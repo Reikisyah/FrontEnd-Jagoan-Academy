@@ -102,12 +102,12 @@ const CourseCard = ({ course }) => (
 );
 
 const Courses = () => {
-
   const [showAll, setShowAll] = useState(false);
   const [slide, setSlide] = useState(0); // 0: first 4, 1: next 4
   const [animating, setAnimating] = useState(false);
+  const [slideDir, setSlideDir] = useState(0); // -1: left, 1: right, 0: idle
+  const [viewAllState, setViewAllState] = useState('hidden'); // 'hidden', 'entering', 'visible', 'exiting'
   const sliderRef = useRef(null);
-
 
   const visibleCourses = showAll
     ? courseData
@@ -117,42 +117,32 @@ const Courses = () => {
   const canSlideRight = !showAll && (slide + 1) * 4 < courseData.length;
 
   // Animasi slide horizontal yang smooth dengan grid wrapper
-  const [slideAnim, setSlideAnim] = useState(0); // % offset
   const handleSlide = (dir) => {
     if (animating) return;
+    setSlideDir(dir);
     setAnimating(true);
-    setSlideAnim(-dir * 100); // -100% (left), 100% (right)
     setTimeout(() => {
       setSlide((s) => s + dir);
-      setSlideAnim(0);
       setAnimating(false);
+      setSlideDir(0);
     }, 400);
   };
 
   // View All animasi geser horizontal (slide in/out)
-  const [viewAllAnim, setViewAllAnim] = useState(false); // 'in', 'out', or false
-  const [showGrid, setShowGrid] = useState(false); // render grid
+  const handleViewAll = () => setViewAllState('entering');
+  const handleCloseAll = () => setViewAllState('exiting');
 
-  const handleViewAll = () => {
-    setShowGrid(true);
-    setTimeout(() => {
-      setViewAllAnim('in'); // animasi masuk (geser dari kanan)
-      setTimeout(() => {
-        setShowAll(true);
-        setViewAllAnim(false);
-      }, 500);
-    }, 10);
+  // Transition end handler for view all
+  const handleViewAllTransitionEnd = () => {
+    if (viewAllState === 'entering') setViewAllState('visible');
+    if (viewAllState === 'exiting') setViewAllState('hidden');
   };
 
-  const handleCloseAll = () => {
-    setViewAllAnim('out'); // animasi keluar (geser ke kanan)
-    setTimeout(() => {
-      setShowAll(false);
-      setSlide(0);
-      setViewAllAnim(false);
-      setShowGrid(false);
-    }, 500);
-  };
+  React.useEffect(() => {
+    if (viewAllState === 'entering') setShowAll(true);
+    if (viewAllState === 'hidden') setShowAll(false);
+    if (viewAllState === 'exiting') setSlide(0);
+  }, [viewAllState]);
 
   return (
     <section className="w-full py-16 bg-white">
@@ -195,11 +185,15 @@ const Courses = () => {
             >
               <div
                 className={
-                  `grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-12 gap-y-12 justify-items-center transition-transform duration-500 h-full`
+                  `grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-12 gap-y-12 justify-items-center transition-all duration-500 h-full ` +
+                  (slideDir === -1 ? 'opacity-0 -translate-x-10' : '') +
+                  (slideDir === 1 ? 'opacity-0 translate-x-10' : '') +
+                  (slideDir === 0 ? 'opacity-100 translate-x-0' : '')
                 }
                 style={{
-                  transform: `translateX(${slideAnim}%)`,
+                  transitionProperty: 'transform, opacity',
                 }}
+                onTransitionEnd={() => setSlideDir(0)}
               >
                 {visibleCourses.map((course, idx) => (
                   <CourseCard key={idx} course={course} />
@@ -207,17 +201,17 @@ const Courses = () => {
               </div>
             </div>
           ) : (
-            showGrid && (
-              <div
-                className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-12 gap-y-12 justify-items-center transition-transform duration-500 h-full`
-                  + (viewAllAnim === 'in' ? ' translate-x-full opacity-0 pointer-events-none' : '')
-                  + (showAll && !viewAllAnim ? ' translate-x-0 opacity-100 pointer-events-auto' : '')
-                  + (viewAllAnim === 'out' ? ' -translate-x-full opacity-0 pointer-events-none' : '')}
-                style={{ transitionProperty: 'transform, opacity', transitionDuration: '500ms' }}
-              >
-                {courseData.map((course, idx) => <CourseCard key={idx} course={course} />)}
-              </div>
-            )
+            <div
+              className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-12 gap-y-12 justify-items-center transition-all duration-500 h-full ` +
+                (viewAllState === 'hidden' ? ' opacity-0 pointer-events-none translate-x-full' : '') +
+                (viewAllState === 'entering' ? ' opacity-100 translate-x-0' : '') +
+                (viewAllState === 'visible' ? ' opacity-100 translate-x-0' : '') +
+                (viewAllState === 'exiting' ? ' opacity-0 pointer-events-none -translate-x-full' : '')}
+              style={{ transitionProperty: 'transform, opacity', transitionDuration: '500ms' }}
+              onTransitionEnd={handleViewAllTransitionEnd}
+            >
+              {courseData.map((course, idx) => <CourseCard key={idx} course={course} />)}
+            </div>
           )}
         </div>
         {/* View All Button */}
