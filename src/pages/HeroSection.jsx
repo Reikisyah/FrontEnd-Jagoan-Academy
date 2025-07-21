@@ -2,7 +2,7 @@ import React from 'react'
 
 const HeroSection = () => {
   return (
-    <section className="relative flex flex-col items-center justify-center min-h-[85vh] sm:min-h-[80vh] w-full bg-gradient-to-tr from-pink-50 via-white to-yellow-50 px-4 sm:px-6 lg:px-8">
+    <section className="relative flex flex-col items-center justify-center min-h-[85vh] sm:min-h-[80vh] w-full bg-white px-4 sm:px-6 lg:px-8">
       <div className="text-center mt-16 sm:mt-20 lg:mt-24 mb-8 sm:mb-12 max-w-4xl mx-auto">
         <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-4 sm:mb-6">
           <span className="block">Temukan Potensi Anda</span>
@@ -20,15 +20,6 @@ const HeroSection = () => {
             Lihat Kursus
           </button>
         </div>
-      </div>
-      {/* Decorative faded circles background - responsif */}
-      <div className="pointer-events-none select-none overflow-hidden">
-        {/* Pink faded circle - responsif untuk mobile dan desktop */}
-        <div className="absolute -z-10 left-[-15vw] sm:left-[-10vw] top-[-15vh] sm:top-[-10vh] w-[600px] sm:w-[800px] lg:w-[900px] h-[600px] sm:h-[800px] lg:h-[900px] bg-pink-200 rounded-full opacity-30 sm:opacity-40 blur-[150px] sm:blur-[200px] lg:blur-[220px]"></div>
-        {/* Yellow faded circle - responsif untuk mobile dan desktop */}
-        <div className="absolute -z-10 right-[-18vw] sm:right-[-12vw] top-[-5vh] sm:top-[0vh] w-[700px] sm:w-[900px] lg:w-[1000px] h-[700px] sm:h-[900px] lg:h-[1000px] bg-yellow-100 rounded-full opacity-25 sm:opacity-35 blur-[160px] sm:blur-[220px] lg:blur-[240px]"></div>
-        {/* Additional subtle gradient overlay untuk mobile */}
-        <div className="absolute -z-5 inset-0 bg-gradient-to-b from-transparent via-white/10 to-transparent sm:hidden"></div>
       </div>
     </section>
   )

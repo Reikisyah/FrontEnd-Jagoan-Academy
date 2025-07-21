@@ -22,8 +22,8 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (form.password.length < 8 || form.confirm.length < 8) {
-      alert('Password dan konfirmasi password minimal 8 karakter')
+    if (form.password.length < 8) {
+      alert('Password minimal 8 karakter')
       return
     }
     if (form.password !== form.confirm) {
@@ -31,22 +31,36 @@ const Register = () => {
       return
     }
     try {
-      // Kirim ke backend
-      const res = await registerApi({
+      // Debug: cek data yang akan dikirim
+      const requestData = {
         name: form.name,
         email: form.email,
         password: form.password,
         password_confirmation: form.confirm,
-      })
+        role: 'participant'
+      }
+      console.log('🚀 [REGISTER] Data yang akan dikirim:', requestData)
+      
+      // Kirim ke backend
+      console.log('📡 [REGISTER] Mengirim request ke backend...')
+      const res = await registerApi(requestData)
+      
+      console.log('✅ [REGISTER] Response dari backend:', res)
+      
       // Jika backend mengembalikan token, simpan ke localStorage
       if (res.token) {
         localStorage.setItem('token', res.token)
+        console.log('💾 [REGISTER] Token tersimpan di localStorage')
       }
+      
+      console.log('🎉 [REGISTER] Registrasi berhasil! Redirect ke login...')
       setSuccess(true)
       setTimeout(() => {
         navigate('/login')
       }, 1500)
     } catch (err) {
+      console.error('❌ [REGISTER] Error:', err)
+      console.error('❌ [REGISTER] Error message:', err.message)
       alert(err.message || 'Register gagal')
     }
   }
@@ -134,6 +148,8 @@ const Register = () => {
                 className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-200 text-sm sm:text-base"
                 required
               />
+
+
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -174,6 +190,7 @@ const Register = () => {
                   {showConfirm ? <FaEyeSlash /> : <FaEye />}
                 </button>
               </div>
+
               <button
                 type="submit"
                 className="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 rounded-lg mt-2 transition-colors"

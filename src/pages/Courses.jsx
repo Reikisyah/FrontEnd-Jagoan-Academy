@@ -137,12 +137,12 @@ const Courses = () => {
       setSlide((s) => s + dir)
       setAnimating(false)
       setSlideDir(0)
-    }, 400)
+    }, 250)
   }
 
   // View All animasi geser horizontal (slide in/out)
-  const handleViewAll = () => setViewAllState('entering')
-  const handleCloseAll = () => setViewAllState('exiting')
+  const handleViewAll = () => setShowAll(true)
+  const handleCloseAll = () => setShowAll(false)
 
   // Transition end handler for view all
   const handleViewAllTransitionEnd = () => {
@@ -180,7 +180,7 @@ const Courses = () => {
           {!showAll && (
             <>
               <button
-                className={`hidden lg:flex absolute left-[-30px] top-1/2 -translate-y-1/2 bg-white border border-gray-200 shadow rounded-full w-10 h-10 items-center justify-center text-gray-500 hover:text-pink-500 transition z-10 ${!canSlideLeft ? 'opacity-0 pointer-events-none' : ''}`}
+                className={`hidden lg:flex absolute left-[-30px] top-1/2 -translate-y-1/2 bg-white border border-gray-200 shadow rounded-full w-10 h-10 items-center justify-center text-gray-500 hover:text-pink-500 z-10 ${!canSlideLeft ? 'opacity-0 pointer-events-none' : ''}`}
                 onClick={() => handleSlide(-1)}
                 disabled={!canSlideLeft || animating}
                 aria-label="Sebelumnya"
@@ -201,7 +201,7 @@ const Courses = () => {
                 </svg>
               </button>
               <button
-                className={`hidden lg:flex absolute right-[-30px] top-1/2 -translate-y-1/2 bg-white border border-gray-200 shadow rounded-full w-10 h-10 items-center justify-center text-gray-500 hover:text-pink-500 transition z-10 ${!canSlideRight ? 'opacity-0 pointer-events-none' : ''}`}
+                className={`hidden lg:flex absolute right-[-30px] top-1/2 -translate-y-1/2 bg-white border border-gray-200 shadow rounded-full w-10 h-10 items-center justify-center text-gray-500 hover:text-pink-500 z-10 ${!canSlideRight ? 'opacity-0 pointer-events-none' : ''}`}
                 onClick={() => handleSlide(1)}
                 disabled={!canSlideRight || animating}
                 aria-label="Selanjutnya"
@@ -231,14 +231,11 @@ const Courses = () => {
             >
               <div
                 className={
-                  `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 justify-items-center transition-all duration-500 h-full ` +
-                  (slideDir === -1 ? 'opacity-0 -translate-x-10' : '') +
-                  (slideDir === 1 ? 'opacity-0 translate-x-10' : '') +
+                  `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 justify-items-center transition-all duration-500 ease-in-out ` +
+                  (slideDir === -1 ? 'opacity-0 -translate-x-8' : '') +
+                  (slideDir === 1 ? 'opacity-0 translate-x-8' : '') +
                   (slideDir === 0 ? 'opacity-100 translate-x-0' : '')
                 }
-                style={{
-                  transitionProperty: 'transform, opacity',
-                }}
                 onTransitionEnd={() => setSlideDir(0)}
               >
                 {visibleCourses.map((course, idx) => (
@@ -247,28 +244,7 @@ const Courses = () => {
               </div>
             </div>
           ) : (
-            <div
-              className={
-                `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 justify-items-center transition-all duration-500 h-full ` +
-                (viewAllState === 'hidden'
-                  ? ' opacity-0 pointer-events-none translate-x-full'
-                  : '') +
-                (viewAllState === 'entering'
-                  ? ' opacity-100 translate-x-0'
-                  : '') +
-                (viewAllState === 'visible'
-                  ? ' opacity-100 translate-x-0'
-                  : '') +
-                (viewAllState === 'exiting'
-                  ? ' opacity-0 pointer-events-none -translate-x-full'
-                  : '')
-              }
-              style={{
-                transitionProperty: 'transform, opacity',
-                transitionDuration: '500ms',
-              }}
-              onTransitionEnd={handleViewAllTransitionEnd}
-            >
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 justify-items-center opacity-0 animate-fade-in">
               {courseData.map((course, idx) => (
                 <CourseCard key={idx} course={course} />
               ))}
@@ -276,30 +252,21 @@ const Courses = () => {
           )}
         </div>
         {/* View All Button */}
-        {!showAll && (
-          <div className="flex justify-center mt-8 sm:mt-10">
+        <div className="flex justify-center mt-8 sm:mt-10">
+          <div className="relative">
             <button
-              className="text-sm sm:text-base text-gray-500 font-semibold hover:text-pink-600 hover:underline focus:outline-none bg-transparent p-2 sm:p-3 min-w-0 shadow-none border-none transition-colors duration-200"
-              style={{ background: 'none', boxShadow: 'none' }}
-              onClick={handleViewAll}
-              disabled={animating}
+              className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full font-semibold shadow-md hover:shadow-lg transition-all duration-300 text-xs sm:text-sm transform hover:scale-105 ${
+                !showAll 
+                  ? 'bg-pink-600 text-white hover:bg-pink-700 opacity-100' 
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300 opacity-100'
+              }`}
+              onClick={!showAll ? handleViewAll : handleCloseAll}
             >
-              Lihat Semua Kursus
+              {!showAll ? 'View All' : 'Tutup'}
             </button>
           </div>
-        )}
-        {showAll && (
-          <div className="flex justify-center mt-8 sm:mt-10">
-            <button
-              className="text-sm sm:text-base text-gray-500 font-semibold hover:text-pink-600 hover:underline focus:outline-none bg-transparent p-2 sm:p-3 min-w-0 shadow-none border-none transition-colors duration-200"
-              style={{ background: 'none', boxShadow: 'none' }}
-              onClick={handleCloseAll}
-              disabled={animating}
-            >
-              Tutup
-            </button>
-          </div>
-        )}
+        </div>
+
       </div>
     </section>
   )

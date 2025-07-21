@@ -26,25 +26,39 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      const res = await loginApi({
+      const requestData = {
         email: form.email,
         password: form.password,
-      })
+        remember: remember,
+      }
+      console.log('🚀 [LOGIN] Data yang akan dikirim:', { email: form.email, remember: remember })
+      
+      console.log('📡 [LOGIN] Mengirim request ke backend...')
+      const res = await loginApi(requestData)
+      
+      console.log('✅ [LOGIN] Response dari backend:', res)
+      
       // Jika backend mengembalikan token, simpan ke localStorage/sessionStorage
       if (res.token) {
         if (remember) {
           localStorage.setItem('token', res.token)
+          console.log('💾 [LOGIN] Token tersimpan di localStorage (remember = true)')
         } else {
           sessionStorage.setItem('token', res.token)
           localStorage.removeItem('token')
+          console.log('💾 [LOGIN] Token tersimpan di sessionStorage (remember = false)')
         }
       }
+      
       localStorage.setItem('rememberMeChecked', remember ? 'true' : 'false')
+      console.log('🎉 [LOGIN] Login berhasil! Redirect ke homepage...')
       setSuccess(true)
       setTimeout(() => {
         navigate('/')
       }, 1500)
     } catch (err) {
+      console.error('❌ [LOGIN] Error:', err)
+      console.error('❌ [LOGIN] Error message:', err.message)
       alert(err.message || 'Login gagal')
     }
   }
