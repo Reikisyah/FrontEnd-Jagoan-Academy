@@ -22,7 +22,7 @@ import FAQ from "./pages/FAQ";
 
 import Register from "./pages/Register";
 import Login from "./pages/Login";
-import { Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "./Hooks/Navbar";
 import Footer from "./Hooks/Footer";
 
@@ -33,7 +33,7 @@ import Footer from "./Hooks/Footer";
 
 function App() {
   return (
-    <>
+    <BrowserRouter>
       <Navbar />
       <div className="min-h-screen flex flex-col">
         <div className="flex-1">
@@ -70,7 +70,7 @@ function App() {
         </div>
         <Footer />
       </div>
-    </>
+    </BrowserRouter>
   );
 }
 
