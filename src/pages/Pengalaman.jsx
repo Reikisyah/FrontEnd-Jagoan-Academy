@@ -10,16 +10,16 @@ const Pengalaman = () => {
           Bergabunglah dengan ribuan pelajar yang telah meraih kesuksesan dan membangun karier impian bersama kami.
         </p>
         <div className="flex flex-col md:flex-row justify-center gap-6 md:gap-8">
-          <div className="flex-1 bg-white rounded-xl shadow p-8 text-center">
-            <div className="text-3xl md:text-4xl font-extrabold text-blue-600 mb-2">10,000+</div>
+          <div className="flex-1 bg-white rounded-xl shadow-lg p-8 text-center transition hover:shadow-2xl">
+            <div className="text-3xl md:text-4xl font-extrabold text-pink-600 mb-2">10,000+</div>
             <div className="text-gray-600 text-lg">Pelajar Terdaftar</div>
           </div>
-          <div className="flex-1 bg-white rounded-xl shadow p-8 text-center">
-            <div className="text-3xl md:text-4xl font-extrabold text-blue-600 mb-2">200+</div>
+          <div className="flex-1 bg-white rounded-xl shadow-lg p-8 text-center transition hover:shadow-2xl">
+            <div className="text-3xl md:text-4xl font-extrabold text-pink-600 mb-2">200+</div>
             <div className="text-gray-600 text-lg">Kursus Tersedia</div>
           </div>
-          <div className="flex-1 bg-white rounded-xl shadow p-8 text-center">
-            <div className="text-3xl md:text-4xl font-extrabold text-blue-600 mb-2">95%</div>
+          <div className="flex-1 bg-white rounded-xl shadow-lg p-8 text-center transition hover:shadow-2xl">
+            <div className="text-3xl md:text-4xl font-extrabold text-pink-600 mb-2">95%</div>
             <div className="text-gray-600 text-lg">Tingkat Kepuasan</div>
           </div>
         </div>

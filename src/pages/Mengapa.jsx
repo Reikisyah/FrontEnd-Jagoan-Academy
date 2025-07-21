@@ -50,7 +50,7 @@ const Mengapa = () => {
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
           {features.map((f, i) => (
-            <div key={i} className="bg-white rounded-xl shadow p-6 flex flex-col items-center text-center transition hover:shadow-lg">
+            <div key={i} className="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center text-center transition hover:shadow-2xl">
               {f.icon}
               <h3 className="font-semibold text-lg mb-2 text-gray-900">{f.title}</h3>
               <p className="text-gray-500 text-sm">{f.desc}</p>

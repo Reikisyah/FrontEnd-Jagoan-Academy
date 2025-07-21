@@ -41,13 +41,25 @@ const FAQ = () => {
                 onClick={() => toggle(idx)}
               >
                 {item.question}
-                <span className="ml-2 text-2xl text-gray-400">{openIndex === idx ? "−" : "+"}</span>
+                <span
+                  className={`ml-2 text-2xl inline-block transition-transform duration-500 ease-in-out`}
+                  style={{
+                    color: '#ec4899',
+                    transition: 'color 0.3s, transform 0.5s',
+                    transform: openIndex === idx ? 'rotate(180deg)' : 'rotate(0deg)'
+                  }}
+                >
+                  {openIndex === idx ? "−" : "+"}
+                </span>
               </button>
-              {openIndex === idx && (
-                <div className="mt-3 text-gray-600 text-base animate-fade-in">
-                  {item.answer}
-                </div>
-              )}
+              <div
+                className={`overflow-hidden transition-all duration-500 ease-in-out mt-3 text-gray-600 text-base ${openIndex === idx ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}
+                style={{
+                  transitionProperty: 'max-height, opacity',
+                }}
+              >
+                <div className="py-1">{item.answer}</div>
+              </div>
             </div>
           ))}
         </div>

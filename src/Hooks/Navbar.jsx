@@ -6,7 +6,7 @@ import { FiSearch } from 'react-icons/fi';
 
 const Navbar = () => {
   return (
-    <nav className="bg-white shadow-sm px-8 py-4 flex items-center justify-between w-full">
+    <nav className="bg-white shadow-lg px-8 py-4 flex items-center justify-between w-full sticky top-0 z-50">
 
       {/* Logo & Brand + Search Bar */}
       <div className="flex items-center gap-6 flex-1">
@@ -14,14 +14,14 @@ const Navbar = () => {
           <span className="text-pink-600">Jagoan</span>
           <span className="text-gray-900"> Academy</span>
         </span>
-        <div className="relative w-full max-w-xs ml-4">
+        <div className="relative w-full max-w-[200px] ml-2">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
             <FiSearch size={20} />
           </span>
           <input
             type="text"
             placeholder="Search courses..."
-            className="w-full pl-10 pr-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-200 text-gray-700 bg-white placeholder-gray-400"
+            className="w-full pl-8 pr-3 py-1.5 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-200 text-gray-700 bg-white placeholder-gray-400 text-sm"
           />
         </div>
       </div>
@@ -41,7 +41,12 @@ const Navbar = () => {
           <a href="#faq" className="hover:text-pink-600 transition">FAQ</a>
         </li>
         <li>
-          <a href="#login" className="border-2 border-pink-600 rounded-lg px-5 py-2 font-semibold text-pink-600 hover:bg-pink-50 transition">Log in</a>
+          <Link
+            to="/login"
+            className="border-2 border-pink-600 rounded-lg px-5 py-2 font-semibold text-pink-600 hover:bg-pink-50 transition"
+          >
+            Log in
+          </Link>
         </li>
         <li>
           <Link

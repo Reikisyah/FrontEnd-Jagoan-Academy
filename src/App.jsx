@@ -21,6 +21,7 @@ import FAQ from "./pages/FAQ";
 
 
 import Register from "./pages/Register";
+import Login from "./pages/Login";
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./Hooks/Navbar";
 import Footer from "./Hooks/Footer";
@@ -44,20 +45,27 @@ function App() {
                   <section id="home">
                     <HeroSection />
                   </section>
+                  <div className="w-full h-12 bg-gradient-to-b from-gray-100 to-white"></div>
                   <section id="about">
                     <Mengapa />
                   </section>
+                  <div className="w-full h-12 bg-gradient-to-b from-gray-100 to-white"></div>
                   <section id="courses">
                     <Courses />
                   </section>
+                  <div className="w-full h-12 bg-gradient-to-b from-gray-100 to-white"></div>
                   <Pengalaman />
+                  <div className="w-full h-12 bg-gradient-to-b from-gray-100 to-white"></div>
                   <FAQ />
+                  <div className="w-full h-12 bg-gradient-to-b from-gray-100 to-white"></div>
                   <Testimonial />
+                  <div className="w-full h-12 bg-gradient-to-b from-gray-100 to-white"></div>
                   <Partner />
                 </main>
               }
             />
             <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login />} />
           </Routes>
         </div>
         <Footer />

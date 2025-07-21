@@ -22,9 +22,13 @@ const HeroSection = () => {
           </button>
         </div>
       </div>
-      {/* Optional: Decorative background circles */}
-      <div className="absolute -z-10 left-10 top-20 w-72 h-72 bg-pink-100 rounded-full opacity-40 blur-2xl"></div>
-      <div className="absolute -z-10 right-10 bottom-10 w-96 h-96 bg-yellow-100 rounded-full opacity-30 blur-2xl"></div>
+      {/* Decorative faded circles background */}
+      <div className="pointer-events-none select-none">
+        {/* Pink faded circle - very large, soft, and centered left */}
+        <div className="absolute -z-10 left-[-10vw] top-[-10vh] w-[900px] h-[900px] bg-pink-200 rounded-full opacity-40 blur-[220px]"></div>
+        {/* Yellow faded circle - very large, soft, and centered right */}
+        <div className="absolute -z-10 right-[-12vw] top-[0vh] w-[1000px] h-[1000px] bg-yellow-100 rounded-full opacity-35 blur-[240px]"></div>
+      </div>
     </section>
   );
 };
