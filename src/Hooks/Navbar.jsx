@@ -7,17 +7,14 @@ import { FiSearch } from 'react-icons/fi';
 const Navbar = () => {
   return (
     <nav className="bg-white shadow-sm px-8 py-4 flex items-center justify-between w-full">
-      {/* Logo & Brand */}
-      <div className="flex items-center gap-2">
+
+      {/* Logo & Brand + Search Bar */}
+      <div className="flex items-center gap-6 flex-1">
         <span className="font-extrabold text-2xl select-none">
           <span className="text-pink-600">Jagoan</span>
           <span className="text-gray-900"> Academy</span>
         </span>
-      </div>
-
-      {/* Search Bar */}
-      <div className="flex-1 flex justify-center mx-8">
-        <div className="relative w-full max-w-xs">
+        <div className="relative w-full max-w-xs ml-4">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
             <FiSearch size={20} />
           </span>
@@ -30,26 +27,26 @@ const Navbar = () => {
       </div>
 
       {/* Menu */}
-      <ul className="flex gap-8 items-center text-gray-800 font-medium">
+      <ul className="flex gap-4 items-center text-gray-800 font-medium">
         <li>
-          <Link to="/" className="hover:text-pink-600 transition">Home</Link>
+          <a href="#home" className="hover:text-pink-600 transition">Home</a>
         </li>
         <li>
-          <Link to="/courses" className="hover:text-pink-600 transition">Courses</Link>
+          <a href="#courses" className="hover:text-pink-600 transition">Courses</a>
         </li>
         <li>
-          <Link to="/categories" className="hover:text-pink-600 transition">Categories</Link>
+          <a href="#about" className="hover:text-pink-600 transition">About</a>
         </li>
         <li>
-          <Link to="/about" className="hover:text-pink-600 transition">About</Link>
+          <a href="#faq" className="hover:text-pink-600 transition">FAQ</a>
         </li>
         <li>
-          <Link to="/login" className="hover:text-pink-600 transition">Log in</Link>
+          <a href="#login" className="border-2 border-pink-600 rounded-lg px-5 py-2 font-semibold text-pink-600 hover:bg-pink-50 transition">Log in</a>
         </li>
         <li>
           <Link
             to="/register"
-            className="ml-2 px-5 py-2 rounded-lg bg-pink-600 text-white font-semibold shadow hover:bg-pink-700 transition"
+            className="px-5 py-2 rounded-lg bg-pink-600 text-white font-semibold shadow hover:bg-pink-700 transition"
           >
             Sign up
           </Link>
