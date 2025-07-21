@@ -1,4 +1,6 @@
+
 const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   entry: './src/index.jsx',
@@ -30,4 +32,10 @@ module.exports = {
       },
     ],
   },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: './public/index.html',
+      // favicon: './public/favicon.ico', // Uncomment jika favicon.ico tersedia
+    }),
+  ],
 };
