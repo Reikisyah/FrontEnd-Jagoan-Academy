@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import { FaEye, FaEyeSlash } from 'react-icons/fa'
+import { login as loginApi } from '../utils/api'
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false)
@@ -22,27 +23,29 @@ const Login = () => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    // Ambil data users dari localStorage
-    const users = JSON.parse(localStorage.getItem('users') || '[]')
-    const user = users.find(
-      (u) => u.email === form.email && u.password === form.password
-    )
-    if (user) {
-      if (remember) {
-        localStorage.setItem('token', 'dummy-token')
-      } else {
-        sessionStorage.setItem('token', 'dummy-token')
-        localStorage.removeItem('token')
+    try {
+      const res = await loginApi({
+        email: form.email,
+        password: form.password,
+      })
+      // Jika backend mengembalikan token, simpan ke localStorage/sessionStorage
+      if (res.token) {
+        if (remember) {
+          localStorage.setItem('token', res.token)
+        } else {
+          sessionStorage.setItem('token', res.token)
+          localStorage.removeItem('token')
+        }
       }
       localStorage.setItem('rememberMeChecked', remember ? 'true' : 'false')
       setSuccess(true)
       setTimeout(() => {
         navigate('/')
       }, 1500)
-    } else {
-      alert('Email atau password salah!')
+    } catch (err) {
+      alert(err.message || 'Login gagal')
     }
   }
 
@@ -51,7 +54,7 @@ const Login = () => {
     // Cari elemen navbar dengan berbagai kemungkinan
     let navbar =
       document.querySelector(
-        'header, .navbar, #navbar, nav, [role="navigation"]'
+        'header, .navbar, #navbar, nav, [role="navigation"]',
       ) ||
       Array.from(document.querySelectorAll('div,section')).find(
         (el) =>
@@ -60,7 +63,7 @@ const Login = () => {
             .replace(/\s+/g, '')
             .toLowerCase()
             .includes('jagoanacademy') &&
-          el.querySelector('a,button,input')
+          el.querySelector('a,button,input'),
       )
     const footer = document.querySelector('footer, .footer, #footer')
     if (navbar) {
@@ -94,8 +97,8 @@ const Login = () => {
   }, [])
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-pink-50">
-      <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12 w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-pink-50 px-4 sm:px-6 lg:px-8">
+      <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-6 sm:p-8 lg:p-10 w-full max-w-sm sm:max-w-md lg:max-w-lg">
         {success ? (
           <div className="flex flex-col items-center justify-center h-64">
             <svg
@@ -120,70 +123,74 @@ const Login = () => {
           </div>
         ) : (
           <>
-            <h2 className="text-2xl md:text-3xl font-bold text-center text-pink-600 mb-2 whitespace-nowrap">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-center text-pink-600 mb-3 sm:mb-4">
               Masuk ke Akun Anda
             </h2>
-            <p className="text-center text-gray-500 mb-6">
+            <p className="text-center text-gray-500 mb-6 sm:mb-8 text-sm sm:text-base leading-relaxed">
               Belum punya akun?{' '}
               <Link
                 to="/register"
-                className="text-pink-500 font-medium hover:underline"
+                className="text-pink-500 font-medium hover:underline transition-colors duration-200"
               >
                 Daftar gratis
               </Link>
             </p>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
               <input
                 type="email"
                 name="email"
-                placeholder="Email address"
+                placeholder="Alamat Email"
                 value={form.email}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-200"
+                className="w-full px-4 sm:px-5 py-3 sm:py-3.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-300 text-sm sm:text-base transition-all duration-200"
                 required
               />
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   name="password"
-                  placeholder="Password"
+                  placeholder="Kata Sandi"
                   value={form.password}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-200 pr-10"
+                  className="w-full px-4 sm:px-5 py-3 sm:py-3.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-300 pr-12 text-sm sm:text-base transition-all duration-200"
                   required
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
                   onClick={() => setShowPassword((v) => !v)}
                   tabIndex={-1}
                 >
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  {showPassword ? (
+                    <FaEyeSlash size={18} />
+                  ) : (
+                    <FaEye size={18} />
+                  )}
                 </button>
               </div>
-              <div className="flex items-center justify-between mt-2 mb-2">
-                <label className="flex items-center text-sm text-gray-600 select-none">
+              <div className="flex items-center justify-between mt-3 mb-4">
+                <label className="flex items-center text-sm text-gray-600 select-none cursor-pointer">
                   <input
                     type="checkbox"
-                    className="form-checkbox accent-pink-500 mr-2"
+                    className="form-checkbox accent-pink-500 mr-2 w-4 h-4"
                     style={{ accentColor: '#ec4899' }}
                     checked={remember}
                     onChange={(e) => setRemember(e.target.checked)}
                   />
-                  Remember me
+                  Ingat saya
                 </label>
                 <Link
                   to="#"
-                  className="text-pink-400 text-sm font-bold hover:underline whitespace-nowrap"
+                  className="text-pink-500 text-sm font-medium hover:underline whitespace-nowrap transition-colors duration-200"
                 >
-                  Forgot your password?
+                  Lupa kata sandi?
                 </Link>
               </div>
               <button
                 type="submit"
-                className="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 rounded-lg mt-2 transition-colors"
+                className="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 sm:py-3.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 text-sm sm:text-base"
               >
-                Login
+                Masuk
               </button>
             </form>
           </>

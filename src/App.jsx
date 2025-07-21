@@ -1,35 +1,20 @@
+import React from 'react'
 
-import React from "react";
+import HeroSection from './pages/HeroSection'
+import Mengapa from './pages/Mengapa'
 
+import Courses from './pages/Courses'
 
+import Pengalaman from './pages/Pengalaman'
+import Partner from './pages/Partner'
+import Testimonial from './pages/Testimonial'
+import FAQ from './pages/FAQ'
 
-
-
-import HeroSection from "./pages/HeroSection";
-import Mengapa from "./pages/Mengapa";
-
-import Courses from "./pages/Courses";
-
-
-
-import Pengalaman from "./pages/Pengalaman";
-import Partner from "./pages/Partner";
-import Testimonial from "./pages/testimonial";
-import FAQ from "./pages/FAQ";
-
-
-
-
-import Register from "./pages/Register";
-import Login from "./pages/Login";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Navbar from "./Hooks/Navbar";
-import Footer from "./Hooks/Footer";
-
-
-
-
-
+import Register from './pages/Register'
+import Login from './pages/Login'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Navbar from './components/Navbar'
+import Footer from './components/Footer'
 
 function App() {
   return (
@@ -71,7 +56,7 @@ function App() {
         <Footer />
       </div>
     </BrowserRouter>
-  );
+  )
 }
 
-export default App;
+export default App

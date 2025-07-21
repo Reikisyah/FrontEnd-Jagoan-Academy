@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import { FaEye, FaEyeSlash } from 'react-icons/fa'
+import { register as registerApi } from '../utils/api'
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false)
@@ -19,7 +20,7 @@ const Register = () => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     if (form.password.length < 8 || form.confirm.length < 8) {
       alert('Password dan konfirmasi password minimal 8 karakter')
@@ -29,25 +30,25 @@ const Register = () => {
       alert('Password dan konfirmasi password tidak sama')
       return
     }
-    // Ambil data users dari localStorage
-    const users = JSON.parse(localStorage.getItem('users') || '[]')
-    // Cek email sudah terdaftar
-    if (users.some((u) => u.email === form.email)) {
-      alert('Email sudah terdaftar!')
-      return
+    try {
+      // Kirim ke backend
+      const res = await registerApi({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        password_confirmation: form.confirm,
+      })
+      // Jika backend mengembalikan token, simpan ke localStorage
+      if (res.token) {
+        localStorage.setItem('token', res.token)
+      }
+      setSuccess(true)
+      setTimeout(() => {
+        navigate('/login')
+      }, 1500)
+    } catch (err) {
+      alert(err.message || 'Register gagal')
     }
-    // Simpan user baru
-    users.push({
-      name: form.name,
-      email: form.email,
-      password: form.password,
-    })
-    localStorage.setItem('users', JSON.stringify(users))
-    localStorage.setItem('token', 'dummy-token')
-    setSuccess(true)
-    setTimeout(() => {
-      navigate('/login')
-    }, 1500)
   }
 
   // Sembunyikan Navbar dan Footer jika ada (untuk layout global)
@@ -55,7 +56,7 @@ const Register = () => {
     // Cari elemen navbar dengan berbagai kemungkinan
     let navbar =
       document.querySelector(
-        'header, .navbar, #navbar, nav, [role="navigation"]'
+        'header, .navbar, #navbar, nav, [role="navigation"]',
       ) ||
       Array.from(document.querySelectorAll('div,section')).find(
         (el) =>
@@ -64,7 +65,7 @@ const Register = () => {
             .replace(/\s+/g, '')
             .toLowerCase()
             .includes('jagoanacademy') &&
-          el.querySelector('a,button,input')
+          el.querySelector('a,button,input'),
       )
     const footer = document.querySelector('footer, .footer, #footer')
     if (navbar) navbar.style.display = 'none'
@@ -76,8 +77,8 @@ const Register = () => {
   }, [])
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-pink-50">
-      <div className="bg-white rounded-2xl shadow-xl p-8 md:p-10 w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-pink-50 px-4 sm:px-6 lg:px-8">
+      <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-6 sm:p-8 lg:p-10 w-full max-w-sm sm:max-w-md lg:max-w-lg">
         {success ? (
           <div className="flex flex-col items-center justify-center h-64">
             <svg
@@ -102,10 +103,10 @@ const Register = () => {
           </div>
         ) : (
           <>
-            <h2 className="text-3xl md:text-4xl font-bold text-center text-pink-600 mb-2">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-center text-pink-600 mb-2">
               Daftar Akun Baru
             </h2>
-            <p className="text-center text-gray-500 mb-6">
+            <p className="text-center text-gray-500 mb-4 sm:mb-6 text-sm sm:text-base">
               Sudah punya akun?{' '}
               <Link
                 to="/login"
@@ -114,14 +115,14 @@ const Register = () => {
                 Masuk sekarang
               </Link>
             </p>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
               <input
                 type="text"
                 name="name"
                 placeholder="Full Name"
                 value={form.name}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-200"
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-200 text-sm sm:text-base"
                 required
               />
               <input
@@ -130,7 +131,7 @@ const Register = () => {
                 placeholder="Email Address"
                 value={form.email}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-200"
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-200 text-sm sm:text-base"
                 required
               />
               <div className="relative">

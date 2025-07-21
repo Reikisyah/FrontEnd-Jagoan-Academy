@@ -1,37 +1,37 @@
-
-import React from "react";
+import React from 'react'
 
 const HeroSection = () => {
   return (
-    <section className="relative flex flex-col items-center justify-center min-h-[80vh] w-full bg-gradient-to-tr from-pink-50 via-white to-yellow-50">
-      <div className="text-center mt-24 mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight">
-          Temukan Potensi Anda
-          <br />
-          <span className="text-pink-600">di Jagoan Academy</span>
+    <section className="relative flex flex-col items-center justify-center min-h-[85vh] sm:min-h-[80vh] w-full bg-gradient-to-tr from-pink-50 via-white to-yellow-50 px-4 sm:px-6 lg:px-8">
+      <div className="text-center mt-16 sm:mt-20 lg:mt-24 mb-8 sm:mb-12 max-w-4xl mx-auto">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-4 sm:mb-6">
+          <span className="block">Temukan Potensi Anda</span>
+          <span className="text-pink-600 block mt-2">di Jagoan Academy</span>
         </h1>
-        <p className="mt-6 text-lg md:text-xl text-gray-500 max-w-2xl mx-auto">
-          Kembangkan keterampilan Anda dengan kursus berkualitas tinggi dari para ahli di bidangnya.
+        <p className="mt-4 sm:mt-6 text-base sm:text-lg md:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed px-4 sm:px-0">
+          Kembangkan keterampilan Anda dengan kursus berkualitas tinggi dari
+          para ahli di bidangnya.
         </p>
-        <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-          <button className="px-7 py-3 rounded-lg bg-pink-600 text-white font-semibold shadow hover:bg-pink-700 transition">
+        <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center px-4 sm:px-0">
+          <button className="w-full sm:w-auto px-6 sm:px-7 py-3 sm:py-4 rounded-lg bg-pink-600 text-white font-semibold shadow-lg hover:bg-pink-700 hover:shadow-xl transition-all duration-200 text-sm sm:text-base">
             Mulai Belajar Sekarang
           </button>
-          <button className="px-7 py-3 rounded-lg border-2 border-pink-500 text-pink-600 font-semibold bg-white hover:bg-pink-50 transition">
+          <button className="w-full sm:w-auto px-6 sm:px-7 py-3 sm:py-4 rounded-lg border-2 border-pink-500 text-pink-600 font-semibold bg-white hover:bg-pink-50 hover:border-pink-600 transition-all duration-200 text-sm sm:text-base">
             Lihat Kursus
           </button>
         </div>
       </div>
-      {/* Decorative faded circles background */}
-      <div className="pointer-events-none select-none">
-        {/* Pink faded circle - very large, soft, and centered left */}
-        <div className="absolute -z-10 left-[-10vw] top-[-10vh] w-[900px] h-[900px] bg-pink-200 rounded-full opacity-40 blur-[220px]"></div>
-        {/* Yellow faded circle - very large, soft, and centered right */}
-        <div className="absolute -z-10 right-[-12vw] top-[0vh] w-[1000px] h-[1000px] bg-yellow-100 rounded-full opacity-35 blur-[240px]"></div>
+      {/* Decorative faded circles background - responsif */}
+      <div className="pointer-events-none select-none overflow-hidden">
+        {/* Pink faded circle - responsif untuk mobile dan desktop */}
+        <div className="absolute -z-10 left-[-15vw] sm:left-[-10vw] top-[-15vh] sm:top-[-10vh] w-[600px] sm:w-[800px] lg:w-[900px] h-[600px] sm:h-[800px] lg:h-[900px] bg-pink-200 rounded-full opacity-30 sm:opacity-40 blur-[150px] sm:blur-[200px] lg:blur-[220px]"></div>
+        {/* Yellow faded circle - responsif untuk mobile dan desktop */}
+        <div className="absolute -z-10 right-[-18vw] sm:right-[-12vw] top-[-5vh] sm:top-[0vh] w-[700px] sm:w-[900px] lg:w-[1000px] h-[700px] sm:h-[900px] lg:h-[1000px] bg-yellow-100 rounded-full opacity-25 sm:opacity-35 blur-[160px] sm:blur-[220px] lg:blur-[240px]"></div>
+        {/* Additional subtle gradient overlay untuk mobile */}
+        <div className="absolute -z-5 inset-0 bg-gradient-to-b from-transparent via-white/10 to-transparent sm:hidden"></div>
       </div>
     </section>
-  );
-};
+  )
+}
 
-export default HeroSection;
-
+export default HeroSection
