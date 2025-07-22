@@ -12,6 +12,7 @@ const Register = () => {
     email: '',
     password: '',
     confirm: '',
+    role: 'participant', // Tambahkan default role
   })
   const navigate = useNavigate()
   const [success, setSuccess] = useState(false)
@@ -31,10 +32,10 @@ const Register = () => {
       return
     }
     // Validasi email format sebelum submit
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(form.email)) {
-      alert('Format email tidak valid');
-      return;
+      alert('Format email tidak valid')
+      return
     }
     try {
       // Debug: cek data yang akan dikirim
@@ -43,22 +44,26 @@ const Register = () => {
         email: form.email,
         password: form.password,
         password_confirmation: form.confirm,
-        role: 'participant'
+        role: form.role, // Ambil dari form
       }
       console.log('🚀 [REGISTER] Data yang akan dikirim:', requestData)
-      
+
       // Kirim ke backend
       console.log('📡 [REGISTER] Mengirim request ke backend...')
       const res = await registerApi(requestData)
-      
+
       console.log('✅ [REGISTER] Response dari backend:', res)
-      
-      // Jika backend mengembalikan token, simpan ke localStorage
-      if (res.token) {
-        localStorage.setItem('token', res.token)
-        console.log('💾 [REGISTER] Token tersimpan di localStorage')
+      // Ambil token dari res.token atau res.data.token
+      const token = res.token || (res.data && res.data.token)
+      const role = res.role || (res.data && res.data.role) || form.role
+      if (token) {
+        localStorage.setItem('token', token)
+        localStorage.setItem('role', role)
+        localStorage.setItem('name', form.name)
+        localStorage.setItem('email', form.email)
+        console.log('💾 [REGISTER] Token dan role tersimpan di localStorage')
       }
-      
+
       console.log('🎉 [REGISTER] Registrasi berhasil! Redirect ke login...')
       setSuccess(true)
       setTimeout(() => {
@@ -67,7 +72,34 @@ const Register = () => {
     } catch (err) {
       console.error('❌ [REGISTER] Error:', err)
       console.error('❌ [REGISTER] Error message:', err.message)
-      alert(err.message || 'Register gagal. Pastikan email belum terdaftar dan format benar.')
+      // Tampilkan pesan error spesifik dari BE jika ada
+      if (err && err.message) {
+        alert(err.message)
+      } else if (err && err.errors) {
+        // Jika BE mengembalikan errors object
+        const errorMessages = Object.values(err.errors).flat().join(', ')
+        alert(errorMessages)
+      } else {
+        alert(
+          'Register gagal. Pastikan email belum terdaftar dan format benar.',
+        )
+      }
+    }
+  }
+
+  // Handler untuk Google Auth
+  const handleGoogleAuth = async (e) => {
+    e.preventDefault()
+    try {
+      const res = await fetch('https://lms.alanwari.ponpes.id/api/auth/google')
+      const json = await res.json()
+      if (json.data) {
+        window.location.href = json.data
+      } else {
+        alert('Gagal mendapatkan link Google Auth')
+      }
+    } catch (err) {
+      alert('Gagal menghubungi server Google Auth')
     }
   }
 
@@ -154,7 +186,17 @@ const Register = () => {
                 className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-200 text-sm sm:text-base"
                 required
               />
-
+              {/* Dropdown role */}
+              <select
+                name="role"
+                value={form.role}
+                onChange={handleChange}
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-200 text-sm sm:text-base"
+                required
+              >
+                <option value="participant">Participant</option>
+                <option value="mentor">Mentor</option>
+              </select>
 
               <div className="relative">
                 <input
@@ -204,6 +246,23 @@ const Register = () => {
                 Create Account
               </button>
             </form>
+            {/* Register dengan Google */}
+            <div className="mt-6 flex flex-col items-center">
+              <span className="text-gray-400 text-sm mb-2">atau</span>
+              <button
+                onClick={handleGoogleAuth}
+                className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold py-2.5 rounded-lg shadow-sm transition-colors duration-200"
+                style={{ textDecoration: 'none' }}
+                type="button"
+              >
+                <img
+                  src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_2013_Google.png"
+                  alt="Google"
+                  className="w-5 h-5"
+                />
+                Daftar dengan Google
+              </button>
+            </div>
           </>
         )}
       </div>

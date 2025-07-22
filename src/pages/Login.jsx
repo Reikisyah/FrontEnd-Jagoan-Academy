@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import { FaEye, FaEyeSlash } from 'react-icons/fa'
-import { login as loginApi } from '../utils/api'
+import { login as loginApi, getMe } from '../utils/api'
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false)
@@ -26,10 +26,10 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     // Validasi email format sebelum submit
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(form.email)) {
-      alert('Format email tidak valid');
-      return;
+      alert('Format email tidak valid')
+      return
     }
     try {
       const requestData = {
@@ -37,25 +37,52 @@ const Login = () => {
         password: form.password,
         remember: remember,
       }
-      console.log('🚀 [LOGIN] Data yang akan dikirim:', { email: form.email, remember: remember })
-      
+      console.log('🚀 [LOGIN] Data yang akan dikirim:', {
+        email: form.email,
+        remember: remember,
+      })
+
       console.log('📡 [LOGIN] Mengirim request ke backend...')
       const res = await loginApi(requestData)
-      
+
       console.log('✅ [LOGIN] Response dari backend:', res)
-      
+
       // Jika backend mengembalikan token, simpan ke localStorage/sessionStorage
-      if (res.token) {
+      const token = res.token || (res.data && res.data.token)
+      const role = res.role || (res.data && res.data.role)
+      const name = res.name || (res.data && res.data.name)
+      const email = res.email || (res.data && res.data.email)
+      if (token) {
         if (remember) {
-          localStorage.setItem('token', res.token)
-          console.log('💾 [LOGIN] Token tersimpan di localStorage (remember = true)')
+          localStorage.setItem('token', token)
+          if (role) localStorage.setItem('role', role)
+          if (name) localStorage.setItem('name', name)
+          if (email) localStorage.setItem('email', email)
+          console.log(
+            '💾 [LOGIN] Token dan role tersimpan di localStorage (remember = true)',
+          )
         } else {
-          sessionStorage.setItem('token', res.token)
+          sessionStorage.setItem('token', token)
           localStorage.removeItem('token')
-          console.log('💾 [LOGIN] Token tersimpan di sessionStorage (remember = false)')
+          if (role) localStorage.setItem('role', role)
+          if (name) localStorage.setItem('name', name)
+          if (email) localStorage.setItem('email', email)
+          console.log(
+            '💾 [LOGIN] Token tersimpan di sessionStorage (remember = false)',
+          )
+        }
+        // Jika name/email belum ada, ambil dari /me
+        if (!name || !email) {
+          try {
+            const userData = await getMe(token)
+            if (userData.name) localStorage.setItem('name', userData.name)
+            if (userData.email) localStorage.setItem('email', userData.email)
+          } catch (err) {
+            console.error('[LOGIN] Gagal mengambil data user dari /me:', err)
+          }
         }
       }
-      
+
       localStorage.setItem('rememberMeChecked', remember ? 'true' : 'false')
       console.log('🎉 [LOGIN] Login berhasil! Redirect ke homepage...')
       setSuccess(true)
@@ -65,7 +92,32 @@ const Login = () => {
     } catch (err) {
       console.error('❌ [LOGIN] Error:', err)
       console.error('❌ [LOGIN] Error message:', err.message)
-      alert(err.message || 'Login gagal. Pastikan email dan password benar.')
+      // Tampilkan pesan error spesifik dari BE jika ada
+      if (err && err.message) {
+        alert(err.message)
+      } else if (err && err.errors) {
+        // Jika BE mengembalikan errors object
+        const errorMessages = Object.values(err.errors).flat().join(', ')
+        alert(errorMessages)
+      } else {
+        alert('Login gagal. Pastikan email dan password benar.')
+      }
+    }
+  }
+
+  // Handler untuk Google Auth
+  const handleGoogleAuth = async (e) => {
+    e.preventDefault()
+    try {
+      const res = await fetch('https://lms.alanwari.ponpes.id/api/auth/google')
+      const json = await res.json()
+      if (json.data) {
+        window.location.href = json.data
+      } else {
+        alert('Gagal mendapatkan link Google Auth')
+      }
+    } catch (err) {
+      alert('Gagal menghubungi server Google Auth')
     }
   }
 
@@ -213,6 +265,23 @@ const Login = () => {
                 Masuk
               </button>
             </form>
+            {/* Login dengan Google */}
+            <div className="mt-6 flex flex-col items-center">
+              <span className="text-gray-400 text-sm mb-2">atau</span>
+              <button
+                onClick={handleGoogleAuth}
+                className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold py-2.5 rounded-lg shadow-sm transition-colors duration-200"
+                style={{ textDecoration: 'none' }}
+                type="button"
+              >
+                <img
+                  src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_2013_Google.png"
+                  alt="Google"
+                  className="w-5 h-5"
+                />
+                Login dengan Google
+              </button>
+            </div>
           </>
         )}
       </div>

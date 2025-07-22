@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { FiSearch, FiMenu, FiX, FiChevronDown } from 'react-icons/fi'
+import { FiSearch, FiMenu, FiX } from 'react-icons/fi'
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -10,13 +10,11 @@ const Navbar = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Cek token di localStorage/sessionStorage
     const token =
       localStorage.getItem('token') || sessionStorage.getItem('token')
     setIsLoggedIn(!!token)
   }, [])
 
-  // Tutup dropdown jika klik di luar
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -45,11 +43,19 @@ const Navbar = () => {
     navigate('/login')
   }
 
+  const userName = localStorage.getItem('name') || 'User'
+  const userInitials = userName
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
+
   return (
-    <nav className="bg-white shadow-lg px-4 sm:px-6 lg:px-8 py-4 w-full sticky top-0 z-50">
-      <div className="flex items-center justify-between">
-        {/* Logo & Brand */}
-        <div className="flex items-center gap-2 sm:gap-4">
+    <nav className="bg-white shadow-md shadow-pink-100 px-4 sm:px-6 lg:px-8 py-4 w-full sticky top-0 z-50">
+      <div className="flex items-center justify-between gap-2">
+        {/* Logo & Search Bar */}
+        <div className="flex items-center gap-4 flex-shrink-0">
           <Link
             to="/"
             className="font-extrabold text-xl sm:text-2xl select-none focus:outline-none"
@@ -57,46 +63,56 @@ const Navbar = () => {
             <span className="text-pink-600">Jagoan</span>
             <span className="text-gray-900"> Academy</span>
           </Link>
-
-          {/* Search Bar - Hidden on mobile, shown on tablet+ */}
-          <div className="hidden md:block relative w-full max-w-[200px] ml-2">
+          {/* Search Bar - Selalu di kanan logo */}
+          <div className="relative w-[180px] sm:w-[220px] md:w-[260px]">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
               <FiSearch size={20} />
             </span>
             <input
               type="text"
               placeholder="Search courses..."
-              className="w-full pl-8 pr-3 py-1.5 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-200 text-gray-700 bg-white placeholder-gray-400 text-sm"
+              className="w-full pl-8 pr-3 py-1.5 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-200 text-gray-700 bg-white placeholder-gray-400 text-sm transition"
             />
           </div>
         </div>
 
         {/* Desktop Menu */}
-        <ul className="hidden lg:flex gap-4 items-center text-gray-800 font-medium">
+        <ul className="hidden lg:flex gap-7 items-center text-gray-800 font-medium">
           <li>
-            <a href="#home" className="hover:text-pink-600 transition">
-              Home
+            <a
+              href="#home"
+              className="hover:text-pink-600 transition relative group"
+            >
+              <span className="pb-1">Home</span>
+              <span className="absolute left-0 -bottom-0.5 w-0 h-0.5 bg-pink-500 group-hover:w-full transition-all duration-300"></span>
             </a>
           </li>
           <li>
-            <a href="#courses" className="hover:text-pink-600 transition">
-              Courses
+            <a
+              href="#courses"
+              className="hover:text-pink-600 transition relative group"
+            >
+              <span className="pb-1">Courses</span>
+              <span className="absolute left-0 -bottom-0.5 w-0 h-0.5 bg-pink-500 group-hover:w-full transition-all duration-300"></span>
             </a>
           </li>
           <li>
-            <a href="#about" className="hover:text-pink-600 transition">
-              About
+            <a
+              href="#about"
+              className="hover:text-pink-600 transition relative group"
+            >
+              <span className="pb-1">About</span>
+              <span className="absolute left-0 -bottom-0.5 w-0 h-0.5 bg-pink-500 group-hover:w-full transition-all duration-300"></span>
             </a>
           </li>
           <li>
-            <a href="#faq" className="hover:text-pink-600 transition">
-              FAQ
+            <a
+              href="#faq"
+              className="hover:text-pink-600 transition relative group"
+            >
+              <span className="pb-1">FAQ</span>
+              <span className="absolute left-0 -bottom-0.5 w-0 h-0.5 bg-pink-500 group-hover:w-full transition-all duration-300"></span>
             </a>
-          </li>
-          <li>
-            <Link to="/dashboard" className="hover:text-pink-600 transition">
-              Dashboard
-            </Link>
           </li>
           {!isLoggedIn ? (
             <>
@@ -120,20 +136,27 @@ const Navbar = () => {
           ) : (
             <li className="relative" ref={dropdownRef}>
               <button
-                className="flex items-center gap-2 px-3 py-2 rounded-full bg-pink-50 border border-pink-200 text-pink-600 font-bold text-base focus:outline-none hover:bg-pink-100 transition"
+                aria-label="Profile menu"
+                className="flex items-center gap-2 p-0 bg-transparent border-none shadow-none focus:outline-none"
                 onClick={() => setDropdownOpen((open) => !open)}
               >
-                <span className="w-8 h-8 rounded-full bg-[#f3e8ff] flex items-center justify-center text-purple-600 font-semibold text-base">
-                  RS
+                <span className="w-8 h-8 rounded-full bg-[#dc2a9b] flex items-center justify-center text-white font-semibold text-base">
+                  {userInitials}
                 </span>
-                <FiChevronDown
-                  className={`w-4 h-4 transition ${dropdownOpen ? 'rotate-180' : ''}`}
-                />
               </button>
               {dropdownOpen && (
                 <div className="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-lg border border-gray-100 z-50 animate-fade-in">
                   <button
                     className="w-full text-left px-5 py-3 text-gray-700 hover:bg-pink-50 rounded-t-xl"
+                    onClick={() => {
+                      setDropdownOpen(false)
+                      navigate('/dashboard')
+                    }}
+                  >
+                    Dashboard
+                  </button>
+                  <button
+                    className="w-full text-left px-5 py-3 text-gray-700 hover:bg-pink-50 rounded-b-xl"
                     onClick={handleLogout}
                   >
                     Logout
@@ -203,14 +226,6 @@ const Navbar = () => {
                 FAQ
               </a>
             </li>
-            <li>
-              <Link
-                to="/dashboard"
-                className="block py-2 hover:text-pink-600 transition"
-              >
-                Dashboard
-              </Link>
-            </li>
             {!isLoggedIn ? (
               <>
                 <li className="pt-2">
@@ -233,20 +248,27 @@ const Navbar = () => {
             ) : (
               <li className="relative" ref={dropdownRef}>
                 <button
-                  className="flex items-center gap-2 px-3 py-2 rounded-full bg-pink-50 border border-pink-200 text-pink-600 font-bold text-base focus:outline-none hover:bg-pink-100 transition w-full justify-center"
+                  aria-label="Profile menu"
+                  className="flex items-center gap-2 p-0 bg-transparent border-none shadow-none focus:outline-none w-full justify-center"
                   onClick={() => setDropdownOpen((open) => !open)}
                 >
-                  <span className="w-8 h-8 rounded-full bg-[#f3e8ff] flex items-center justify-center text-purple-600 font-semibold text-base">
-                    RS
+                  <span className="w-8 h-8 rounded-full bg-[#18181b] flex items-center justify-center text-white font-semibold text-base">
+                    {userInitials}
                   </span>
-                  <FiChevronDown
-                    className={`w-4 h-4 transition ${dropdownOpen ? 'rotate-180' : ''}`}
-                  />
                 </button>
                 {dropdownOpen && (
                   <div className="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-lg border border-gray-100 z-50 animate-fade-in">
                     <button
                       className="w-full text-left px-5 py-3 text-gray-700 hover:bg-pink-50 rounded-t-xl"
+                      onClick={() => {
+                        setDropdownOpen(false)
+                        navigate('/dashboard')
+                      }}
+                    >
+                      Dashboard
+                    </button>
+                    <button
+                      className="w-full text-left px-5 py-3 text-gray-700 hover:bg-pink-50 rounded-b-xl"
                       onClick={handleLogout}
                     >
                       Logout
