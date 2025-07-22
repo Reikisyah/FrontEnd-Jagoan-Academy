@@ -30,6 +30,12 @@ const Register = () => {
       alert('Password dan konfirmasi password tidak sama')
       return
     }
+    // Validasi email format sebelum submit
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) {
+      alert('Format email tidak valid');
+      return;
+    }
     try {
       // Debug: cek data yang akan dikirim
       const requestData = {
@@ -61,7 +67,7 @@ const Register = () => {
     } catch (err) {
       console.error('❌ [REGISTER] Error:', err)
       console.error('❌ [REGISTER] Error message:', err.message)
-      alert(err.message || 'Register gagal')
+      alert(err.message || 'Register gagal. Pastikan email belum terdaftar dan format benar.')
     }
   }
 

@@ -1,72 +1,82 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+import { getAllPartners } from '../utils/api'
 
-const partners = [
-  {
-    name: 'Google',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg',
-  },
-  {
-    name: 'Microsoft',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg',
-  },
-  {
-    name: 'Oracle Logo',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/5/50/Oracle_logo.svg',
-  },
-  {
-    name: 'Amazon Web Services',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg',
-  },
-  {
-    name: 'IBM Logo',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg',
-  },
-  {
-    name: 'Cisco Logo',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/0/08/Cisco_logo_blue_2016.svg',
-  },
-  {
-    name: 'Facebook',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg',
-  },
-  {
-    name: 'Twitter',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4f/Twitter-logo.svg',
-  },
-  {
-    name: 'LinkedIn',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png',
-  },
-  {
-    name: 'Apple',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg',
-  },
-  {
-    name: 'Netflix',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg',
-  },
-  {
-    name: 'Spotify',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg',
-  },
-]
+const Partner = () => {
+  const [partners, setPartners] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-const Partner = () => (
-  <section id="partner" className="w-full py-8 sm:py-12 lg:py-16 bg-gray-50">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center text-gray-900 mb-4 sm:mb-6">
-        Partner Kami
-      </h2>
-      <p className="text-center text-gray-500 mb-6 sm:mb-8 lg:mb-10 max-w-3xl mx-auto text-sm sm:text-base lg:text-lg leading-relaxed px-4 sm:px-0">
-        Berikut adalah beberapa mitra yang mendukung program pembelajaran kami
-      </p>
-      <DoubleRowAutoScrollPartners partners={partners} />
-    </div>
-  </section>
-)
+  useEffect(() => {
+    const fetchPartners = async () => {
+      try {
+        setLoading(true)
+        const data = await getAllPartners()
+        setPartners(data)
+        setError(null)
+      } catch (err) {
+        console.error('Error fetching partners:', err)
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchPartners()
+  }, [])
+
+  if (loading) {
+    return (
+      <section id="partner" className="w-full py-8 sm:py-12 lg:py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Memuat data partner...</p>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  if (error) {
+    return (
+      <section id="partner" className="w-full py-8 sm:py-12 lg:py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <p className="text-red-600">Error: {error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="mt-4 px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+            >
+              Coba Lagi
+            </button>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  return (
+    <section id="partner" className="w-full py-8 sm:py-12 lg:py-16 bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center text-gray-900 mb-4 sm:mb-6">
+          Partner Kami
+        </h2>
+        <p className="text-center text-gray-500 mb-6 sm:mb-8 lg:mb-10 max-w-3xl mx-auto text-sm sm:text-base lg:text-lg leading-relaxed px-4 sm:px-0">
+          Berikut adalah beberapa mitra yang mendukung program pembelajaran kami
+        </p>
+        <DoubleRowAutoScrollPartners partners={partners} />
+      </div>
+    </section>
+  )
+}
 
 // Komponen auto scroll partner dua baris horizontal
 function DoubleRowAutoScrollPartners({ partners }) {
+  // Jika partners kosong, return null
+  if (!partners || partners.length === 0) {
+    return null
+  }
+
   // Bagi dua baris
   const mid = Math.ceil(partners.length / 2)
   const topRow = partners.slice(0, mid)
@@ -176,17 +186,9 @@ function DoubleRowAutoScrollPartners({ partners }) {
             {topItems.map((item, idx) => (
               <img
                 key={idx}
-                src={item.logo}
+                src={item.logo.startsWith('http') ? item.logo : `https://lms.alanwari.ponpes.id/storage/${item.logo}`}
                 alt={item.name}
-                className="max-h-12 sm:max-h-14 lg:max-h-16 object-contain mx-auto partner-logo-img"
-                style={{ minWidth: 50, minHeight: 30 }}
-                onError={(e) => {
-                  e.target.onerror = null
-                  e.target.style.display = 'inline-block'
-                  e.target.src = ''
-                  e.target.style.background = '#ccc'
-                  e.target.alt = item.name
-                }}
+                className="h-16 sm:h-20 lg:h-24 w-32 sm:w-40 lg:w-48 object-cover mx-auto partner-logo-img bg-white rounded-lg p-2"
               />
             ))}
           </div>
@@ -200,17 +202,9 @@ function DoubleRowAutoScrollPartners({ partners }) {
             {bottomItems.map((item, idx) => (
               <img
                 key={idx}
-                src={item.logo}
+                src={item.logo.startsWith('http') ? item.logo : `https://lms.alanwari.ponpes.id/storage/${item.logo}`}
                 alt={item.name}
-                className="max-h-12 sm:max-h-14 lg:max-h-16 object-contain mx-auto partner-logo-img"
-                style={{ minWidth: 50, minHeight: 30 }}
-                onError={(e) => {
-                  e.target.onerror = null
-                  e.target.style.display = 'inline-block'
-                  e.target.src = ''
-                  e.target.style.background = '#ccc'
-                  e.target.alt = item.name
-                }}
+                className="h-16 sm:h-20 lg:h-24 w-32 sm:w-40 lg:w-48 object-cover mx-auto partner-logo-img bg-white rounded-lg p-2"
               />
             ))}
           </div>

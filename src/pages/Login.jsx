@@ -25,6 +25,12 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    // Validasi email format sebelum submit
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) {
+      alert('Format email tidak valid');
+      return;
+    }
     try {
       const requestData = {
         email: form.email,
@@ -54,12 +60,12 @@ const Login = () => {
       console.log('🎉 [LOGIN] Login berhasil! Redirect ke homepage...')
       setSuccess(true)
       setTimeout(() => {
-        navigate('/')
+        navigate('/dashboard')
       }, 1500)
     } catch (err) {
       console.error('❌ [LOGIN] Error:', err)
       console.error('❌ [LOGIN] Error message:', err.message)
-      alert(err.message || 'Login gagal')
+      alert(err.message || 'Login gagal. Pastikan email dan password benar.')
     }
   }
 

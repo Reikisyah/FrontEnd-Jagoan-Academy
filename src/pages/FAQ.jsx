@@ -1,33 +1,63 @@
-import React, { useState } from 'react'
-
-const faqData = [
-  {
-    question: 'Bagaimana cara mendaftar di Jagoan Academy?',
-    answer:
-      "Anda dapat mendaftar dengan mengklik tombol 'Sign up' di pojok kanan atas dan mengisi formulir pendaftaran.",
-  },
-  {
-    question: 'Apakah ada biaya tersembunyi?',
-    answer:
-      'Tidak, semua biaya akan diinformasikan secara transparan sebelum Anda melakukan pembayaran.',
-  },
-  {
-    question: 'Bisakah saya mendapatkan pengembalian dana?',
-    answer:
-      'Ya, Anda dapat mengajukan pengembalian dana sesuai dengan kebijakan refund kami.',
-  },
-  {
-    question: 'Bagaimana cara mengakses materi kursus?',
-    answer:
-      'Setelah mendaftar dan membayar, Anda dapat mengakses materi kursus melalui dashboard akun Anda.',
-  },
-]
+import React, { useState, useEffect } from 'react'
+import { getAllFAQ } from '../utils/api'
 
 const FAQ = () => {
+  const [faqData, setFaqData] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [openIndex, setOpenIndex] = useState(null)
+
+  useEffect(() => {
+    const fetchFAQ = async () => {
+      try {
+        setLoading(true)
+        const data = await getAllFAQ()
+        setFaqData(data)
+        setError(null)
+      } catch (err) {
+        console.error('Error fetching FAQ:', err)
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchFAQ()
+  }, [])
 
   const toggle = (idx) => {
     setOpenIndex(openIndex === idx ? null : idx)
+  }
+
+  if (loading) {
+    return (
+      <section id="faq" className="w-full py-8 sm:py-12 lg:py-16 bg-white">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Memuat data FAQ...</p>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  if (error) {
+    return (
+      <section id="faq" className="w-full py-8 sm:py-12 lg:py-16 bg-white">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <p className="text-red-600">Error: {error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="mt-4 px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+            >
+              Coba Lagi
+            </button>
+          </div>
+        </div>
+      </section>
+    )
   }
 
   return (

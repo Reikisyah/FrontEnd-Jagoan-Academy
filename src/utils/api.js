@@ -39,6 +39,87 @@ export async function register(data) {
   }
 }
 
+// Get all FAQs
+export async function getAllFAQ() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/faqs`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+    })
+    
+    const resJson = await response.json()
+    
+    if (!response.ok) {
+      throw new Error(resJson.message || 'Failed to fetch FAQs')
+    }
+    
+    return resJson.data || []
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error('Tidak dapat terhubung ke server. Periksa koneksi internet Anda.')
+    }
+    throw error
+  }
+}
+
+// Get all partners
+export async function getAllPartners() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/partners`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+    })
+    
+    const resJson = await response.json()
+    
+    if (!response.ok) {
+      throw new Error(resJson.message || 'Failed to fetch partners')
+    }
+    
+    return resJson.data || []
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error('Tidak dapat terhubung ke server. Periksa koneksi internet Anda.')
+    }
+    throw error
+  }
+}
+
+// Get all courses
+export async function getAllCourses() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/courses`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+    })
+    
+    const resJson = await response.json()
+    
+    if (!response.ok) {
+      throw new Error(resJson.message || 'Gagal mengambil data kursus')
+    }
+    
+    return resJson.data || []
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error('Tidak dapat terhubung ke server. Periksa koneksi internet Anda.')
+    }
+    throw error
+  }
+}
+
 export async function login(data) {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {

@@ -1,12 +1,48 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { FiSearch, FiMenu, FiX } from 'react-icons/fi'
+import React, { useState, useEffect, useRef } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { FiSearch, FiMenu, FiX, FiChevronDown } from 'react-icons/fi'
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const dropdownRef = useRef(null)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    // Cek token di localStorage/sessionStorage
+    const token =
+      localStorage.getItem('token') || sessionStorage.getItem('token')
+    setIsLoggedIn(!!token)
+  }, [])
+
+  // Tutup dropdown jika klik di luar
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false)
+      }
+    }
+    if (dropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [dropdownOpen])
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    sessionStorage.removeItem('token')
+    setDropdownOpen(false)
+    setIsLoggedIn(false)
+    navigate('/login')
   }
 
   return (
@@ -14,10 +50,13 @@ const Navbar = () => {
       <div className="flex items-center justify-between">
         {/* Logo & Brand */}
         <div className="flex items-center gap-2 sm:gap-4">
-          <span className="font-extrabold text-xl sm:text-2xl select-none">
+          <Link
+            to="/"
+            className="font-extrabold text-xl sm:text-2xl select-none focus:outline-none"
+          >
             <span className="text-pink-600">Jagoan</span>
             <span className="text-gray-900"> Academy</span>
-          </span>
+          </Link>
 
           {/* Search Bar - Hidden on mobile, shown on tablet+ */}
           <div className="hidden md:block relative w-full max-w-[200px] ml-2">
@@ -55,21 +94,54 @@ const Navbar = () => {
             </a>
           </li>
           <li>
-            <Link
-              to="/login"
-              className="border-2 border-pink-600 rounded-lg px-3 sm:px-5 py-2 font-semibold text-pink-600 hover:bg-pink-50 transition text-sm sm:text-base"
-            >
-              Log in
+            <Link to="/dashboard" className="hover:text-pink-600 transition">
+              Dashboard
             </Link>
           </li>
-          <li>
-            <Link
-              to="/register"
-              className="px-5 py-2 rounded-lg bg-pink-600 text-white font-semibold shadow hover:bg-pink-700 transition"
-            >
-              Sign up
-            </Link>
-          </li>
+          {!isLoggedIn ? (
+            <>
+              <li>
+                <Link
+                  to="/login"
+                  className="border-2 border-pink-600 rounded-lg px-3 sm:px-5 py-2 font-semibold text-pink-600 hover:bg-pink-50 transition text-sm sm:text-base"
+                >
+                  Log in
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/register"
+                  className="px-5 py-2 rounded-lg bg-pink-600 text-white font-semibold shadow hover:bg-pink-700 transition"
+                >
+                  Sign up
+                </Link>
+              </li>
+            </>
+          ) : (
+            <li className="relative" ref={dropdownRef}>
+              <button
+                className="flex items-center gap-2 px-3 py-2 rounded-full bg-pink-50 border border-pink-200 text-pink-600 font-bold text-base focus:outline-none hover:bg-pink-100 transition"
+                onClick={() => setDropdownOpen((open) => !open)}
+              >
+                <span className="w-8 h-8 rounded-full bg-[#f3e8ff] flex items-center justify-center text-purple-600 font-semibold text-base">
+                  RS
+                </span>
+                <FiChevronDown
+                  className={`w-4 h-4 transition ${dropdownOpen ? 'rotate-180' : ''}`}
+                />
+              </button>
+              {dropdownOpen && (
+                <div className="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-lg border border-gray-100 z-50 animate-fade-in">
+                  <button
+                    className="w-full text-left px-5 py-3 text-gray-700 hover:bg-pink-50 rounded-t-xl"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </li>
+          )}
         </ul>
 
         {/* Mobile Menu Button */}
@@ -131,22 +203,58 @@ const Navbar = () => {
                 FAQ
               </a>
             </li>
-            <li className="pt-2">
+            <li>
               <Link
-                to="/login"
-                className="block text-center border-2 border-pink-600 rounded-lg px-4 py-2 font-semibold text-pink-600 hover:bg-pink-50 transition"
+                to="/dashboard"
+                className="block py-2 hover:text-pink-600 transition"
               >
-                Log in
+                Dashboard
               </Link>
             </li>
-            <li className="pt-2">
-              <Link
-                to="/register"
-                className="block text-center px-4 py-2 rounded-lg bg-pink-600 text-white font-semibold shadow hover:bg-pink-700 transition"
-              >
-                Sign up
-              </Link>
-            </li>
+            {!isLoggedIn ? (
+              <>
+                <li className="pt-2">
+                  <Link
+                    to="/login"
+                    className="block text-center border-2 border-pink-600 rounded-lg px-4 py-2 font-semibold text-pink-600 hover:bg-pink-50 transition"
+                  >
+                    Log in
+                  </Link>
+                </li>
+                <li className="pt-2">
+                  <Link
+                    to="/register"
+                    className="block text-center px-4 py-2 rounded-lg bg-pink-600 text-white font-semibold shadow hover:bg-pink-700 transition"
+                  >
+                    Sign up
+                  </Link>
+                </li>
+              </>
+            ) : (
+              <li className="relative" ref={dropdownRef}>
+                <button
+                  className="flex items-center gap-2 px-3 py-2 rounded-full bg-pink-50 border border-pink-200 text-pink-600 font-bold text-base focus:outline-none hover:bg-pink-100 transition w-full justify-center"
+                  onClick={() => setDropdownOpen((open) => !open)}
+                >
+                  <span className="w-8 h-8 rounded-full bg-[#f3e8ff] flex items-center justify-center text-purple-600 font-semibold text-base">
+                    RS
+                  </span>
+                  <FiChevronDown
+                    className={`w-4 h-4 transition ${dropdownOpen ? 'rotate-180' : ''}`}
+                  />
+                </button>
+                {dropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-lg border border-gray-100 z-50 animate-fade-in">
+                    <button
+                      className="w-full text-left px-5 py-3 text-gray-700 hover:bg-pink-50 rounded-t-xl"
+                      onClick={handleLogout}
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </li>
+            )}
           </ul>
         </div>
       )}

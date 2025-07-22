@@ -12,7 +12,8 @@ import FAQ from './pages/FAQ'
 
 import Register from './pages/Register'
 import Login from './pages/Login'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Dashboard from './pages/Dashboard'
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 
@@ -49,6 +50,7 @@ function App() {
                 </main>
               }
             />
+            <Route path="/dashboard" element={<Dashboard hideNavbarFooter={true} />} />
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
           </Routes>
