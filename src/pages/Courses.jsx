@@ -300,10 +300,39 @@ const Courses = () => {
   if (loading) {
     return (
       <section className="w-full py-8 sm:py-12 lg:py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="flex flex-col items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-pink-600 mb-4"></div>
-            <p className="text-gray-600">Memuat data kursus...</p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center text-gray-900 mb-4 sm:mb-6">
+            Jelajahi Kursus Populer Kami
+          </h2>
+          <p className="text-center text-gray-500 mb-6 sm:mb-8 lg:mb-10 max-w-3xl mx-auto text-sm sm:text-base lg:text-lg leading-relaxed px-4 sm:px-0">
+            Dari keahlian{' '}
+            <span className="font-semibold text-gray-900">penting</span> hingga
+            topik teknis, Jagoan Academy mendukung pengembangan profesional
+            Anda.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mb-8 sm:mb-10 px-4 sm:px-0">
+            <button className="px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-pink-600 text-white font-semibold shadow-md hover:bg-pink-700 hover:shadow-lg transition-all duration-200 text-sm sm:text-base">
+              Semua
+            </button>
+            <button className="px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-gray-100 text-gray-700 font-semibold border border-gray-300 hover:bg-gray-200 hover:border-gray-400 transition-all duration-200 text-sm sm:text-base">
+              Bisnis (0)
+            </button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 justify-items-center">
+            {[...Array(4)].map((_, i) => (
+              <div
+                key={i}
+                className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 w-full max-w-[280px] min-h-[320px] sm:min-h-[340px] flex flex-col animate-pulse"
+              >
+                <div className="h-[140px] w-full rounded-lg bg-gray-200 mb-3" />
+                <div className="h-5 bg-gray-200 rounded w-2/3 mb-2" />
+                <div className="h-4 bg-gray-100 rounded w-1/2 mb-1" />
+                <div className="h-4 bg-gray-100 rounded w-1/3 mb-2" />
+                <div className="h-4 bg-gray-100 rounded w-1/4 mb-2" />
+                <div className="flex-1" />
+                <div className="h-6 w-24 bg-gray-200 rounded mt-2" />
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -314,33 +343,40 @@ const Courses = () => {
   if (error) {
     return (
       <section className="w-full py-8 sm:py-12 lg:py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-red-500"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm text-red-700">{error}</p>
-              </div>
-            </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center text-gray-900 mb-4 sm:mb-6">
+            Jelajahi Kursus Populer Kami
+          </h2>
+          <p className="text-center text-gray-500 mb-6 sm:mb-8 lg:mb-10 max-w-3xl mx-auto text-sm sm:text-base lg:text-lg leading-relaxed px-4 sm:px-0">
+            Dari keahlian{' '}
+            <span className="font-semibold text-gray-900">penting</span> hingga
+            topik teknis, Jagoan Academy mendukung pengembangan profesional
+            Anda.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mb-8 sm:mb-10 px-4 sm:px-0">
+            <button className="px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-pink-600 text-white font-semibold shadow-md hover:bg-pink-700 hover:shadow-lg transition-all duration-200 text-sm sm:text-base">
+              Semua
+            </button>
+            <button className="px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-gray-100 text-gray-700 font-semibold border border-gray-300 hover:bg-gray-200 hover:border-gray-400 transition-all duration-200 text-sm sm:text-base">
+              Bisnis (0)
+            </button>
           </div>
-          <button
-            onClick={fetchCourses}
-            className="px-4 py-2 bg-pink-600 text-white rounded-md hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2"
-          >
-            Coba Lagi
-          </button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 justify-items-center">
+            {[...Array(4)].map((_, i) => (
+              <div
+                key={i}
+                className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 w-full max-w-[280px] min-h-[320px] sm:min-h-[340px] flex flex-col animate-pulse"
+              >
+                <div className="h-[140px] w-full rounded-lg bg-gray-200 mb-3" />
+                <div className="h-5 bg-gray-200 rounded w-2/3 mb-2" />
+                <div className="h-4 bg-gray-100 rounded w-1/2 mb-1" />
+                <div className="h-4 bg-gray-100 rounded w-1/3 mb-2" />
+                <div className="h-4 bg-gray-100 rounded w-1/4 mb-2" />
+                <div className="flex-1" />
+                <div className="h-6 w-24 bg-gray-200 rounded mt-2" />
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     )

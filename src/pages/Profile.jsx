@@ -129,67 +129,80 @@ const Profile = () => {
 
   if (loading)
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="bg-white rounded-xl shadow-lg px-8 py-6 text-lg text-pink-600 font-semibold flex items-center gap-2">
-          <svg
-            className="animate-spin h-6 w-6 text-pink-500"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-              fill="none"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8v8z"
-            />
-          </svg>
-          Loading profile...
+      <div className="flex min-h-screen bg-white">
+        <Sidebar />
+        <div className="flex-1 flex flex-col min-h-screen">
+          <DashboardHeader />
+          <div className="flex justify-center items-center flex-1">
+            <div className="bg-white rounded-xl shadow-lg px-8 py-6 text-lg text-pink-600 font-semibold flex items-center gap-2">
+              <svg
+                className="animate-spin h-6 w-6 text-pink-500"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8z"
+                />
+              </svg>
+              Loading profile...
+            </div>
+          </div>
         </div>
       </div>
     )
   if (error)
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center w-full max-w-md animate-pulse">
-          <div className="w-32 h-32 rounded-full bg-gray-200 mb-6" />
-          <div className="h-7 w-40 bg-gray-200 rounded mb-2" />
-          <div className="h-4 w-32 bg-gray-100 rounded mb-4" />
-          <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            {[...Array(6)].map((_, i) => (
-              <div key={i}>
-                <div className="h-4 w-24 bg-gray-200 rounded mb-2" />
-                <div className="h-4 w-32 bg-gray-100 rounded" />
+      <div className="flex min-h-screen bg-white">
+        <Sidebar />
+        <div className="flex-1 flex flex-col min-h-screen">
+          <DashboardHeader />
+          <div className="flex justify-center items-center flex-1">
+            <div className="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center w-full max-w-md animate-pulse">
+              <div className="w-32 h-32 rounded-full bg-gray-200 mb-6" />
+              <div className="h-7 w-40 bg-gray-200 rounded mb-2" />
+              <div className="h-4 w-32 bg-gray-100 rounded mb-4" />
+              <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i}>
+                    <div className="h-4 w-24 bg-gray-200 rounded mb-2" />
+                    <div className="h-4 w-32 bg-gray-100 rounded" />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-          <div className="w-full mb-6">
-            <div className="h-4 w-24 bg-gray-200 rounded mb-1" />
-            <div className="h-4 w-40 bg-gray-100 rounded" />
-          </div>
-          <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            {[...Array(2)].map((_, i) => (
-              <div key={i}>
+              <div className="w-full mb-6">
                 <div className="h-4 w-24 bg-gray-200 rounded mb-1" />
-                <div className="h-4 w-32 bg-gray-100 rounded" />
+                <div className="h-4 w-40 bg-gray-100 rounded" />
               </div>
-            ))}
-          </div>
-          <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            {[...Array(2)].map((_, i) => (
-              <div key={i}>
-                <div className="h-4 w-24 bg-gray-200 rounded mb-1" />
-                <div className="h-4 w-32 bg-gray-100 rounded" />
+              <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                {[...Array(2)].map((_, i) => (
+                  <div key={i}>
+                    <div className="h-4 w-24 bg-gray-200 rounded mb-1" />
+                    <div className="h-4 w-32 bg-gray-100 rounded" />
+                  </div>
+                ))}
               </div>
-            ))}
+              <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                {[...Array(2)].map((_, i) => (
+                  <div key={i}>
+                    <div className="h-4 w-24 bg-gray-200 rounded mb-1" />
+                    <div className="h-4 w-32 bg-gray-100 rounded" />
+                  </div>
+                ))}
+              </div>
+              <div className="h-10 w-32 bg-gray-200 rounded" />
+              <div className="text-red-500 mt-6">{error}</div>
+            </div>
           </div>
-          <div className="h-10 w-32 bg-gray-200 rounded" />
         </div>
       </div>
     )

@@ -185,7 +185,7 @@ const CoursesDashboard = () => {
                 {publishError}
               </div>
             )}
-            {loading && (
+            {(loading || error) && (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
                 {[...Array(6)].map((_, i) => (
                   <div
@@ -204,7 +204,6 @@ const CoursesDashboard = () => {
                 ))}
               </div>
             )}
-            {error && <div className="text-red-500 mb-4">{error}</div>}
             {!loading && !error && filteredCourses.length === 0 && (
               <div className="flex flex-col items-center py-10">
                 <div className="mb-4 text-gray-500 text-lg font-semibold">
