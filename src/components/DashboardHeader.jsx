@@ -37,8 +37,8 @@ const DashboardHeader = () => {
 
   return (
     <header className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200">
-      {/* Search Bar */}
-      <div className="flex items-center w-1/3 min-w-[250px]">
+      {/* Hapus Search Bar */}
+      {/* <div className="flex items-center w-1/3 min-w-[250px]">
         <div className="relative w-full">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
             <FiSearch className="w-5 h-5" />
@@ -49,7 +49,8 @@ const DashboardHeader = () => {
             className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-pink-200 text-sm"
           />
         </div>
-      </div>
+      </div> */}
+      <div />
       {/* Right Side: Notification & User */}
       <div className="flex items-center gap-6">
         {/* Notification Bell */}

@@ -21,7 +21,7 @@ import {
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { useNavigate } from 'react-router-dom'
-import AddCourse from './AddCourse'
+// import AddCourse from './AddCourse' // Tidak perlu lagi
 
 const initialCourse = {
   title: '',
@@ -36,7 +36,7 @@ const CoursesDashboard = () => {
   const [courses, setCourses] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [showAdd, setShowAdd] = useState(false)
+  // const [showAdd, setShowAdd] = useState(false) // Hapus
   const [showEdit, setShowEdit] = useState(false)
   const [form, setForm] = useState(initialCourse)
   const [editId, setEditId] = useState(null)
@@ -180,11 +180,13 @@ const CoursesDashboard = () => {
       .finally(() => setLoading(false))
   }
 
-  const handleAdd = () => {
-    setForm(initialCourse)
-    setShowAdd(true)
-    setFormError(null)
-  }
+  const navigate = useNavigate()
+
+  // const handleAdd = () => {
+  //   setForm(initialCourse)
+  //   setShowAdd(true)
+  //   setFormError(null)
+  // }
 
   const handleEdit = (course) => {
     setEditId(course.id)
@@ -256,45 +258,46 @@ const CoursesDashboard = () => {
     setFormLoading(true)
     setFormError(null)
     try {
-      if (showAdd) {
-        const payload = {
-          title: form.title,
-          description: form.description,
-          category: form.category,
-          sub_category: form.sub_category,
-        }
-        let newCourse = null
-        try {
-          const res = await addCourse(payload)
-          newCourse = res
-        } catch (err) {
-          // Jika gagal, simulasikan dummy
-          newCourse = {
-            id: Date.now(),
-            title: form.title,
-            description: form.description,
-            category: form.category,
-            sub_category: form.sub_category,
-            created_by: 'dummy',
-            students_count: 0,
-            is_published: false,
-          }
-          setCourses((prev) => [newCourse, ...prev])
-          setSuccessMsg('Dummy course added (offline)!')
-          toast.success('Dummy course added (offline)!')
-          setTimeout(() => setSuccessMsg(null), 2000)
-        }
-        setShowAdd(false)
-        setShowEdit(false)
-        // Redirect ke PlanCourse dengan data course baru
-        navigate('/plan-course', { state: { course: newCourse } })
-        return
-      } else if (showEdit && editId) {
+      // if (showAdd) {
+      //   const payload = {
+      //     title: form.title,
+      //     description: form.description,
+      //     category: form.category,
+      //     sub_category: form.sub_category,
+      //   }
+      //   let newCourse = null
+      //   try {
+      //     const res = await addCourse(payload)
+      //     newCourse = res
+      //   } catch (err) {
+      //     // Jika gagal, simulasikan dummy
+      //     newCourse = {
+      //       id: Date.now(),
+      //       title: form.title,
+      //       description: form.description,
+      //       category: form.category,
+      //       sub_category: form.sub_category,
+      //       created_by: 'dummy',
+      //       students_count: 0,
+      //       is_published: false,
+      //     }
+      //     setCourses((prev) => [newCourse, ...prev])
+      //     setSuccessMsg('Dummy course added (offline)!')
+      //     toast.success('Dummy course added (offline)!')
+      //     setTimeout(() => setSuccessMsg(null), 2000)
+      //   }
+      //   setShowAdd(false)
+      //   setShowEdit(false)
+      //   // Redirect ke PlanCourse dengan data course baru
+      //   navigate('/plan-course', { state: { course: newCourse } })
+      //   return
+      // } else
+      if (showEdit && editId) {
         await updateCourse(editId, form)
         setSuccessMsg('Course updated!')
         toast.success('Course berhasil diupdate!')
       }
-      setShowAdd(false)
+      // setShowAdd(false)
       setShowEdit(false)
       fetchCourses()
       setTimeout(() => setSuccessMsg(null), 2000)
@@ -306,12 +309,12 @@ const CoursesDashboard = () => {
     }
   }
 
-  const closeModal = () => {
-    setShowAdd(false)
-    setShowEdit(false)
-    setFormError(null)
-    setForm(initialCourse)
-  }
+  // const closeModal = () => {
+  //   setShowAdd(false)
+  //   setShowEdit(false)
+  //   setFormError(null)
+  //   setForm(initialCourse)
+  // }
 
   // Fungsi untuk membuka modal konfirmasi
   const openConfirmModal = (type, course) => {
@@ -422,11 +425,11 @@ const CoursesDashboard = () => {
 
   // Reset spendTime saat modal add dibuka/ditutup
   useEffect(() => {
-    if (showAdd) {
-      setAddStep(1)
-      setSpendTime('')
-    }
-  }, [showAdd])
+    // if (showAdd) {
+    //   setAddStep(1)
+    //   setSpendTime('')
+    // }
+  }, [])
 
   const handleNextAddStep = () => {
     // Validasi tiap step
@@ -494,7 +497,7 @@ const CoursesDashboard = () => {
                 />
                 <button
                   className="bg-pink-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-pink-700 transition shadow"
-                  onClick={handleAdd}
+                  onClick={() => navigate('/dashboard/courses/add')}
                 >
                   + Add Course
                 </button>
@@ -573,14 +576,14 @@ const CoursesDashboard = () => {
                 </div>
                 <button
                   className="bg-pink-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-pink-700 transition shadow"
-                  onClick={handleAdd}
+                  onClick={() => navigate('/dashboard/courses/add')}
                 >
                   + Add Course
                 </button>
               </div>
             )}
             {/* Add/Edit Course Modal */}
-            <AddCourse
+            {/* <AddCourse
               form={form}
               formError={formError}
               formLoading={formLoading}
@@ -592,7 +595,7 @@ const CoursesDashboard = () => {
               handleBackAddStep={handleBackAddStep}
               closeModal={closeModal}
               showAdd={showAdd}
-            />
+            /> */}
             {!loading && !error && filteredBySearch.length > 0 && (
               <>
                 {/* Filter & Sort Controls */}
@@ -875,7 +878,11 @@ const CoursesDashboard = () => {
                               <button
                                 className="text-pink-500 hover:text-pink-700"
                                 title="Edit"
-                                onClick={() => handleEdit(course)}
+                                onClick={() =>
+                                  navigate('/plan-course/landing-page', {
+                                    state: { course },
+                                  })
+                                }
                                 disabled={
                                   formLoading ||
                                   publishLoading === course.id ||
@@ -1149,7 +1156,9 @@ const CoursesDashboard = () => {
                       className="bg-pink-600 hover:bg-pink-700 text-white px-6 py-2 rounded-lg font-semibold flex items-center gap-2 shadow"
                       onClick={() => {
                         closeDetailModal()
-                        handleEdit(selectedCourse)
+                        navigate('/plan-course/landing-page', {
+                          state: { course: selectedCourse },
+                        })
                       }}
                     >
                       <FaEdit /> Edit

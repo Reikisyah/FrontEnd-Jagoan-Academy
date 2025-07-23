@@ -17,7 +17,14 @@ import CoursesDashboard from './pages/Dashboard/CourseAdmin/Courses'
 import UserManagement from './pages/Dashboard/UserManagement'
 import SubcategoriesMentor from './pages/Dashboard/SubcategoriesMentor'
 import Setting from './pages/Dashboard/Setting'
-import PlanCourse from './pages/Dashboard/PlanCourse'
+import PlanCourse from './pages/Dashboard/PlanCourse/CourseLandingPage'
+import AddCourse from './pages/Dashboard/CourseAdmin/AddCourse'
+import CourseLandingPage from './pages/Dashboard/PlanCourse/CourseLandingPage'
+import Pricing from './pages/Dashboard/PlanCourse/Pricing'
+import Promotions from './pages/Dashboard/PlanCourse/Promotions'
+import Coupons from './pages/Dashboard/PlanCourse/Coupons'
+import Reviews from './pages/Dashboard/PlanCourse/Reviews'
+import Curriculum from './pages/Dashboard/PlanCourse/Curriculum'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
@@ -39,6 +46,14 @@ function AppRoutes() {
     '/help-center',
     '/settings',
     '/courses-dashboard',
+    '/dashboard/courses/add',
+    '/plan-course',
+    '/plan-course/curriculum',
+    '/plan-course/landing-page',
+    '/plan-course/pricing',
+    '/plan-course/promotions',
+    '/plan-course/coupons',
+    '/plan-course/reviews',
   ]
   const hide = hideNavFooter.includes(location.pathname)
   return (
@@ -81,6 +96,17 @@ function AppRoutes() {
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
             <Route path="/courses-dashboard" element={<CoursesDashboard />} />
+            <Route
+              path="/dashboard/courses/add"
+              element={
+                <div className="flex min-h-screen bg-white">
+                  <Sidebar />
+                  <div className="flex-1 flex flex-col min-h-screen">
+                    <AddCourse />
+                  </div>
+                </div>
+              }
+            />
             <Route
               path="/user-management"
               element={
@@ -134,6 +160,15 @@ function AppRoutes() {
             />
             <Route path="/settings" element={<Setting />} />
             <Route path="/plan-course" element={<PlanCourse />} />
+            <Route path="/plan-course/curriculum" element={<Curriculum />} />
+            <Route
+              path="/plan-course/landing-page"
+              element={<CourseLandingPage />}
+            />
+            <Route path="/plan-course/pricing" element={<Pricing />} />
+            <Route path="/plan-course/promotions" element={<Promotions />} />
+            <Route path="/plan-course/coupons" element={<Coupons />} />
+            <Route path="/plan-course/reviews" element={<Reviews />} />
           </Routes>
         </div>
         {!hide && <Footer />}
