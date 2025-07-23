@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import { FaEye, FaEyeSlash } from 'react-icons/fa'
 import { register as registerApi } from '../utils/api'
+import { toast, ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false)
@@ -16,6 +18,7 @@ const Register = () => {
   })
   const navigate = useNavigate()
   const [success, setSuccess] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -23,18 +26,22 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setLoading(true)
     if (form.password.length < 8) {
-      alert('Password minimal 8 karakter')
+      toast.error('Password minimal 8 karakter')
+      setLoading(false)
       return
     }
     if (form.password !== form.confirm) {
-      alert('Password dan konfirmasi password tidak sama')
+      toast.error('Password dan konfirmasi password tidak sama')
+      setLoading(false)
       return
     }
     // Validasi email format sebelum submit
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(form.email)) {
-      alert('Format email tidak valid')
+      toast.error('Format email tidak valid')
+      setLoading(false)
       return
     }
     try {
@@ -66,6 +73,7 @@ const Register = () => {
 
       console.log('🎉 [REGISTER] Registrasi berhasil! Redirect ke login...')
       setSuccess(true)
+      toast.success('Registrasi berhasil!')
       setTimeout(() => {
         navigate('/login')
       }, 1500)
@@ -74,16 +82,18 @@ const Register = () => {
       console.error('❌ [REGISTER] Error message:', err.message)
       // Tampilkan pesan error spesifik dari BE jika ada
       if (err && err.message) {
-        alert(err.message)
+        toast.error(err.message)
       } else if (err && err.errors) {
         // Jika BE mengembalikan errors object
         const errorMessages = Object.values(err.errors).flat().join(', ')
-        alert(errorMessages)
+        toast.error(errorMessages)
       } else {
-        alert(
+        toast.error(
           'Register gagal. Pastikan email belum terdaftar dan format benar.',
         )
       }
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -129,144 +139,183 @@ const Register = () => {
   }, [])
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-pink-50 px-4 sm:px-6 lg:px-8">
-      <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-6 sm:p-8 lg:p-10 w-full max-w-sm sm:max-w-md lg:max-w-lg">
-        {success ? (
-          <div className="flex flex-col items-center justify-center h-64">
-            <svg
-              className="animate-bounce mb-4 text-pink-500"
-              width="48"
-              height="48"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-            <h2 className="text-2xl font-bold text-pink-600 mb-2">
-              Registrasi Berhasil!
-            </h2>
-            <p className="text-gray-500">Mengalihkan ke halaman login...</p>
-          </div>
-        ) : (
-          <>
-            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-center text-pink-600 mb-2">
-              Daftar Akun Baru
-            </h2>
-            <p className="text-center text-gray-500 mb-4 sm:mb-6 text-sm sm:text-base">
-              Sudah punya akun?{' '}
-              <Link
-                to="/login"
-                className="text-pink-500 font-medium hover:underline"
+    <React.Fragment>
+      <ToastContainer
+        position="top-right"
+        autoClose={2000}
+        hideProgressBar
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-pink-50 px-4 sm:px-6 lg:px-8">
+        <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-6 sm:p-8 lg:p-10 w-full max-w-sm sm:max-w-md lg:max-w-lg">
+          {success ? (
+            <div className="flex flex-col items-center justify-center h-64">
+              <svg
+                className="animate-bounce mb-4 text-pink-500"
+                width="48"
+                height="48"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                Masuk sekarang
-              </Link>
-            </p>
-            <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
-              <input
-                type="text"
-                name="name"
-                placeholder="Full Name"
-                value={form.name}
-                onChange={handleChange}
-                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-200 text-sm sm:text-base"
-                required
-              />
-              <input
-                type="email"
-                name="email"
-                placeholder="Email Address"
-                value={form.email}
-                onChange={handleChange}
-                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-200 text-sm sm:text-base"
-                required
-              />
-              {/* Dropdown role */}
-              <select
-                name="role"
-                value={form.role}
-                onChange={handleChange}
-                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-200 text-sm sm:text-base"
-                required
-              >
-                <option value="participant">Participant</option>
-                <option value="mentor">Mentor</option>
-              </select>
-
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  placeholder="Password"
-                  value={form.password}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-200 pr-10"
-                  minLength={8}
-                  required
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
                 />
-                <button
-                  type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-                  onClick={() => setShowPassword((v) => !v)}
-                  tabIndex={-1}
-                >
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}
-                </button>
-              </div>
-              <div className="relative">
-                <input
-                  type={showConfirm ? 'text' : 'password'}
-                  name="confirm"
-                  placeholder="Confirm Password"
-                  value={form.confirm}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-200 pr-10"
-                  minLength={8}
-                  required
-                />
-                <button
-                  type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-                  onClick={() => setShowConfirm((v) => !v)}
-                  tabIndex={-1}
-                >
-                  {showConfirm ? <FaEyeSlash /> : <FaEye />}
-                </button>
-              </div>
-
-              <button
-                type="submit"
-                className="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 rounded-lg mt-2 transition-colors"
-              >
-                Create Account
-              </button>
-            </form>
-            {/* Register dengan Google */}
-            <div className="mt-6 flex flex-col items-center">
-              <span className="text-gray-400 text-sm mb-2">atau</span>
-              <button
-                onClick={handleGoogleAuth}
-                className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold py-2.5 rounded-lg shadow-sm transition-colors duration-200"
-                style={{ textDecoration: 'none' }}
-                type="button"
-              >
-                <img
-                  src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_2013_Google.png"
-                  alt="Google"
-                  className="w-5 h-5"
-                />
-                Daftar dengan Google
-              </button>
+              </svg>
+              <h2 className="text-2xl font-bold text-pink-600 mb-2">
+                Registrasi Berhasil!
+              </h2>
+              <p className="text-gray-500">Mengalihkan ke halaman login...</p>
             </div>
-          </>
-        )}
+          ) : (
+            <>
+              <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-center text-pink-600 mb-2">
+                Daftar Akun Baru
+              </h2>
+              <p className="text-center text-gray-500 mb-4 sm:mb-6 text-sm sm:text-base">
+                Sudah punya akun?{' '}
+                <Link
+                  to="/login"
+                  className="text-pink-500 font-medium hover:underline"
+                >
+                  Masuk sekarang
+                </Link>
+              </p>
+              <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="Full Name"
+                  value={form.name}
+                  onChange={handleChange}
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-200 text-sm sm:text-base"
+                  required
+                />
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email Address"
+                  value={form.email}
+                  onChange={handleChange}
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-200 text-sm sm:text-base"
+                  required
+                />
+                {/* Dropdown role */}
+                <select
+                  name="role"
+                  value={form.role}
+                  onChange={handleChange}
+                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-200 text-sm sm:text-base"
+                  required
+                >
+                  <option value="participant">Participant</option>
+                  <option value="mentor">Mentor</option>
+                </select>
+
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    placeholder="Password"
+                    value={form.password}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-200 pr-10"
+                    minLength={8}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                    onClick={() => setShowPassword((v) => !v)}
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+                <div className="relative">
+                  <input
+                    type={showConfirm ? 'text' : 'password'}
+                    name="confirm"
+                    placeholder="Confirm Password"
+                    value={form.confirm}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-200 pr-10"
+                    minLength={8}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                    onClick={() => setShowConfirm((v) => !v)}
+                    tabIndex={-1}
+                  >
+                    {showConfirm ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 rounded-lg mt-2 transition-colors flex items-center justify-center"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <span className="flex items-center gap-2">
+                      <svg
+                        className="animate-spin h-5 w-5 mr-2 text-white"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          fill="none"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v8z"
+                        />
+                      </svg>
+                      Loading...
+                    </span>
+                  ) : (
+                    'Create Account'
+                  )}
+                </button>
+              </form>
+              {/* Register dengan Google */}
+              <div className="mt-6 flex flex-col items-center">
+                <span className="text-gray-400 text-sm mb-2">atau</span>
+                <button
+                  onClick={handleGoogleAuth}
+                  className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold py-2.5 rounded-lg shadow-sm transition-colors duration-200"
+                  style={{ textDecoration: 'none' }}
+                  type="button"
+                >
+                  <img
+                    src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_2013_Google.png"
+                    alt="Google"
+                    className="w-5 h-5"
+                  />
+                  Daftar dengan Google
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </React.Fragment>
   )
 }
 

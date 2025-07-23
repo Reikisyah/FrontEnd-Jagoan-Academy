@@ -41,24 +41,23 @@ export async function register(data) {
   }
 }
 
-// Get all FAQs
+// FAQ
 export async function getAllFAQ() {
   try {
+    const token =
+      localStorage.getItem('token') || sessionStorage.getItem('token')
+    const headers = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+    }
+    if (token) headers['Authorization'] = `Bearer ${token}`
     const response = await fetch(`${API_BASE_URL}/faqs`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-      },
+      headers,
     })
-
     const resJson = await response.json()
-
-    if (!response.ok) {
-      throw new Error(resJson.message || 'Failed to fetch FAQs')
-    }
-
+    if (!response.ok) throw new Error(resJson.message || 'Failed to fetch FAQ')
     return resJson.data || []
   } catch (error) {
     if (error.name === 'TypeError' && error.message.includes('fetch')) {
@@ -69,26 +68,188 @@ export async function getAllFAQ() {
     throw error
   }
 }
-
-// Get all partners
+export async function addFAQ(data) {
+  try {
+    const token =
+      localStorage.getItem('token') || sessionStorage.getItem('token')
+    const headers = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+    }
+    if (token) headers['Authorization'] = `Bearer ${token}`
+    const response = await fetch(`${API_BASE_URL}/faqs`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(data),
+    })
+    const resJson = await response.json()
+    if (!response.ok) throw new Error(resJson.message || 'Failed to add FAQ')
+    return resJson.data || resJson
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error(
+        'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.',
+      )
+    }
+    throw error
+  }
+}
+export async function deleteFAQ(id) {
+  try {
+    const token =
+      localStorage.getItem('token') || sessionStorage.getItem('token')
+    const headers = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+    }
+    if (token) headers['Authorization'] = `Bearer ${token}`
+    const response = await fetch(`${API_BASE_URL}/faqs/${id}`, {
+      method: 'DELETE',
+      headers,
+    })
+    const resJson = await response.json()
+    if (!response.ok) throw new Error(resJson.message || 'Failed to delete FAQ')
+    return resJson
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error(
+        'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.',
+      )
+    }
+    throw error
+  }
+}
+export async function updateFAQ(id, data) {
+  try {
+    const token =
+      localStorage.getItem('token') || sessionStorage.getItem('token')
+    const headers = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+    }
+    if (token) headers['Authorization'] = `Bearer ${token}`
+    const response = await fetch(`${API_BASE_URL}/faqs/${id}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(data),
+    })
+    const resJson = await response.json()
+    if (!response.ok) throw new Error(resJson.message || 'Failed to update FAQ')
+    return resJson.data || resJson
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error(
+        'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.',
+      )
+    }
+    throw error
+  }
+}
+// Partner
 export async function getAllPartners() {
   try {
+    const token =
+      localStorage.getItem('token') || sessionStorage.getItem('token')
+    const headers = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+    }
+    if (token) headers['Authorization'] = `Bearer ${token}`
     const response = await fetch(`${API_BASE_URL}/partners`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-      },
+      headers,
     })
-
     const resJson = await response.json()
-
-    if (!response.ok) {
+    if (!response.ok)
       throw new Error(resJson.message || 'Failed to fetch partners')
-    }
-
     return resJson.data || []
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error(
+        'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.',
+      )
+    }
+    throw error
+  }
+}
+export async function addPartner(data) {
+  try {
+    const token =
+      localStorage.getItem('token') || sessionStorage.getItem('token')
+    const headers = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+    }
+    if (token) headers['Authorization'] = `Bearer ${token}`
+    const response = await fetch(`${API_BASE_URL}/partners`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(data),
+    })
+    const resJson = await response.json()
+    if (!response.ok)
+      throw new Error(resJson.message || 'Failed to add partner')
+    return resJson.data || resJson
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error(
+        'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.',
+      )
+    }
+    throw error
+  }
+}
+export async function deletePartner(id) {
+  try {
+    const token =
+      localStorage.getItem('token') || sessionStorage.getItem('token')
+    const headers = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+    }
+    if (token) headers['Authorization'] = `Bearer ${token}`
+    const response = await fetch(`${API_BASE_URL}/partners/${id}`, {
+      method: 'DELETE',
+      headers,
+    })
+    const resJson = await response.json()
+    if (!response.ok)
+      throw new Error(resJson.message || 'Failed to delete partner')
+    return resJson
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error(
+        'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.',
+      )
+    }
+    throw error
+  }
+}
+export async function updatePartner(id, data) {
+  try {
+    const token =
+      localStorage.getItem('token') || sessionStorage.getItem('token')
+    const headers = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+    }
+    if (token) headers['Authorization'] = `Bearer ${token}`
+    const response = await fetch(`${API_BASE_URL}/partners/${id}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(data),
+    })
+    const resJson = await response.json()
+    if (!response.ok)
+      throw new Error(resJson.message || 'Failed to update partner')
+    return resJson.data || resJson
   } catch (error) {
     if (error.name === 'TypeError' && error.message.includes('fetch')) {
       throw new Error(
@@ -501,6 +662,236 @@ export async function updateCategory(id, data) {
       throw new Error(resJson.message || 'Failed to update category')
     }
     return resJson.data || resJson
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error(
+        'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.',
+      )
+    }
+    throw error
+  }
+}
+
+// Get all users
+export async function getAllUsers() {
+  try {
+    const token =
+      localStorage.getItem('token') || sessionStorage.getItem('token')
+    const headers = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+    }
+    if (token) headers['Authorization'] = `Bearer ${token}`
+    const response = await fetch(`${API_BASE_URL}/users`, {
+      method: 'GET',
+      headers,
+    })
+    const resJson = await response.json()
+    if (!response.ok)
+      throw new Error(resJson.message || 'Failed to fetch users')
+    return resJson.data || []
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error(
+        'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.',
+      )
+    }
+    throw error
+  }
+}
+// Update user (PUT /users/:id)
+export async function updateUser(id, data) {
+  try {
+    const token =
+      localStorage.getItem('token') || sessionStorage.getItem('token')
+    const headers = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+    }
+    if (token) headers['Authorization'] = `Bearer ${token}`
+    const response = await fetch(`${API_BASE_URL}/users/${id}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(data),
+    })
+    const resJson = await response.json()
+    if (!response.ok)
+      throw new Error(resJson.message || 'Failed to update user')
+    return resJson.data || resJson
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error(
+        'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.',
+      )
+    }
+    throw error
+  }
+}
+// Delete user (DELETE /users/:id)
+export async function deleteUser(id) {
+  try {
+    const token =
+      localStorage.getItem('token') || sessionStorage.getItem('token')
+    const headers = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+    }
+    if (token) headers['Authorization'] = `Bearer ${token}`
+    const response = await fetch(`${API_BASE_URL}/users/${id}`, {
+      method: 'DELETE',
+      headers,
+    })
+    const resJson = await response.json()
+    if (!response.ok)
+      throw new Error(resJson.message || 'Failed to delete user')
+    return resJson
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error(
+        'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.',
+      )
+    }
+    throw error
+  }
+}
+// Change user role (PUT /users/:id, body: {role: ...})
+export async function changeUserRole(id, role) {
+  try {
+    const token =
+      localStorage.getItem('token') || sessionStorage.getItem('token')
+    const headers = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+    }
+    if (token) headers['Authorization'] = `Bearer ${token}`
+    const response = await fetch(`${API_BASE_URL}/users/${id}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ role }),
+    })
+    const resJson = await response.json()
+    if (!response.ok)
+      throw new Error(resJson.message || 'Failed to change user role')
+    return resJson.data || resJson
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error(
+        'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.',
+      )
+    }
+    throw error
+  }
+}
+
+// Get all subcategories
+export async function getAllSubcategories() {
+  try {
+    const token =
+      localStorage.getItem('token') || sessionStorage.getItem('token')
+    const headers = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+    }
+    if (token) headers['Authorization'] = `Bearer ${token}`
+    const response = await fetch(`${API_BASE_URL}/sub-categories`, {
+      method: 'GET',
+      headers,
+    })
+    const resJson = await response.json()
+    if (!response.ok)
+      throw new Error(resJson.message || 'Failed to fetch subcategories')
+    return resJson.data || []
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error(
+        'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.',
+      )
+    }
+    throw error
+  }
+}
+// Add subcategory
+export async function addSubcategory(data) {
+  try {
+    const token =
+      localStorage.getItem('token') || sessionStorage.getItem('token')
+    const headers = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+    }
+    if (token) headers['Authorization'] = `Bearer ${token}`
+    const response = await fetch(`${API_BASE_URL}/sub-categories`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(data),
+    })
+    const resJson = await response.json()
+    if (!response.ok)
+      throw new Error(resJson.message || 'Failed to add subcategory')
+    return resJson.data || resJson
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error(
+        'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.',
+      )
+    }
+    throw error
+  }
+}
+// Update subcategory
+export async function updateSubcategory(id, data) {
+  try {
+    const token =
+      localStorage.getItem('token') || sessionStorage.getItem('token')
+    const headers = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+    }
+    if (token) headers['Authorization'] = `Bearer ${token}`
+    const response = await fetch(`${API_BASE_URL}/sub-categories/${id}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(data),
+    })
+    const resJson = await response.json()
+    if (!response.ok)
+      throw new Error(resJson.message || 'Failed to update subcategory')
+    return resJson.data || resJson
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error(
+        'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.',
+      )
+    }
+    throw error
+  }
+}
+// Delete subcategory
+export async function deleteSubcategory(id) {
+  try {
+    const token =
+      localStorage.getItem('token') || sessionStorage.getItem('token')
+    const headers = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+    }
+    if (token) headers['Authorization'] = `Bearer ${token}`
+    const response = await fetch(`${API_BASE_URL}/sub-categories/${id}`, {
+      method: 'DELETE',
+      headers,
+    })
+    const resJson = await response.json()
+    if (!response.ok)
+      throw new Error(resJson.message || 'Failed to delete subcategory')
+    return resJson
   } catch (error) {
     if (error.name === 'TypeError' && error.message.includes('fetch')) {
       throw new Error(

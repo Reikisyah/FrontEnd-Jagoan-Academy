@@ -16,9 +16,13 @@ import Dashboard from './pages/Dashboard'
 import Profile from './pages/Profile'
 import Categories from './pages/Categories'
 import CoursesDashboard from './pages/CoursesDashboard'
+import UserManagement from './pages/UserManagement'
+import SubcategoriesMentor from './pages/SubcategoriesMentor'
+import Setting from './pages/Setting'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
+import Sidebar from './components/Sidebar'
 
 function AppRoutes() {
   const location = useLocation()
@@ -29,7 +33,7 @@ function AppRoutes() {
     '/categories',
     '/subcategories',
     '/languages',
-    '/manage-users',
+    '/user-management',
     '/discussions',
     '/resources',
     '/analytics',
@@ -79,6 +83,17 @@ function AppRoutes() {
             <Route path="/login" element={<Login />} />
             <Route path="/courses-dashboard" element={<CoursesDashboard />} />
             <Route
+              path="/user-management"
+              element={
+                <div className="flex min-h-screen bg-white">
+                  <Sidebar />
+                  <div className="flex-1 flex flex-col min-h-screen">
+                    <UserManagement />
+                  </div>
+                </div>
+              }
+            />
+            <Route
               path="/courses"
               element={<div className="p-10">Courses Page (Coming Soon)</div>}
             />
@@ -86,18 +101,17 @@ function AppRoutes() {
             <Route
               path="/subcategories"
               element={
-                <div className="p-10">Subcategories Page (Coming Soon)</div>
+                <div className="flex min-h-screen bg-white">
+                  <Sidebar />
+                  <div className="flex-1 flex flex-col min-h-screen">
+                    <SubcategoriesMentor />
+                  </div>
+                </div>
               }
             />
             <Route
               path="/languages"
               element={<div className="p-10">Languages Page (Coming Soon)</div>}
-            />
-            <Route
-              path="/manage-users"
-              element={
-                <div className="p-10">Manage Users Page (Coming Soon)</div>
-              }
             />
             <Route
               path="/discussions"
@@ -119,10 +133,7 @@ function AppRoutes() {
                 <div className="p-10">Help Center Page (Coming Soon)</div>
               }
             />
-            <Route
-              path="/settings"
-              element={<div className="p-10">Settings Page (Coming Soon)</div>}
-            />
+            <Route path="/settings" element={<Setting />} />
           </Routes>
         </div>
         {!hide && <Footer />}

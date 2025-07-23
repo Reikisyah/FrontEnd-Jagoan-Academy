@@ -8,6 +8,18 @@ import {
   deleteCourse,
   publishCourse,
 } from '../utils/api'
+import {
+  FaEye,
+  FaEdit,
+  FaCheck,
+  FaTimes,
+  FaTrash,
+  FaClock,
+  FaRegCopy,
+  FaStar,
+} from 'react-icons/fa'
+import { toast, ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 const initialCourse = {
   title: '',
@@ -36,6 +48,110 @@ const CoursesDashboard = () => {
   const [search, setSearch] = useState('')
   const [deleteConfirmId, setDeleteConfirmId] = useState(null)
   const modalRef = useRef()
+  // Tambahkan state untuk modal konfirmasi universal
+  const [confirmModal, setConfirmModal] = useState({
+    open: false,
+    type: '',
+    course: null,
+  })
+  // Tambahkan state untuk sorting dan filtering
+  const [sortBy, setSortBy] = useState('title')
+  const [sortDir, setSortDir] = useState('asc')
+  const [filterCategory, setFilterCategory] = useState('')
+  const [filterStatus, setFilterStatus] = useState('')
+  // State for view detail modal
+  const [selectedCourse, setSelectedCourse] = useState(null)
+  const [showDetailModal, setShowDetailModal] = useState(false)
+  // State for bulk actions
+  const [selectedIds, setSelectedIds] = useState([])
+  const allPageIds = courses.map((c) => c.id)
+  const isAllSelected =
+    allPageIds.length > 0 && allPageIds.every((id) => selectedIds.includes(id))
+  const toggleSelectAll = () => {
+    if (isAllSelected)
+      setSelectedIds(selectedIds.filter((id) => !allPageIds.includes(id)))
+    else setSelectedIds([...new Set([...selectedIds, ...allPageIds])])
+  }
+  const toggleSelectOne = (id) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    )
+  }
+  const clearSelection = () => setSelectedIds([])
+
+  // Bulk action handlers
+  const handleBulkDelete = async () => {
+    for (const id of selectedIds) {
+      await handleDelete(id)
+    }
+    clearSelection()
+  }
+  const handleBulkPublish = async () => {
+    for (const id of selectedIds) {
+      await handlePublish(id)
+    }
+    clearSelection()
+  }
+  const handleBulkUnpublish = async () => {
+    for (const id of selectedIds) {
+      await handlePublish(id)
+    }
+    clearSelection()
+  }
+
+  // Tambahkan state untuk bulk edit
+  const [showBulkEdit, setShowBulkEdit] = useState(false)
+  const [bulkEditForm, setBulkEditForm] = useState({
+    category: '',
+    sub_category: '',
+    price: '',
+  })
+  const [bulkEditLoading, setBulkEditLoading] = useState(false)
+  const [bulkEditError, setBulkEditError] = useState(null)
+  const [bulkEditSuccess, setBulkEditSuccess] = useState(null)
+
+  // Handler untuk buka modal bulk edit
+  const openBulkEdit = () => {
+    setBulkEditForm({ category: '', sub_category: '', price: '' })
+    setBulkEditError(null)
+    setShowBulkEdit(true)
+  }
+  const closeBulkEdit = () => {
+    setShowBulkEdit(false)
+    setBulkEditError(null)
+  }
+  // Handler submit bulk edit
+  const handleBulkEditSubmit = async (e) => {
+    e.preventDefault()
+    setBulkEditLoading(true)
+    setBulkEditError(null)
+    let updated = 0
+    try {
+      for (const id of selectedIds) {
+        const course = courses.find((c) => c.id === id)
+        if (!course) continue
+        const updateData = {
+          ...course,
+          ...(bulkEditForm.category && { category: bulkEditForm.category }),
+          ...(bulkEditForm.sub_category && {
+            sub_category: bulkEditForm.sub_category,
+          }),
+          ...(bulkEditForm.price && { price: bulkEditForm.price }),
+        }
+        await updateCourse(id, updateData)
+        updated++
+      }
+      setBulkEditSuccess(`${updated} course(s) updated!`)
+      fetchCourses()
+      setTimeout(() => setBulkEditSuccess(null), 2000)
+      setShowBulkEdit(false)
+      clearSelection()
+    } catch (err) {
+      setBulkEditError(err.message)
+    } finally {
+      setBulkEditLoading(false)
+    }
+  }
 
   useEffect(() => {
     fetchCourses()
@@ -44,9 +160,14 @@ const CoursesDashboard = () => {
   const fetchCourses = () => {
     setLoading(true)
     setError(null)
+    setFetchError(false)
     getAllCourses()
       .then((data) => setCourses(data))
-      .catch((err) => setError(err.message))
+      .catch((err) => {
+        setError(err.message)
+        setFetchError(true)
+        toast.error('Gagal memuat data courses!')
+      })
       .finally(() => setLoading(false))
   }
 
@@ -75,10 +196,12 @@ const CoursesDashboard = () => {
     try {
       await deleteCourse(id)
       setSuccessMsg('Course deleted!')
+      toast.success('Course berhasil dihapus!')
       fetchCourses()
       setTimeout(() => setSuccessMsg(null), 2000)
     } catch (err) {
       setFormError(err.message)
+      toast.error('Gagal menghapus course!')
     } finally {
       setDeleteLoading(null)
       setDeleteConfirmId(null)
@@ -91,31 +214,54 @@ const CoursesDashboard = () => {
     try {
       await publishCourse(id)
       setPublishSuccess('Course published!')
+      toast.success('Course berhasil dipublish!')
       fetchCourses()
       setTimeout(() => setPublishSuccess(null), 2000)
     } catch (err) {
       setPublishError(err.message)
+      toast.error('Gagal publish course!')
       setTimeout(() => setPublishError(null), 2000)
     } finally {
       setPublishLoading(null)
     }
   }
 
+  // Helper for formatting price
+  const formatPrice = (value) => {
+    if (!value) return ''
+    return Number(value.toString().replace(/\D/g, '')).toLocaleString('id-ID')
+  }
+
   const handleFormChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
+    if (e.target.name === 'price') {
+      // Only allow numbers and format
+      const raw = e.target.value.replace(/\D/g, '')
+      setForm({ ...form, price: raw })
+    } else {
+      setForm({ ...form, [e.target.name]: e.target.value })
+    }
   }
 
   const handleFormSubmit = async (e) => {
     e.preventDefault()
     setFormLoading(true)
     setFormError(null)
+    // Validasi harga
+    if (!form.price || Number(form.price) === 0) {
+      setFormLoading(false)
+      setFormError('Price must be greater than 0')
+      toast.error('Harga harus lebih dari 0')
+      return
+    }
     try {
       if (showAdd) {
         await addCourse(form)
         setSuccessMsg('Course added!')
+        toast.success('Course berhasil ditambahkan!')
       } else if (showEdit && editId) {
         await updateCourse(editId, form)
         setSuccessMsg('Course updated!')
+        toast.success('Course berhasil diupdate!')
       }
       setShowAdd(false)
       setShowEdit(false)
@@ -123,6 +269,7 @@ const CoursesDashboard = () => {
       setTimeout(() => setSuccessMsg(null), 2000)
     } catch (err) {
       setFormError(err.message)
+      toast.error('Gagal menyimpan course!')
     } finally {
       setFormLoading(false)
     }
@@ -135,15 +282,141 @@ const CoursesDashboard = () => {
     setForm(initialCourse)
   }
 
-  // Filtered courses by search
-  const filteredCourses = courses.filter((c) => {
+  // Fungsi untuk membuka modal konfirmasi
+  const openConfirmModal = (type, course) => {
+    setConfirmModal({ open: true, type, course })
+  }
+  // Fungsi untuk menutup modal konfirmasi
+  const closeConfirmModal = () => {
+    setConfirmModal({ open: false, type: '', course: null })
+  }
+
+  // Fungsi handle untuk bulk action/modal
+  const handleConfirmAction = async () => {
+    if (!confirmModal.course) return
+    if (confirmModal.type === 'delete') {
+      await handleDelete(confirmModal.course.id)
+    } else if (confirmModal.type === 'publish') {
+      await handlePublish(confirmModal.course.id)
+    } else if (confirmModal.type === 'unpublish') {
+      await handlePublish(confirmModal.course.id)
+    }
+    closeConfirmModal()
+  }
+
+  // Sorting & filtering logic
+  const sortedFilteredCourses = courses
+    .filter((c) => {
+      if (filterCategory && c.category !== filterCategory) return false
+      if (filterStatus) {
+        if (filterStatus === 'published' && !c.is_published) return false
+        if (filterStatus === 'draft' && c.is_published) return false
+      }
+      return true
+    })
+    .sort((a, b) => {
+      let valA = a[sortBy] || ''
+      let valB = b[sortBy] || ''
+      if (sortBy === 'status') {
+        valA = a.is_published ? 1 : 0
+        valB = b.is_published ? 1 : 0
+      }
+      if (typeof valA === 'string') valA = valA.toLowerCase()
+      if (typeof valB === 'string') valB = valB.toLowerCase()
+      if (valA < valB) return sortDir === 'asc' ? -1 : 1
+      if (valA > valB) return sortDir === 'asc' ? 1 : -1
+      return 0
+    })
+
+  // Improved search: search by title, description, category, instructor, status
+  const filteredBySearch = sortedFilteredCourses.filter((c) => {
     const q = search.toLowerCase()
     return (
       c.title.toLowerCase().includes(q) ||
       c.description.toLowerCase().includes(q) ||
-      (c.category || '').toLowerCase().includes(q)
+      (c.category || '').toLowerCase().includes(q) ||
+      (c.created_by || '').toLowerCase().includes(q) ||
+      (c.is_published ? 'published' : 'draft').includes(q)
     )
   })
+
+  // Ambil semua kategori unik dari courses
+  const allCategories = Array.from(
+    new Set(courses.map((c) => c.category).filter(Boolean)),
+  )
+
+  // Tambahkan state untuk pagination
+  const [page, setPage] = useState(1)
+  const pageSize = 10 // Number of items per page
+
+  // Ganti filteredCourses dengan sortedFilteredCourses di pagination
+  const totalPages = Math.ceil(filteredBySearch.length / pageSize)
+  const paginatedCourses = filteredBySearch.slice(
+    (page - 1) * pageSize,
+    page * pageSize,
+  )
+
+  const handleView = (course) => {
+    setSelectedCourse(course)
+    setShowDetailModal(true)
+  }
+  const closeDetailModal = () => {
+    setShowDetailModal(false)
+    setSelectedCourse(null)
+  }
+
+  // Helper for image URL (from BE: course.thumbnail)
+  const getImageUrl = (url) => {
+    if (
+      !url ||
+      typeof url !== 'string' ||
+      url.trim() === '' ||
+      url === 'null' ||
+      url === 'undefined'
+    )
+      return 'https://via.placeholder.com/40x40?text=No+Image'
+    if (url.startsWith('http')) return url
+    return `https://lms.alanwari.ponpes.id/storage/${url}`
+  }
+
+  // State for copy feedback
+  const [copied, setCopied] = useState({ id: false, slug: false })
+  const handleCopy = (type, value) => {
+    navigator.clipboard.writeText(value)
+    setCopied((prev) => ({ ...prev, [type]: true }))
+    setTimeout(() => setCopied((prev) => ({ ...prev, [type]: false })), 1200)
+  }
+
+  const [fetchError, setFetchError] = useState(false)
+
+  if (error && courses.length === 0) {
+    return (
+      <React.Fragment>
+        <ToastContainer
+          position="top-right"
+          autoClose={2000}
+          hideProgressBar
+          newestOnTop
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+        />
+        <div className="flex flex-col items-center justify-center h-96">
+          <p className="text-red-600 text-lg font-bold mb-4">
+            Gagal memuat data courses.
+          </p>
+          <button
+            onClick={fetchCourses}
+            className="bg-pink-600 text-white px-4 py-2 rounded hover:bg-pink-700"
+          >
+            Coba Lagi
+          </button>
+        </div>
+      </React.Fragment>
+    )
+  }
 
   return (
     <div className="flex min-h-screen bg-white">
@@ -186,25 +459,57 @@ const CoursesDashboard = () => {
               </div>
             )}
             {(loading || error) && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-                {[...Array(6)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="bg-white rounded-xl shadow p-6 flex flex-col gap-3 border border-pink-100 animate-pulse"
-                  >
-                    <div className="w-full h-40 bg-gray-200 rounded-lg mb-2" />
-                    <div className="h-5 bg-gray-200 rounded w-2/3 mb-2" />
-                    <div className="h-4 bg-gray-100 rounded w-1/2 mb-1" />
-                    <div className="h-4 bg-gray-100 rounded w-1/3 mb-2" />
-                    <div className="flex gap-2">
-                      <div className="h-8 w-16 bg-gray-100 rounded" />
-                      <div className="h-8 w-16 bg-gray-100 rounded" />
-                    </div>
-                  </div>
-                ))}
+              <div className="overflow-x-auto animate-pulse">
+                <table className="min-w-full border border-pink-100 rounded-xl bg-white">
+                  <thead>
+                    <tr className="bg-pink-600 text-white">
+                      <th className="py-2 px-4 text-left">COURSE</th>
+                      <th className="py-2 px-4 text-left">CATEGORY</th>
+                      <th className="py-2 px-4 text-left">INSTRUCTOR</th>
+                      <th className="py-2 px-4 text-left">STUDENTS</th>
+                      <th className="py-2 px-4 text-left">STATUS</th>
+                      <th className="py-2 px-4 text-left">ACTIONS</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...Array(5)].map((_, idx) => (
+                      <tr key={idx} className="border-b">
+                        <td className="py-2 px-4">
+                          <div className="flex items-center gap-2">
+                            <div className="w-10 h-10 bg-gray-200 rounded mr-2" />
+                            <div>
+                              <div className="h-4 w-32 bg-gray-200 rounded mb-1" />
+                              <div className="h-3 w-24 bg-gray-100 rounded" />
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-2 px-4">
+                          <div className="h-4 w-20 bg-gray-200 rounded" />
+                        </td>
+                        <td className="py-2 px-4">
+                          <div className="h-4 w-24 bg-gray-200 rounded" />
+                        </td>
+                        <td className="py-2 px-4">
+                          <div className="h-4 w-8 bg-gray-200 rounded" />
+                        </td>
+                        <td className="py-2 px-4">
+                          <div className="h-6 w-16 bg-gray-100 rounded" />
+                        </td>
+                        <td className="py-2 px-4">
+                          <div className="flex gap-2">
+                            <div className="h-8 w-8 bg-gray-100 rounded" />
+                            <div className="h-8 w-8 bg-gray-100 rounded" />
+                            <div className="h-8 w-8 bg-gray-100 rounded" />
+                            <div className="h-8 w-8 bg-gray-100 rounded" />
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
-            {!loading && !error && filteredCourses.length === 0 && (
+            {!loading && !error && filteredBySearch.length === 0 && (
               <div className="flex flex-col items-center py-10">
                 <div className="mb-4 text-gray-500 text-lg font-semibold">
                   No courses found.
@@ -256,16 +561,30 @@ const CoursesDashboard = () => {
                       rows={2}
                       required
                     />
-                    <input
-                      type="number"
-                      name="price"
-                      value={form.price}
-                      onChange={handleFormChange}
-                      placeholder="Price"
-                      className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200"
-                      required
-                      min={0}
-                    />
+                    {/* Price input with Rp prefix */}
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                        Rp
+                      </span>
+                      <input
+                        type="text"
+                        name="price"
+                        value={formatPrice(form.price)}
+                        onChange={handleFormChange}
+                        placeholder="Contoh: 500000"
+                        className="pl-10 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200 text-right"
+                        min={0}
+                        required
+                      />
+                    </div>
+                    <div className="text-xs text-gray-400 mt-1 ml-1">
+                      Masukkan harga tanpa titik/koma, hanya angka
+                    </div>
+                    {formError && formError.toLowerCase().includes('price') && (
+                      <div className="text-red-500 text-xs mt-1 ml-1">
+                        {formError}
+                      </div>
+                    )}
                     <input
                       type="text"
                       name="category"
@@ -314,126 +633,585 @@ const CoursesDashboard = () => {
                 </div>
               </div>
             )}
-            {!loading && !error && filteredCourses.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-                {filteredCourses.map((course, idx) => (
-                  <div
-                    key={course.id}
-                    className="bg-white rounded-xl shadow p-6 flex flex-col gap-3 border border-pink-100 relative"
+            {!loading && !error && filteredBySearch.length > 0 && (
+              <>
+                {/* Filter & Sort Controls */}
+                <div className="flex flex-wrap gap-2 mb-4 items-center">
+                  <label className="text-sm font-semibold">Filter:</label>
+                  <select
+                    className="border rounded px-2 py-1 text-sm"
+                    value={filterCategory}
+                    onChange={(e) => {
+                      setFilterCategory(e.target.value)
+                      setPage(1)
+                    }}
                   >
-                    <img
-                      src={
-                        course.thumbnail ||
-                        'https://via.placeholder.com/300x180?text=No+Image'
-                      }
-                      alt={course.title}
-                      className="w-full h-40 object-cover rounded-lg mb-2 border"
-                    />
-                    <div className="font-bold text-lg text-pink-700 truncate">
-                      {course.title}
-                    </div>
-                    <div className="text-gray-500 text-sm line-clamp-2 mb-1">
-                      {course.description}
-                    </div>
-                    <div className="flex flex-wrap gap-2 text-xs mb-2">
-                      <span className="bg-pink-50 text-pink-600 px-2 py-1 rounded">
-                        Category: {course.category}
-                      </span>
-                      <span className="bg-pink-50 text-pink-600 px-2 py-1 rounded">
-                        Sub: {course.sub_category}
-                      </span>
-                      <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                        By: {course.created_by}
-                      </span>
-                    </div>
-                    <div className="flex gap-4 items-center mb-2">
-                      <span className="text-pink-600 font-bold text-lg">
-                        Rp{course.price}
-                      </span>
-                      <span className="text-yellow-600 font-semibold flex items-center gap-1">
-                        <svg
-                          className="w-4 h-4 inline"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.38-2.455a1 1 0 00-1.175 0l-3.38 2.455c-.784.57-1.838-.196-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.05 9.394c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.967z" />
-                        </svg>
-                        {course.rating}
-                      </span>
-                      <span className="text-gray-500 text-xs">
-                        {course.total_reviews} reviews
-                      </span>
-                    </div>
-                    <div className="flex gap-2 flex-wrap mt-auto">
+                    <option value="">All Categories</option>
+                    {allCategories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    className="border rounded px-2 py-1 text-sm"
+                    value={filterStatus}
+                    onChange={(e) => {
+                      setFilterStatus(e.target.value)
+                      setPage(1)
+                    }}
+                  >
+                    <option value="">All Status</option>
+                    <option value="published">Published</option>
+                    <option value="draft">Draft</option>
+                  </select>
+                  <label className="ml-4 text-sm font-semibold">Sort by:</label>
+                  <select
+                    className="border rounded px-2 py-1 text-sm"
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                  >
+                    <option value="title">Title</option>
+                    <option value="status">Status</option>
+                  </select>
+                  <button
+                    className="ml-1 px-2 py-1 border rounded text-sm"
+                    onClick={() =>
+                      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
+                    }
+                  >
+                    {sortDir === 'asc' ? '▲' : '▼'}
+                  </button>
+                </div>
+                {/* Bulk Action Bar */}
+                {selectedIds.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-2 items-center bg-pink-50 border border-pink-200 rounded-lg px-4 py-2">
+                    <span className="font-semibold text-pink-700">
+                      {selectedIds.length} selected
+                    </span>
+                    <button
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+                      onClick={openBulkEdit}
+                      disabled={bulkEditLoading}
+                    >
+                      Bulk Edit
+                    </button>
+                    <button
+                      className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                      onClick={handleBulkDelete}
+                    >
+                      Delete
+                    </button>
+                    <button
+                      className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
+                      onClick={handleBulkPublish}
+                    >
+                      Publish
+                    </button>
+                    <button
+                      className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded"
+                      onClick={handleBulkUnpublish}
+                    >
+                      Unpublish
+                    </button>
+                    <button
+                      className="ml-2 text-gray-500 hover:text-pink-600 underline text-sm"
+                      onClick={clearSelection}
+                    >
+                      Clear
+                    </button>
+                  </div>
+                )}
+                {/* Modal Bulk Edit */}
+                {showBulkEdit && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+                    <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md relative">
                       <button
-                        className="px-3 py-1 rounded-lg border border-pink-500 text-pink-600 font-semibold hover:bg-pink-50 text-sm"
-                        onClick={() => handleEdit(course)}
-                        disabled={
-                          formLoading ||
-                          publishLoading === course.id ||
-                          deleteLoading === course.id
-                        }
+                        className="absolute top-2 right-3 text-gray-400 hover:text-pink-600 text-2xl font-bold"
+                        onClick={closeBulkEdit}
                       >
-                        Edit
+                        ×
                       </button>
-                      <button
-                        className="px-3 py-1 rounded-lg border border-red-400 text-red-500 font-semibold hover:bg-red-50 text-sm"
-                        onClick={() => setDeleteConfirmId(course.id)}
-                        disabled={
-                          deleteLoading === course.id ||
-                          formLoading ||
-                          publishLoading === course.id
-                        }
+                      <h2 className="text-lg font-bold mb-4 text-pink-700">
+                        Bulk Edit Courses ({selectedIds.length} selected)
+                      </h2>
+                      <form
+                        onSubmit={handleBulkEditSubmit}
+                        className="flex flex-col gap-4"
                       >
-                        {deleteLoading === course.id ? 'Deleting...' : 'Delete'}
-                      </button>
-                      <button
-                        className="px-3 py-1 rounded-lg border border-green-500 text-green-600 font-semibold hover:bg-green-50 text-sm"
-                        onClick={() => handlePublish(course.id)}
-                        disabled={
-                          publishLoading === course.id ||
-                          formLoading ||
-                          deleteLoading === course.id
-                        }
-                      >
-                        {publishLoading === course.id
-                          ? 'Publishing...'
-                          : 'Publish'}
-                      </button>
-                    </div>
-                    {/* Delete confirmation */}
-                    {deleteConfirmId === course.id && (
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10 rounded-xl">
-                        <div className="bg-white rounded-lg shadow-lg p-6 flex flex-col items-center gap-3">
-                          <div className="font-semibold text-lg text-pink-700">
-                            Delete this course?
+                        <input
+                          type="text"
+                          name="category"
+                          value={bulkEditForm.category}
+                          onChange={(e) =>
+                            setBulkEditForm((f) => ({
+                              ...f,
+                              category: e.target.value,
+                            }))
+                          }
+                          placeholder="New Category (optional)"
+                          className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200"
+                        />
+                        <input
+                          type="text"
+                          name="sub_category"
+                          value={bulkEditForm.sub_category}
+                          onChange={(e) =>
+                            setBulkEditForm((f) => ({
+                              ...f,
+                              sub_category: e.target.value,
+                            }))
+                          }
+                          placeholder="New Sub Category (optional)"
+                          className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200"
+                        />
+                        <input
+                          type="text"
+                          name="price"
+                          value={bulkEditForm.price}
+                          onChange={(e) =>
+                            setBulkEditForm((f) => ({
+                              ...f,
+                              price: e.target.value.replace(/\D/g, ''),
+                            }))
+                          }
+                          placeholder="New Price (optional)"
+                          className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200"
+                        />
+                        {bulkEditError && (
+                          <div className="text-red-500 text-sm">
+                            {bulkEditError}
                           </div>
-                          <div className="flex gap-3 mt-2">
-                            <button
-                              className="bg-pink-600 text-white px-4 py-1 rounded-lg font-semibold hover:bg-pink-700 transition"
-                              onClick={() => handleDelete(course.id)}
-                              disabled={deleteLoading === course.id}
-                            >
-                              Yes, delete
-                            </button>
-                            <button
-                              className="px-4 py-1 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100"
-                              onClick={() => setDeleteConfirmId(null)}
-                              disabled={deleteLoading === course.id}
-                            >
-                              Cancel
-                            </button>
+                        )}
+                        {bulkEditSuccess && (
+                          <div className="text-green-600 text-sm">
+                            {bulkEditSuccess}
                           </div>
+                        )}
+                        <div className="flex gap-3 mt-2">
+                          <button
+                            type="submit"
+                            className="bg-pink-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-pink-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={bulkEditLoading}
+                          >
+                            {bulkEditLoading ? 'Saving...' : 'Save Changes'}
+                          </button>
+                          <button
+                            type="button"
+                            className="px-6 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100"
+                            onClick={closeBulkEdit}
+                            disabled={bulkEditLoading}
+                          >
+                            Cancel
+                          </button>
                         </div>
-                      </div>
+                      </form>
+                    </div>
+                  </div>
+                )}
+                <div className="flex-1 flex flex-col min-h-[400px] overflow-x-auto w-full justify-between">
+                  <table className="min-w-[900px] border border-pink-100 rounded-xl bg-white flex-grow">
+                    <thead>
+                      <tr className="bg-pink-600 text-white">
+                        <th
+                          className="py-2 px-4 text-left cursor-pointer"
+                          onClick={() => {
+                            setSortBy('title')
+                            setSortDir(
+                              sortBy === 'title' && sortDir === 'asc'
+                                ? 'desc'
+                                : 'asc',
+                            )
+                          }}
+                        >
+                          COURSE{' '}
+                          {sortBy === 'title'
+                            ? sortDir === 'asc'
+                              ? '▲'
+                              : '▼'
+                            : ''}
+                        </th>
+                        <th className="py-2 px-4 text-left">CATEGORY</th>
+                        <th className="py-2 px-4 text-left">INSTRUCTOR</th>
+                        <th className="py-2 px-4 text-left">STUDENTS</th>
+                        <th
+                          className="py-2 px-4 text-left cursor-pointer"
+                          onClick={() => {
+                            setSortBy('status')
+                            setSortDir(
+                              sortBy === 'status' && sortDir === 'asc'
+                                ? 'desc'
+                                : 'asc',
+                            )
+                          }}
+                        >
+                          STATUS{' '}
+                          {sortBy === 'status'
+                            ? sortDir === 'asc'
+                              ? '▲'
+                              : '▼'
+                            : ''}
+                        </th>
+                        <th className="py-2 px-4 text-left">ACTIONS</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paginatedCourses.map((course) => (
+                        <tr
+                          key={course.id}
+                          className="border-b hover:bg-pink-50"
+                        >
+                          <td className="py-2 px-4">
+                            <div className="flex items-center gap-2">
+                              <img
+                                src={getImageUrl(course.thumbnail)}
+                                alt={course.title}
+                                className="w-10 h-10 object-cover rounded mr-2 border"
+                              />
+                              <div>
+                                <div className="font-semibold text-gray-900 leading-tight">
+                                  {course.title}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {course.description || '-'}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-2 px-4 text-gray-700">
+                            {course.category}
+                          </td>
+                          <td className="py-2 px-4 text-gray-700">
+                            {course.created_by}
+                          </td>
+                          <td className="py-2 px-4 text-gray-700">
+                            {course.students_count || 0}
+                          </td>
+                          <td className="py-2 px-4">
+                            {course.is_published ? (
+                              <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-bold">
+                                PUBLISHED
+                              </span>
+                            ) : (
+                              <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-bold">
+                                DRAFT
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-2 px-4">
+                            <div className="flex gap-2 items-center">
+                              <button
+                                className="text-gray-500 hover:text-pink-600"
+                                title="View"
+                                onClick={() => handleView(course)}
+                                disabled={
+                                  formLoading ||
+                                  publishLoading === course.id ||
+                                  deleteLoading === course.id
+                                }
+                              >
+                                <FaEye />
+                              </button>
+                              <button
+                                className="text-pink-500 hover:text-pink-700"
+                                title="Edit"
+                                onClick={() => handleEdit(course)}
+                                disabled={
+                                  formLoading ||
+                                  publishLoading === course.id ||
+                                  deleteLoading === course.id
+                                }
+                              >
+                                <FaEdit />
+                              </button>
+                              {course.is_published ? (
+                                <button
+                                  className="text-orange-500 hover:text-orange-700"
+                                  title="Unpublish"
+                                  onClick={() =>
+                                    openConfirmModal('unpublish', course)
+                                  }
+                                  disabled={
+                                    publishLoading === course.id ||
+                                    formLoading ||
+                                    deleteLoading === course.id
+                                  }
+                                >
+                                  <FaTimes />
+                                </button>
+                              ) : (
+                                <button
+                                  className="text-green-600 hover:text-green-800"
+                                  title="Publish"
+                                  onClick={() =>
+                                    openConfirmModal('publish', course)
+                                  }
+                                  disabled={
+                                    publishLoading === course.id ||
+                                    formLoading ||
+                                    deleteLoading === course.id
+                                  }
+                                >
+                                  <FaCheck />
+                                </button>
+                              )}
+                              <button
+                                className="text-red-500 hover:text-red-700"
+                                title="Delete"
+                                onClick={() =>
+                                  openConfirmModal('delete', course)
+                                }
+                                disabled={
+                                  deleteLoading === course.id ||
+                                  formLoading ||
+                                  publishLoading === course.id
+                                }
+                              >
+                                <FaTrash />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {/* Pagination Controls */}
+                <div className="flex justify-center items-center gap-2 mt-4">
+                  <button
+                    className="px-3 py-1 rounded border bg-white text-pink-600 font-semibold disabled:opacity-50"
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                  >
+                    Previous
+                  </button>
+                  <span className="font-semibold text-gray-700">
+                    Page {page} of {totalPages}
+                  </span>
+                  <button
+                    className="px-3 py-1 rounded border bg-white text-pink-600 font-semibold disabled:opacity-50"
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                  >
+                    Next
+                  </button>
+                </div>
+              </>
+            )}
+            {/* Universal Confirmation Modal */}
+            {confirmModal.open && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+                <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-sm relative flex flex-col items-center">
+                  <button
+                    className="absolute top-2 right-3 text-gray-400 hover:text-pink-600 text-2xl font-bold"
+                    onClick={closeConfirmModal}
+                  >
+                    ×
+                  </button>
+                  <h2 className="text-lg font-bold mb-4 text-pink-700">
+                    {confirmModal.type === 'delete' && 'Delete this course?'}
+                    {confirmModal.type === 'publish' && 'Publish this course?'}
+                    {confirmModal.type === 'unpublish' &&
+                      'Unpublish this course?'}
+                  </h2>
+                  <div className="mb-4 text-gray-700 text-center">
+                    {confirmModal.course && (
+                      <>
+                        <div className="font-semibold mb-2">
+                          {confirmModal.course.title}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          /
+                          {confirmModal.course.slug ||
+                            confirmModal.course.title
+                              ?.toLowerCase()
+                              .replace(/\s+/g, '-')}
+                        </div>
+                      </>
                     )}
                   </div>
-                ))}
+                  <div className="flex gap-3 mt-2">
+                    <button
+                      className="bg-pink-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-pink-700 transition"
+                      onClick={handleConfirmAction}
+                    >
+                      {confirmModal.type === 'delete' && 'Yes, Delete'}
+                      {confirmModal.type === 'publish' && 'Yes, Publish'}
+                      {confirmModal.type === 'unpublish' && 'Yes, Unpublish'}
+                    </button>
+                    <button
+                      className="px-6 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100"
+                      onClick={closeConfirmModal}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* View Detail Modal */}
+            {showDetailModal && selectedCourse && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+                <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-lg relative">
+                  <button
+                    className="absolute top-2 right-3 text-gray-400 hover:text-pink-600 text-2xl font-bold"
+                    onClick={closeDetailModal}
+                    title="Close"
+                  >
+                    ×
+                  </button>
+                  <h2 className="text-xl font-bold mb-4 text-pink-700 mt-2">
+                    Course Detail
+                  </h2>
+                  <div className="flex gap-4 mb-4">
+                    <img
+                      src={getImageUrl(selectedCourse.thumbnail)}
+                      alt={selectedCourse.title}
+                      className="w-24 h-24 object-cover rounded border"
+                    />
+                    <div className="flex-1">
+                      <div className="font-semibold text-lg text-gray-900 mb-1 flex items-center gap-2">
+                        {selectedCourse.title}
+                        {selectedCourse.label && (
+                          <span className="inline-block bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs font-bold ml-1">
+                            {selectedCourse.label}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-gray-500 mb-1 flex items-center gap-2">
+                        <span className="font-semibold">Slug:</span> /
+                        {selectedCourse.slug ||
+                          selectedCourse.title
+                            ?.toLowerCase()
+                            .replace(/\s+/g, '-')}
+                        <button
+                          className="ml-1 text-gray-400 hover:text-pink-600 text-xs"
+                          title="Copy Slug"
+                          onClick={() =>
+                            handleCopy(
+                              'slug',
+                              '/' +
+                                (selectedCourse.slug ||
+                                  selectedCourse.title
+                                    ?.toLowerCase()
+                                    .replace(/\s+/g, '-')),
+                            )
+                          }
+                        >
+                          <FaRegCopy />
+                        </button>
+                        {copied.slug && (
+                          <span className="text-green-600 text-xs ml-1">
+                            Copied!
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-sm text-gray-700 mb-1">
+                        <span className="font-semibold">Category:</span>{' '}
+                        {selectedCourse.category}
+                      </div>
+                      <div className="text-sm text-gray-700 mb-1 flex items-center gap-2">
+                        <span className="font-semibold">Sub Category:</span>
+                        {selectedCourse.sub_category && (
+                          <span className="inline-block bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs font-bold">
+                            {selectedCourse.sub_category}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-sm text-gray-700 mb-1">
+                        <span className="font-semibold">Instructor:</span>{' '}
+                        {selectedCourse.created_by}
+                      </div>
+                      <div className="text-sm text-gray-700 mb-1">
+                        <span className="font-semibold">Price:</span> Rp
+                        {Number(selectedCourse.price).toLocaleString('id-ID')}
+                      </div>
+                      <div className="text-sm text-gray-700 mb-1 flex items-center gap-2">
+                        <span className="font-semibold">Rating:</span>
+                        <span className="flex items-center gap-1">
+                          <FaStar className="text-yellow-400" />
+                          {selectedCourse.rating || '-'}
+                        </span>
+                      </div>
+                      <div className="text-sm text-gray-700 mb-1">
+                        <span className="font-semibold">Total Reviews:</span>{' '}
+                        {selectedCourse.total_reviews || 0}
+                      </div>
+                      <div className="text-sm text-gray-700 mb-1">
+                        <span className="font-semibold">Created At:</span>{' '}
+                        {selectedCourse.created_at
+                          ? new Date(selectedCourse.created_at).toLocaleString(
+                              'id-ID',
+                              { dateStyle: 'medium', timeStyle: 'short' },
+                            )
+                          : '-'}
+                      </div>
+                      <div className="text-sm text-gray-700 mb-1">
+                        <span className="font-semibold">Published At:</span>{' '}
+                        {selectedCourse.published_at
+                          ? new Date(
+                              selectedCourse.published_at,
+                            ).toLocaleString('id-ID', {
+                              dateStyle: 'medium',
+                              timeStyle: 'short',
+                            })
+                          : '-'}
+                      </div>
+                      <div className="text-sm text-gray-700 mb-1">
+                        <span className="font-semibold">Students:</span>{' '}
+                        {selectedCourse.students_count || 0}
+                      </div>
+                      <div className="text-sm mb-1 flex items-center gap-2">
+                        <span className="font-semibold">Status:</span>
+                        {selectedCourse.is_published ? (
+                          <span className="inline-flex items-center gap-1 bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-bold shadow-sm">
+                            <FaCheck className="inline-block" /> PUBLISHED
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-bold shadow-sm">
+                            <FaClock className="inline-block" /> DRAFT
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mb-2">
+                    <div className="font-semibold text-gray-700 mb-1">
+                      Description:
+                    </div>
+                    <div className="text-gray-600 text-sm whitespace-pre-line">
+                      {selectedCourse.description}
+                    </div>
+                  </div>
+                  {/* Edit Button */}
+                  <div className="flex justify-end mt-6">
+                    <button
+                      className="bg-pink-600 hover:bg-pink-700 text-white px-6 py-2 rounded-lg font-semibold flex items-center gap-2 shadow"
+                      onClick={() => {
+                        closeDetailModal()
+                        handleEdit(selectedCourse)
+                      }}
+                    >
+                      <FaEdit /> Edit
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </div>
         </div>
       </div>
+      <ToastContainer
+        position="top-right"
+        autoClose={2000}
+        hideProgressBar
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </div>
   )
 }
