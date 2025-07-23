@@ -1,7 +1,7 @@
 import React from 'react'
 import { FiClipboard, FiPieChart } from 'react-icons/fi'
-import Sidebar from '../components/Sidebar'
-import DashboardHeader from '../components/DashboardHeader'
+import Sidebar from '../../../components/Sidebar'
+import DashboardHeader from '../../../components/DashboardHeader'
 
 export default function Dashboard({ hideNavbarFooter }) {
   React.useEffect(() => {

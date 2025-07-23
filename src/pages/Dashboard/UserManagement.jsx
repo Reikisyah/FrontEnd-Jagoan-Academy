@@ -4,7 +4,7 @@ import {
   updateUser,
   deleteUser,
   changeUserRole,
-} from '../utils/api'
+} from '../../utils/api'
 import { FaEdit, FaTrash, FaUserShield, FaCheck, FaTimes } from 'react-icons/fa'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { getMe, updateProfileMentor } from '../utils/api'
-import Sidebar from '../components/Sidebar'
-import DashboardHeader from '../components/DashboardHeader'
+import { getMe, updateProfileMentor } from '../../utils/api'
+import Sidebar from '../../components/Sidebar'
+import DashboardHeader from '../../components/DashboardHeader'
 
 const API_BASE_URL = 'https://lms.alanwari.ponpes.id/api'
 

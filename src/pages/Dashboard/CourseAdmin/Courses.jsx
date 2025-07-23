@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react'
-import Sidebar from '../components/Sidebar'
-import DashboardHeader from '../components/DashboardHeader'
+import Sidebar from '../../../components/Sidebar'
+import DashboardHeader from '../../../components/DashboardHeader'
 import {
   getAllCourses,
   addCourse,
   updateCourse,
   deleteCourse,
   publishCourse,
-} from '../utils/api'
+} from '../../../utils/api'
 import {
   FaEye,
   FaEdit,
@@ -20,6 +20,8 @@ import {
 } from 'react-icons/fa'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import { useNavigate } from 'react-router-dom'
+import AddCourse from './AddCourse'
 
 const initialCourse = {
   title: '',
@@ -153,6 +155,13 @@ const CoursesDashboard = () => {
     }
   }
 
+  // Tambahkan state untuk stepper
+  const [addStep, setAddStep] = useState(1)
+  const totalAddSteps = 3
+
+  // Tambahkan state spendTime
+  const [spendTime, setSpendTime] = useState('')
+
   useEffect(() => {
     fetchCourses()
   }, [])
@@ -246,18 +255,40 @@ const CoursesDashboard = () => {
     e.preventDefault()
     setFormLoading(true)
     setFormError(null)
-    // Validasi harga
-    if (!form.price || Number(form.price) === 0) {
-      setFormLoading(false)
-      setFormError('Price must be greater than 0')
-      toast.error('Harga harus lebih dari 0')
-      return
-    }
     try {
       if (showAdd) {
-        await addCourse(form)
-        setSuccessMsg('Course added!')
-        toast.success('Course berhasil ditambahkan!')
+        const payload = {
+          title: form.title,
+          description: form.description,
+          category: form.category,
+          sub_category: form.sub_category,
+        }
+        let newCourse = null
+        try {
+          const res = await addCourse(payload)
+          newCourse = res
+        } catch (err) {
+          // Jika gagal, simulasikan dummy
+          newCourse = {
+            id: Date.now(),
+            title: form.title,
+            description: form.description,
+            category: form.category,
+            sub_category: form.sub_category,
+            created_by: 'dummy',
+            students_count: 0,
+            is_published: false,
+          }
+          setCourses((prev) => [newCourse, ...prev])
+          setSuccessMsg('Dummy course added (offline)!')
+          toast.success('Dummy course added (offline)!')
+          setTimeout(() => setSuccessMsg(null), 2000)
+        }
+        setShowAdd(false)
+        setShowEdit(false)
+        // Redirect ke PlanCourse dengan data course baru
+        navigate('/plan-course', { state: { course: newCourse } })
+        return
       } else if (showEdit && editId) {
         await updateCourse(editId, form)
         setSuccessMsg('Course updated!')
@@ -388,6 +419,32 @@ const CoursesDashboard = () => {
   }
 
   const [fetchError, setFetchError] = useState(false)
+
+  // Reset spendTime saat modal add dibuka/ditutup
+  useEffect(() => {
+    if (showAdd) {
+      setAddStep(1)
+      setSpendTime('')
+    }
+  }, [showAdd])
+
+  const handleNextAddStep = () => {
+    // Validasi tiap step
+    if (addStep === 1 && !form.title.trim()) {
+      toast.error('Title is required')
+      return
+    }
+    if (addStep === 2 && !form.description.trim()) {
+      toast.error('Description is required')
+      return
+    }
+    if (addStep === 3 && !form.category.trim()) {
+      toast.error('Category is required')
+      return
+    }
+    setAddStep((s) => Math.min(totalAddSteps, s + 1))
+  }
+  const handleBackAddStep = () => setAddStep((s) => Math.max(1, s - 1))
 
   if (error && courses.length === 0) {
     return (
@@ -523,116 +580,19 @@ const CoursesDashboard = () => {
               </div>
             )}
             {/* Add/Edit Course Modal */}
-            {(showAdd || showEdit) && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-                <div
-                  className="bg-white rounded-xl shadow-lg p-8 w-full max-w-lg relative"
-                  ref={modalRef}
-                >
-                  <button
-                    className="absolute top-2 right-3 text-gray-400 hover:text-pink-600 text-2xl font-bold"
-                    onClick={closeModal}
-                  >
-                    ×
-                  </button>
-                  <h2 className="text-lg font-bold mb-4 text-pink-700">
-                    {showAdd ? 'Add Course' : 'Edit Course'}
-                  </h2>
-                  <form
-                    onSubmit={handleFormSubmit}
-                    className="flex flex-col gap-4"
-                  >
-                    <input
-                      type="text"
-                      name="title"
-                      value={form.title}
-                      onChange={handleFormChange}
-                      placeholder="Title"
-                      className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200"
-                      required
-                      autoFocus
-                    />
-                    <textarea
-                      name="description"
-                      value={form.description}
-                      onChange={handleFormChange}
-                      placeholder="Description"
-                      className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200"
-                      rows={2}
-                      required
-                    />
-                    {/* Price input with Rp prefix */}
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                        Rp
-                      </span>
-                      <input
-                        type="text"
-                        name="price"
-                        value={formatPrice(form.price)}
-                        onChange={handleFormChange}
-                        placeholder="Contoh: 500000"
-                        className="pl-10 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200 text-right"
-                        min={0}
-                        required
-                      />
-                    </div>
-                    <div className="text-xs text-gray-400 mt-1 ml-1">
-                      Masukkan harga tanpa titik/koma, hanya angka
-                    </div>
-                    {formError && formError.toLowerCase().includes('price') && (
-                      <div className="text-red-500 text-xs mt-1 ml-1">
-                        {formError}
-                      </div>
-                    )}
-                    <input
-                      type="text"
-                      name="category"
-                      value={form.category}
-                      onChange={handleFormChange}
-                      placeholder="Category"
-                      className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200"
-                    />
-                    <input
-                      type="text"
-                      name="sub_category"
-                      value={form.sub_category}
-                      onChange={handleFormChange}
-                      placeholder="Sub Category"
-                      className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200"
-                    />
-                    <input
-                      type="text"
-                      name="thumbnail"
-                      value={form.thumbnail}
-                      onChange={handleFormChange}
-                      placeholder="Thumbnail (URL or path)"
-                      className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200"
-                    />
-                    <div className="flex gap-3 mt-2">
-                      <button
-                        type="submit"
-                        className="bg-pink-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-pink-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                        disabled={formLoading}
-                      >
-                        {formLoading ? 'Saving...' : showAdd ? 'Add' : 'Save'}
-                      </button>
-                      <button
-                        type="button"
-                        className="px-6 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100"
-                        onClick={closeModal}
-                        disabled={formLoading}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                    {formError && (
-                      <div className="text-red-500 mt-2">{formError}</div>
-                    )}
-                  </form>
-                </div>
-              </div>
-            )}
+            <AddCourse
+              form={form}
+              formError={formError}
+              formLoading={formLoading}
+              addStep={addStep}
+              totalAddSteps={totalAddSteps}
+              handleFormChange={handleFormChange}
+              handleFormSubmit={handleFormSubmit}
+              handleNextAddStep={handleNextAddStep}
+              handleBackAddStep={handleBackAddStep}
+              closeModal={closeModal}
+              showAdd={showAdd}
+            />
             {!loading && !error && filteredBySearch.length > 0 && (
               <>
                 {/* Filter & Sort Controls */}

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import Sidebar from '../components/Sidebar'
-import DashboardHeader from '../components/DashboardHeader'
+import Sidebar from '../../components/Sidebar'
+import DashboardHeader from '../../components/DashboardHeader'
 import {
   getAllFAQ,
   addFAQ,
@@ -10,7 +10,7 @@ import {
   addPartner,
   deletePartner,
   updatePartner,
-} from '../utils/api'
+} from '../../utils/api'
 import { FaTrash, FaEdit } from 'react-icons/fa'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'

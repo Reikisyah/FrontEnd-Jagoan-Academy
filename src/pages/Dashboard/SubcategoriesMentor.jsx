@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import DashboardHeader from '../components/DashboardHeader'
+import DashboardHeader from '../../components/DashboardHeader'
 import {
   getAllSubcategories,
   addSubcategory,
   updateSubcategory,
   deleteSubcategory,
-} from '../utils/api'
+} from '../../utils/api'
 import { FaEdit, FaTrash, FaGripVertical } from 'react-icons/fa'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 import { toast, ToastContainer } from 'react-toastify'

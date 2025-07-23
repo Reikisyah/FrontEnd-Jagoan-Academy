@@ -4,9 +4,9 @@ import {
   deleteCategory,
   updateCategory,
   addCategory as addCategoryAPI,
-} from '../utils/api'
-import Sidebar from '../components/Sidebar'
-import DashboardHeader from '../components/DashboardHeader'
+} from '../../utils/api'
+import Sidebar from '../../components/Sidebar'
+import DashboardHeader from '../../components/DashboardHeader'
 import { FaEdit, FaTrash } from 'react-icons/fa'
 import { FaGripVertical } from 'react-icons/fa'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
