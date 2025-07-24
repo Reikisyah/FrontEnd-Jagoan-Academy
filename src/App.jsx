@@ -2,7 +2,7 @@ import React from 'react'
 
 import HeroSection from './pages/Homepage/HeroSection'
 import Mengapa from './pages/Homepage/Mengapa'
-import Courses from './pages/Homepage/Courses'
+import Courses from './pages/Homepage/Course/Courses'
 import Pengalaman from './pages/Homepage/Pengalaman'
 import Partner from './pages/Homepage/Partner'
 import Testimonial from './pages/Homepage/Testimonial'
@@ -25,6 +25,7 @@ import Promotions from './pages/Dashboard/PlanCourse/Promotions'
 import Coupons from './pages/Dashboard/PlanCourse/Coupons'
 import Reviews from './pages/Dashboard/PlanCourse/Reviews'
 import Curriculum from './pages/Dashboard/PlanCourse/Curriculum'
+import DetailCourse from './pages/Homepage/Course/DetailCourse'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
@@ -88,6 +89,7 @@ function AppRoutes() {
                 </main>
               }
             />
+            <Route path="/course/:id" element={<DetailCourse />} />
             <Route
               path="/dashboard"
               element={<Dashboard hideNavbarFooter={true} />}
@@ -118,10 +120,8 @@ function AppRoutes() {
                 </div>
               }
             />
-            <Route
-              path="/courses"
-              element={<div className="p-10">Courses Page (Coming Soon)</div>}
-            />
+            <Route path="/courses" element={<Courses />} />
+            <Route path="/courses/:id" element={<DetailCourse />} />
             <Route path="/categories" element={<Categories />} />
             <Route
               path="/subcategories"

@@ -1,8 +1,8 @@
+//Courses.jsx
 import React, { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { createPortal } from 'react-dom'
-import { getAllCourses } from '../../utils/api'
-import { toast, ToastContainer } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
+import { getAllCourses } from '../../../utils/api'
 
 // Fallback course data in case of API failure
 const fallbackCourseData = [
@@ -100,6 +100,7 @@ const fallbackSvg =
   'data:image/svg+xml;utf8,<svg width="400" height="200" xmlns="http://www.w3.org/2000/svg"><rect fill="%23f3f4f6" width="400" height="200"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%239ca3af" font-size="20">No Image</text></svg>'
 
 const CourseCard = ({ course }) => {
+  const navigate = useNavigate()
   // Helper for image URL (from BE: course.thumbnail)
   const getImageUrl = (url) => {
     if (
@@ -148,7 +149,11 @@ const CourseCard = ({ course }) => {
   )
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-200 p-3 sm:p-4 w-full max-w-[280px] min-h-[320px] sm:min-h-[340px] flex flex-col cursor-pointer h-full mx-auto relative">
+    <div
+      className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-200 p-3 sm:p-4 w-full max-w-[280px] min-h-[320px] sm:min-h-[340px] flex flex-col cursor-pointer h-full mx-auto relative"
+      onClick={() => navigate(`/courses/${course.id}`)}
+      style={{ cursor: 'pointer' }}
+    >
       {/* Badge publish status */}
       <div className="absolute top-2 right-2">
         {course.is_published ? (
@@ -233,22 +238,18 @@ const Courses = () => {
     left: 0,
     width: 0,
   })
-  const [fetchError, setFetchError] = useState(false)
 
   // Fetch courses from API
   const fetchCourses = async () => {
     setLoading(true)
     setError(null)
-    setFetchError(false)
     try {
       const data = await getAllCourses()
       setCourses(data.length > 0 ? data : fallbackCourseData)
-      if (data.length === 0) setFetchError(true)
     } catch (err) {
-      setError('Gagal memuat data kursus.')
-      setCourses([])
-      setFetchError(true)
-      toast.error('Gagal memuat data kursus!')
+      console.error('Error fetching courses:', err)
+      setError('Gagal memuat data kursus. Menampilkan data contoh...')
+      setCourses(fallbackCourseData)
     } finally {
       setLoading(false)
     }
@@ -346,34 +347,45 @@ const Courses = () => {
   }
 
   // Error state
-  if (error && courses.length === 0) {
+  if (error) {
     return (
-      <React.Fragment>
-        <ToastContainer
-          position="top-right"
-          autoClose={2000}
-          hideProgressBar
-          newestOnTop
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-        />
-        <section className="w-full py-8 sm:py-12 lg:py-16 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center min-h-[300px]">
-            <p className="text-red-600 text-lg font-bold mb-4">
-              Courses gagal ditemukan.
-            </p>
-            <button
-              onClick={fetchCourses}
-              className="bg-pink-600 text-white px-4 py-2 rounded hover:bg-pink-700"
-            >
-              Coba Lagi
+      <section className="w-full py-8 sm:py-12 lg:py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center text-gray-900 mb-4 sm:mb-6">
+            Jelajahi Kursus Populer Kami
+          </h2>
+          <p className="text-center text-gray-500 mb-6 sm:mb-8 lg:mb-10 max-w-3xl mx-auto text-sm sm:text-base lg:text-lg leading-relaxed px-4 sm:px-0">
+            Dari keahlian{' '}
+            <span className="font-semibold text-gray-900">penting</span> hingga
+            topik teknis, Jagoan Academy mendukung pengembangan profesional
+            Anda.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mb-8 sm:mb-10 px-4 sm:px-0">
+            <button className="px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-pink-600 text-white font-semibold shadow-md hover:bg-pink-700 hover:shadow-lg transition-all duration-200 text-sm sm:text-base">
+              Semua
+            </button>
+            <button className="px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-gray-100 text-gray-700 font-semibold border border-gray-300 hover:bg-gray-200 hover:border-gray-400 transition-all duration-200 text-sm sm:text-base">
+              Bisnis (0)
             </button>
           </div>
-        </section>
-      </React.Fragment>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 justify-items-center">
+            {[...Array(4)].map((_, i) => (
+              <div
+                key={i}
+                className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 w-full max-w-[280px] min-h-[320px] sm:min-h-[340px] flex flex-col animate-pulse"
+              >
+                <div className="h-[140px] w-full rounded-lg bg-gray-200 mb-3" />
+                <div className="h-5 bg-gray-200 rounded w-2/3 mb-2" />
+                <div className="h-4 bg-gray-100 rounded w-1/2 mb-1" />
+                <div className="h-4 bg-gray-100 rounded w-1/3 mb-2" />
+                <div className="h-4 bg-gray-100 rounded w-1/4 mb-2" />
+                <div className="flex-1" />
+                <div className="h-6 w-24 bg-gray-200 rounded mt-2" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
     )
   }
 
@@ -410,141 +422,127 @@ const Courses = () => {
   }
 
   return (
-    <React.Fragment>
-      <ToastContainer
-        position="top-right"
-        autoClose={2000}
-        hideProgressBar
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
-      <section className="w-full py-8 sm:py-12 lg:py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center text-gray-900 mb-4 sm:mb-6">
-            Jelajahi Kursus Populer Kami
-          </h2>
-          <p className="text-center text-gray-500 mb-6 sm:mb-8 lg:mb-10 max-w-3xl mx-auto text-sm sm:text-base lg:text-lg leading-relaxed px-4 sm:px-0">
-            Dari keahlian{' '}
-            <span className="font-semibold text-gray-900">penting</span> hingga
-            topik teknis, Jagoan Academy mendukung pengembangan profesional
-            Anda.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mb-8 sm:mb-10 px-4 sm:px-0">
-            <button className="px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-pink-600 text-white font-semibold shadow-md hover:bg-pink-700 hover:shadow-lg transition-all duration-200 text-sm sm:text-base">
-              Semua
-            </button>
-            <button className="px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-gray-100 text-gray-700 font-semibold border border-gray-300 hover:bg-gray-200 hover:border-gray-400 transition-all duration-200 text-sm sm:text-base">
-              Bisnis (0)
-            </button>
-          </div>
-          <div className="relative">
-            {/* Slider arrows - Hidden on mobile */}
-            {!showAll && (
-              <>
-                <button
-                  className={`hidden lg:flex absolute left-[-30px] top-1/2 -translate-y-1/2 bg-white border border-gray-200 shadow rounded-full w-10 h-10 items-center justify-center text-gray-500 hover:text-pink-500 z-10 ${!canSlideLeft ? 'opacity-0 pointer-events-none' : ''}`}
-                  onClick={() => handleSlide(-1)}
-                  disabled={!canSlideLeft || animating}
-                  aria-label="Sebelumnya"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M15 19l-7-7 7-7"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
-                <button
-                  className={`hidden lg:flex absolute right-[-30px] top-1/2 -translate-y-1/2 bg-white border border-gray-200 shadow rounded-full w-10 h-10 items-center justify-center text-gray-500 hover:text-pink-500 z-10 ${!canSlideRight ? 'opacity-0 pointer-events-none' : ''}`}
-                  onClick={() => handleSlide(1)}
-                  disabled={!canSlideRight || animating}
-                  aria-label="Selanjutnya"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M9 5l7 7-7 7"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
-              </>
-            )}
-            {/* Card grid/slider */}
-            {!showAll ? (
-              <div
-                className="overflow-hidden"
-                style={{ maxWidth: '1100px', margin: '0 auto' }}
+    <section className="w-full py-8 sm:py-12 lg:py-16 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center text-gray-900 mb-4 sm:mb-6">
+          Jelajahi Kursus Populer Kami
+        </h2>
+        <p className="text-center text-gray-500 mb-6 sm:mb-8 lg:mb-10 max-w-3xl mx-auto text-sm sm:text-base lg:text-lg leading-relaxed px-4 sm:px-0">
+          Dari keahlian{' '}
+          <span className="font-semibold text-gray-900">penting</span> hingga
+          topik teknis, Jagoan Academy mendukung pengembangan profesional Anda.
+        </p>
+        <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mb-8 sm:mb-10 px-4 sm:px-0">
+          <button className="px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-pink-600 text-white font-semibold shadow-md hover:bg-pink-700 hover:shadow-lg transition-all duration-200 text-sm sm:text-base">
+            Semua
+          </button>
+          <button className="px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-gray-100 text-gray-700 font-semibold border border-gray-300 hover:bg-gray-200 hover:border-gray-400 transition-all duration-200 text-sm sm:text-base">
+            Bisnis (0)
+          </button>
+        </div>
+        <div className="relative">
+          {/* Slider arrows - Hidden on mobile */}
+          {!showAll && (
+            <>
+              <button
+                className={`hidden lg:flex absolute left-[-30px] top-1/2 -translate-y-1/2 bg-white border border-gray-200 shadow rounded-full w-10 h-10 items-center justify-center text-gray-500 hover:text-pink-500 z-10 ${!canSlideLeft ? 'opacity-0 pointer-events-none' : ''}`}
+                onClick={() => handleSlide(-1)}
+                disabled={!canSlideLeft || animating}
+                aria-label="Sebelumnya"
               >
-                <div
-                  className={
-                    `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 justify-items-center transition-all duration-500 ease-in-out ` +
-                    (slideDir === -1 ? 'opacity-0 -translate-x-8' : '') +
-                    (slideDir === 1 ? 'opacity-0 translate-x-8' : '') +
-                    (slideDir === 0 ? 'opacity-100 translate-x-0' : '')
-                  }
-                  onTransitionEnd={() => setSlideDir(0)}
+                <svg
+                  width="24"
+                  height="24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
                 >
-                  {visibleCourses.map((course, idx) => (
-                    <CourseCard key={course.id || idx} course={course} />
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 justify-items-center opacity-0 animate-fade-in">
-                {courses.map((course, idx) => (
+                  <path
+                    d="M15 19l-7-7 7-7"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+              <button
+                className={`hidden lg:flex absolute right-[-30px] top-1/2 -translate-y-1/2 bg-white border border-gray-200 shadow rounded-full w-10 h-10 items-center justify-center text-gray-500 hover:text-pink-500 z-10 ${!canSlideRight ? 'opacity-0 pointer-events-none' : ''}`}
+                onClick={() => handleSlide(1)}
+                disabled={!canSlideRight || animating}
+                aria-label="Selanjutnya"
+              >
+                <svg
+                  width="24"
+                  height="24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M9 5l7 7-7 7"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            </>
+          )}
+          {/* Card grid/slider */}
+          {!showAll ? (
+            <div
+              className="overflow-hidden"
+              style={{ maxWidth: '1100px', margin: '0 auto' }}
+            >
+              <div
+                className={
+                  `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 justify-items-center transition-all duration-500 ease-in-out ` +
+                  (slideDir === -1 ? 'opacity-0 -translate-x-8' : '') +
+                  (slideDir === 1 ? 'opacity-0 translate-x-8' : '') +
+                  (slideDir === 0 ? 'opacity-100 translate-x-0' : '')
+                }
+                onTransitionEnd={() => setSlideDir(0)}
+              >
+                {visibleCourses.map((course, idx) => (
                   <CourseCard key={course.id || idx} course={course} />
                 ))}
               </div>
-            )}
-            {/* Hover Detail Card */}
-            {hoveredCourse &&
-              createPortal(
-                <CourseHoverDetail
-                  course={hoveredCourse}
-                  position={hoveredCardPos}
-                  onClose={() => setHoveredCourse(null)}
-                />,
-                document.body,
-              )}
-          </div>
-          {/* View All Button */}
-          <div className="flex justify-center mt-8 sm:mt-10">
-            <div className="relative">
-              <button
-                className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full font-semibold shadow-md hover:shadow-lg transition-all duration-300 text-xs sm:text-sm transform hover:scale-105 ${
-                  !showAll
-                    ? 'bg-pink-600 text-white hover:bg-pink-700 opacity-100'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300 opacity-100'
-                }`}
-                onClick={!showAll ? handleViewAll : handleCloseAll}
-              >
-                {!showAll ? 'View All' : 'Tutup'}
-              </button>
             </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 justify-items-center opacity-0 animate-fade-in">
+              {courses.map((course, idx) => (
+                <CourseCard key={course.id || idx} course={course} />
+              ))}
+            </div>
+          )}
+          {/* Hover Detail Card */}
+          {hoveredCourse &&
+            createPortal(
+              <CourseHoverDetail
+                course={hoveredCourse}
+                position={hoveredCardPos}
+                onClose={() => setHoveredCourse(null)}
+              />,
+              document.body,
+            )}
+        </div>
+        {/* View All Button */}
+        <div className="flex justify-center mt-8 sm:mt-10">
+          <div className="relative">
+            <button
+              className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full font-semibold shadow-md hover:shadow-lg transition-all duration-300 text-xs sm:text-sm transform hover:scale-105 ${
+                !showAll
+                  ? 'bg-pink-600 text-white hover:bg-pink-700 opacity-100'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300 opacity-100'
+              }`}
+              onClick={!showAll ? handleViewAll : handleCloseAll}
+            >
+              {!showAll ? 'View All' : 'Tutup'}
+            </button>
           </div>
         </div>
-      </section>
-    </React.Fragment>
+      </div>
+    </section>
   )
 }
 

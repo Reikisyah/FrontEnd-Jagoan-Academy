@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://lms.alanwari.ponpes.id/api'
+export const API_BASE_URL = 'https://lms.alanwari.ponpes.id/api'
 
 // Register peserta/mentor
 export async function register(data) {

@@ -1,3 +1,9 @@
+/* Custom sticky for sticky card */
+.sticky-custom {
+  position: sticky;
+  top: 6rem; /* 96px, set sesuai kebutuhan agar tidak tertutup navbar */
+    z-index:  30;
+}
 
 @tailwind base;
 @tailwind components;
