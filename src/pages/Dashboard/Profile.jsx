@@ -48,8 +48,16 @@ const Profile = () => {
           linkedin: data.linkedin || '',
           instagram: data.instagram || '',
         }
+      } else if (userRole === 'admin') {
+        // Admin - hanya email, no hp, tanggal lahir, alamat
+        formData = {
+          email: data.email || '',
+          phone_number: data.phone_number || '',
+          date_of_birth: data.date_of_birth ? data.date_of_birth.slice(0, 10) : '',
+          address: data.address || '',
+        }
       } else {
-        // Mentor/Admin
+        // Mentor
         formData = {
           name: data.name || '',
           email: data.email || '',
@@ -94,7 +102,7 @@ const Profile = () => {
     setUpdateSuccess(null)
     try {
       const token = localStorage.getItem('token')
-      if (!form.name.trim()) throw new Error('Nama wajib diisi')
+      if (userRole !== 'admin' && !form.name.trim()) throw new Error('Nama wajib diisi')
       if (!form.email.includes('@')) throw new Error('Email tidak valid')
       
       let payload = {}
@@ -113,8 +121,32 @@ const Profile = () => {
         }
         const res = await updateProfileParticipant(payload, token)
         setUpdateSuccess('Profile berhasil diupdate!')
+      } else if (userRole === 'admin') {
+        // Admin - hanya email, no hp, tanggal lahir, alamat
+        payload = {
+          email: form.email,
+          phone_number: form.phone_number,
+          date_of_birth: form.date_of_birth,
+          address: form.address,
+          // Field tambahan untuk kompatibilitas backend
+          name: profile.name,
+          linkedin: '',
+          instagram: '',
+          skill: [],
+          job_role: '',
+          bio: '',
+          experience: 0,
+          contributions: [],
+          achievements: [],
+        }
+        // Jika ada file upload (foto profil)
+        if (form.profile && form.profile instanceof File) {
+          payload.profile = form.profile;
+        }
+        const res = await updateProfileMentor(payload, token)
+        setUpdateSuccess('Profile berhasil diupdate!')
       } else {
-        // Mentor/Admin
+        // Mentor
         payload = {
           name: form.name,
           email: form.email,
@@ -238,6 +270,293 @@ const Profile = () => {
     profile.profile.length > 0
   ) {
     profilePic = `${API_BASE_URL}/${profile.profile[0].path}`
+  }
+
+  // Admin view
+  if (userRole === 'admin') {
+    return (
+      <div className="flex min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        <Sidebar />
+        <div className="flex-1 flex flex-col">
+          <DashboardHeader />
+          <div className="flex-1 p-6">
+            <div className="max-w-4xl mx-auto">
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                {/* Header dengan gradient */}
+                <div className="bg-gradient-to-r from-pink-500 to-pink-600 px-8 py-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                        <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h1 className="text-2xl font-bold text-white">Profil Admin</h1>
+                        <p className="text-pink-100 text-sm capitalize">Administrator</p>
+                      </div>
+                    </div>
+                    {!editMode && (
+                      <button
+                        onClick={() => setEditMode(true)}
+                        className="bg-white/20 backdrop-blur-sm text-white px-6 py-2.5 rounded-xl hover:bg-white/30 transition-all duration-200 flex items-center space-x-2"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        <span>Edit Profil</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="p-8">
+                  {/* Profile Photo Section */}
+                  <div className="mb-8 text-center">
+                    <div className="relative inline-block">
+                      <div className="w-32 h-32 mx-auto bg-gradient-to-br from-pink-400 to-pink-500 rounded-full flex items-center justify-center shadow-lg overflow-hidden">
+                        {form.profile && form.profile instanceof File ? (
+                          <img
+                            src={URL.createObjectURL(form.profile)}
+                            alt="Profile Preview"
+                            className="w-full h-full rounded-full object-cover"
+                          />
+                        ) : profile?.profile_photo ? (
+                          <img
+                            src={`${API_BASE_URL}${profile.profile_photo}`}
+                            alt="Profile"
+                            className="w-full h-full rounded-full object-cover"
+                          />
+                        ) : (
+                          <svg className="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                      </div>
+                      <label className="absolute bottom-0 right-0 bg-pink-600 text-white p-2 rounded-full shadow-lg hover:bg-pink-700 transition-colors cursor-pointer">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files[0]
+                            if (file) {
+                              // Validasi ukuran file (max 5MB)
+                              if (file.size > 5 * 1024 * 1024) {
+                                setUpdateError('Ukuran file terlalu besar. Maksimal 5MB.')
+                                return
+                              }
+                              // Validasi tipe file
+                              if (!file.type.startsWith('image/')) {
+                                setUpdateError('File harus berupa gambar.')
+                                return
+                              }
+                              setUpdateError(null)
+                              setForm({ ...form, profile: file })
+                            }
+                          }}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                    <h2 className="mt-4 text-xl font-semibold text-gray-900">{profile?.name || 'Admin'}</h2>
+                    <p className="text-gray-500">{profile?.email}</p>
+                  </div>
+
+                  {/* Form atau Display Mode */}
+                  {editMode ? (
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                      {/* Email */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                            </svg>
+                            Email
+                          </label>
+                          <input
+                            type="email"
+                            name="email"
+                            value={form.email || ''}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200"
+                            required
+                          />
+                        </div>
+
+                        {/* No HP */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                            </svg>
+                            No. HP
+                          </label>
+                          <input
+                            type="tel"
+                            name="phone_number"
+                            value={form.phone_number || ''}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Tanggal Lahir */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            Tanggal Lahir
+                          </label>
+                          <input
+                            type="date"
+                            name="date_of_birth"
+                            value={form.date_of_birth || ''}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200"
+                          />
+                        </div>
+
+                        {/* Alamat */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            Alamat
+                          </label>
+                          <textarea
+                            name="address"
+                            value={form.address || ''}
+                            onChange={handleChange}
+                            rows={3}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 resize-none"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Buttons */}
+                      <div className="flex gap-4 pt-6">
+                        <button
+                          type="submit"
+                          disabled={updateLoading || !isFormChanged()}
+                          className="flex-1 bg-gradient-to-r from-pink-500 to-pink-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-pink-600 hover:to-pink-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                        >
+                          {updateLoading ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                              Menyimpan...
+                            </>
+                          ) : (
+                            'Simpan Perubahan'
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditMode(false)}
+                          disabled={updateLoading}
+                          className="px-6 py-3 rounded-xl border border-gray-300 text-gray-600 hover:bg-gray-100 transition-all duration-200 disabled:opacity-50"
+                        >
+                          Batal
+                        </button>
+                      </div>
+
+                      {/* Success/Error Messages */}
+                      {updateSuccess && (
+                        <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-green-800">
+                          <div className="flex items-center">
+                            <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                            {updateSuccess}
+                          </div>
+                        </div>
+                      )}
+                      {updateError && (
+                        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-800">
+                          <div className="flex items-center">
+                            <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                            </svg>
+                            {updateError}
+                          </div>
+                        </div>
+                      )}
+                    </form>
+                  ) : (
+                    /* Display Mode */
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Email */}
+                        <div className="bg-gray-50 rounded-xl p-4">
+                          <div className="flex items-center mb-2">
+                            <svg className="w-5 h-5 text-pink-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                            </svg>
+                            <span className="text-sm font-medium text-gray-700">Email</span>
+                          </div>
+                          <p className="text-gray-900 font-semibold">{profile?.email || '-'}</p>
+                        </div>
+
+                        {/* No HP */}
+                        <div className="bg-gray-50 rounded-xl p-4">
+                          <div className="flex items-center mb-2">
+                            <svg className="w-5 h-5 text-pink-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                            </svg>
+                            <span className="text-sm font-medium text-gray-700">No. HP</span>
+                          </div>
+                          <p className="text-gray-900 font-semibold">{profile?.phone_number || '-'}</p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Tanggal Lahir */}
+                        <div className="bg-gray-50 rounded-xl p-4">
+                          <div className="flex items-center mb-2">
+                            <svg className="w-5 h-5 text-pink-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <span className="text-sm font-medium text-gray-700">Tanggal Lahir</span>
+                          </div>
+                          <p className="text-gray-900 font-semibold">
+                            {profile?.date_of_birth ? new Date(profile.date_of_birth).toLocaleDateString('id-ID', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            }) : '-'}
+                          </p>
+                        </div>
+
+                        {/* Alamat */}
+                        <div className="bg-gray-50 rounded-xl p-4">
+                          <div className="flex items-center mb-2">
+                            <svg className="w-5 h-5 text-pink-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span className="text-sm font-medium text-gray-700">Alamat</span>
+                          </div>
+                          <p className="text-gray-900 font-semibold">{profile?.address || '-'}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (userRole === 'participant') {
