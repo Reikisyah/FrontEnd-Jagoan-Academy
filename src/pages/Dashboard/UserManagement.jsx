@@ -5,10 +5,12 @@ import {
   updateUser,
   deleteUser,
   changeUserRole,
-} from '../../utils/api'
+} from '../../utils/api/userApi'
 import { FaEdit, FaTrash, FaUserShield, FaCheck, FaTimes } from 'react-icons/fa'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import Swal from 'sweetalert2'
+import 'sweetalert2/dist/sweetalert2.min.css'
 
 const UserManagement = () => {
   const [users, setUsers] = useState([])
@@ -120,17 +122,41 @@ const UserManagement = () => {
     setDeleteUserId(null)
   }
   const handleDelete = async () => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'Delete this user?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#e11d48',
+      cancelButtonColor: '#aaa',
+      confirmButtonText: 'Yes',
+      customClass: { popup: 'rounded-xl' },
+    })
+    if (!result.isConfirmed) return
     setDeleteLoading(true)
     try {
       await deleteUser(deleteUserId)
       setSuccessMsg('User deleted!')
+      await Swal.fire({
+        icon: 'success',
+        title: 'User deleted!',
+        showConfirmButton: false,
+        timer: 1200,
+        customClass: { popup: 'rounded-xl' },
+        position: 'center',
+      })
       fetchUsers()
       setShowDelete(false)
       setTimeout(() => setSuccessMsg(null), 2000)
-      toast.success('User deleted successfully!')
     } catch (err) {
       setError(err.message)
-      toast.error(err.message)
+      await Swal.fire({
+        icon: 'error',
+        title: 'Failed to delete user',
+        text: err.message,
+        confirmButtonColor: '#e11d48',
+        customClass: { popup: 'rounded-xl' },
+      })
     } finally {
       setDeleteLoading(false)
     }

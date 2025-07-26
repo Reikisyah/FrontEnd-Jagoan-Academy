@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import CardDetailCourse from './CardDetailCourse'
 import DropdownSection from './DropdownSection'
 import { useParams } from 'react-router-dom'
-import { API_BASE_URL } from '../../../utils/api'
+import { API_BASE_URL } from '../../../utils/api/baseApi'
 
 const DetailCourse = () => {
   const { id } = useParams()

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { getAllPartners } from '../../utils/api'
+import { getAllPartners } from '../../utils/api/partnerApi'
 
 const Partner = () => {
   const [partners, setPartners] = useState([])

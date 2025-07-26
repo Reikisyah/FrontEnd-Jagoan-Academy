@@ -20,6 +20,10 @@ const Footer = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  const isStartCoursePage =
+    typeof window !== 'undefined' &&
+    window.location.pathname.includes('/student/course')
+
   return (
     <footer className="bg-[#101828] text-gray-300 pt-8 sm:pt-10 lg:pt-12 pb-6 px-4 sm:px-6 lg:px-8 xl:px-16 mt-8 sm:mt-12 lg:mt-16 w-full">
       <div className="max-w-7xl mx-auto">
@@ -181,37 +185,39 @@ const Footer = () => {
         </div>
       </div>
       {/* Scroll Up Button */}
-      <button
-        onClick={scrollToTop}
-        className={`fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-50 transition-all duration-500 focus:outline-none hover:scale-110
-          ${showScroll ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-8 pointer-events-none'}`}
-        aria-label="Scroll to top"
-      >
-        <span className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white border-4 border-pink-500 shadow-lg hover:shadow-xl transition-all duration-200">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2.5}
-            stroke="#f472b6"
-            className="w-6 h-6 sm:w-7 sm:h-7"
-          >
-            <circle
-              cx="12"
-              cy="12"
-              r="9"
-              stroke="#f472b6"
-              strokeWidth="2.5"
+      {!isStartCoursePage && (
+        <button
+          onClick={scrollToTop}
+          className={`fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-50 transition-all duration-500 focus:outline-none hover:scale-110
+            ${showScroll ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-8 pointer-events-none'}`}
+          aria-label="Scroll to top"
+        >
+          <span className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white border-4 border-pink-500 shadow-lg hover:shadow-xl transition-all duration-200">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
               fill="none"
-            />
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 16V8M12 8l-4 4M12 8l4 4"
-            />
-          </svg>
-        </span>
-      </button>
+              viewBox="0 0 24 24"
+              strokeWidth={2.5}
+              stroke="#f472b6"
+              className="w-6 h-6 sm:w-7 sm:h-7"
+            >
+              <circle
+                cx="12"
+                cy="12"
+                r="9"
+                stroke="#f472b6"
+                strokeWidth="2.5"
+                fill="none"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 16V8M12 8l-4 4M12 8l4 4"
+              />
+            </svg>
+          </span>
+        </button>
+      )}
     </footer>
   )
 }

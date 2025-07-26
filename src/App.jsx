@@ -26,10 +26,18 @@ import Coupons from './pages/Dashboard/PlanCourse/Coupons'
 import Reviews from './pages/Dashboard/PlanCourse/Reviews'
 import Curriculum from './pages/Dashboard/PlanCourse/Curriculum'
 import DetailCourse from './pages/Homepage/Course/DetailCourse'
+import IntendedLearners from './pages/Dashboard/PlanCourse/IntendedLearners'
+import Language from './pages/Dashboard/Language'
+import HelpCenter from './pages/Dashboard/HelpCenter'
+import Discussions from './pages/Dashboard/Discussions'
+import Resources from './pages/Dashboard/Resources'
+import Analytics from './pages/Dashboard/Analytics'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import Sidebar from './components/Sidebar'
+import CourseStudent from './pages/Dashboard/CourseStudent/Course'
+import StartCourse from './pages/Dashboard/CourseStudent/StartCourse'
 
 function AppRoutes() {
   const location = useLocation()
@@ -55,8 +63,13 @@ function AppRoutes() {
     '/plan-course/promotions',
     '/plan-course/coupons',
     '/plan-course/reviews',
+    '/plan-course/intended-learners',
+    '/student/courses',
+    '/student/course', // untuk prefix
   ]
-  const hide = hideNavFooter.includes(location.pathname)
+  const hide = hideNavFooter.some(
+    (p) => location.pathname === p || location.pathname.startsWith(p + '/'),
+  )
   return (
     <>
       {!hide && <Navbar />}
@@ -134,30 +147,11 @@ function AppRoutes() {
                 </div>
               }
             />
-            <Route
-              path="/languages"
-              element={<div className="p-10">Languages Page (Coming Soon)</div>}
-            />
-            <Route
-              path="/discussions"
-              element={
-                <div className="p-10">Discussions Page (Coming Soon)</div>
-              }
-            />
-            <Route
-              path="/resources"
-              element={<div className="p-10">Resources Page (Coming Soon)</div>}
-            />
-            <Route
-              path="/analytics"
-              element={<div className="p-10">Analytics Page (Coming Soon)</div>}
-            />
-            <Route
-              path="/help-center"
-              element={
-                <div className="p-10">Help Center Page (Coming Soon)</div>
-              }
-            />
+            <Route path="/languages" element={<Language />} />
+            <Route path="/discussions" element={<Discussions />} />
+            <Route path="/resources" element={<Resources />} />
+            <Route path="/analytics" element={<Analytics />} />
+            <Route path="/help-center" element={<HelpCenter />} />
             <Route path="/settings" element={<Setting />} />
             <Route path="/plan-course" element={<PlanCourse />} />
             <Route path="/plan-course/curriculum" element={<Curriculum />} />
@@ -169,6 +163,12 @@ function AppRoutes() {
             <Route path="/plan-course/promotions" element={<Promotions />} />
             <Route path="/plan-course/coupons" element={<Coupons />} />
             <Route path="/plan-course/reviews" element={<Reviews />} />
+            <Route
+              path="/plan-course/intended-learners"
+              element={<IntendedLearners />}
+            />
+            <Route path="/student/courses" element={<CourseStudent />} />
+            <Route path="/student/course/:id" element={<StartCourse />} />
           </Routes>
         </div>
         {!hide && <Footer />}

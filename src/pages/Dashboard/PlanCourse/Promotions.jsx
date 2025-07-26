@@ -1,15 +1,25 @@
 import React, { useState } from 'react'
 import DashboardHeader from '../../../components/DashboardHeader'
 import Tab from '../../../components/Tab'
+import Swal from 'sweetalert2'
+import 'sweetalert2/dist/sweetalert2.min.css'
 
 const Promotions = () => {
   const [refLink] = useState(
     'http://localhost:3000/course/2c8610d3-1acd-4db8-8ae5-ca6ddcdc7a4e?ref=yourcode',
   )
   const [copied, setCopied] = useState(false)
-  const handleCopy = () => {
+  const handleCopy = async () => {
     navigator.clipboard.writeText(refLink)
     setCopied(true)
+    await Swal.fire({
+      icon: 'success',
+      title: 'Referral link copied!',
+      showConfirmButton: false,
+      timer: 1200,
+      customClass: { popup: 'rounded-xl' },
+      position: 'center',
+    })
     setTimeout(() => setCopied(false), 1200)
   }
 

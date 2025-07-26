@@ -4,7 +4,7 @@ import {
   deleteCategory,
   updateCategory,
   addCategory as addCategoryAPI,
-} from '../../utils/api'
+} from '../../utils/api/categoryApi'
 import Sidebar from '../../components/Sidebar'
 import DashboardHeader from '../../components/DashboardHeader'
 import { FaEdit, FaTrash } from 'react-icons/fa'
@@ -12,6 +12,8 @@ import { FaGripVertical } from 'react-icons/fa'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import Swal from 'sweetalert2'
+import 'sweetalert2/dist/sweetalert2.min.css'
 
 const Categories = () => {
   const [categories, setCategories] = useState([])
@@ -140,6 +142,17 @@ const Categories = () => {
   }
 
   const handleDelete = async (id) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'Delete this category?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#e11d48',
+      cancelButtonColor: '#aaa',
+      confirmButtonText: 'Yes',
+      customClass: { popup: 'rounded-xl' },
+    })
+    if (!result.isConfirmed) return
     setDeleteLoading(id)
     setDeleteError(null)
     try {
@@ -152,11 +165,24 @@ const Categories = () => {
       setUndoTimeout(timeout)
       fetchCategories()
       setSuccessMsg('Category deleted!')
+      await Swal.fire({
+        icon: 'success',
+        title: 'Category deleted!',
+        showConfirmButton: false,
+        timer: 1200,
+        customClass: { popup: 'rounded-xl' },
+        position: 'center',
+      })
       setTimeout(() => setSuccessMsg(null), 2000)
-      toast.success('Category deleted successfully!')
     } catch (err) {
       setDeleteError(err.message)
-      toast.error(err.message)
+      await Swal.fire({
+        icon: 'error',
+        title: 'Failed to delete category',
+        text: err.message,
+        confirmButtonColor: '#e11d48',
+        customClass: { popup: 'rounded-xl' },
+      })
     } finally {
       setDeleteLoading(null)
     }

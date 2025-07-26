@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { getAllFAQ } from '../../utils/api'
+import { getAllFAQ } from '../../utils/api/faqApi'
 
 const FAQ = () => {
   const [faqData, setFaqData] = useState([])

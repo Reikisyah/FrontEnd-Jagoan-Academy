@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createPortal } from 'react-dom'
-import { getAllCourses } from '../../../utils/api'
+import { getAllCourses } from '../../../utils/api/courseApi'
 
 // Fallback course data in case of API failure
 const fallbackCourseData = [
@@ -263,6 +263,19 @@ const Courses = () => {
   // Handle close all click
   const handleCloseAll = () => {
     setViewAllState('exiting')
+  }
+
+  // Tambahkan handler hapus course (jika belum ada)
+  const handleDeleteCourse = async (id) => {
+    console.log('Klik hapus course dengan id:', id)
+    try {
+      // TODO: Panggil API hapus course jika ada
+      // const resp = await deleteCourse(id)
+      // console.log('Response hapus course:', resp)
+      alert('Fitur hapus course belum diimplementasikan di halaman ini.')
+    } catch (err) {
+      console.error('Error hapus course:', err)
+    }
   }
 
   // Load courses on component mount
