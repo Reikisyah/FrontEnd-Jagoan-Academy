@@ -1,7 +1,15 @@
 import React, { useState } from 'react'
 import Tab from '../../../components/Tab'
 import DashboardHeader from '../../../components/DashboardHeader'
-import { FaTrash, FaGripVertical, FaPlus } from 'react-icons/fa'
+import {
+  FaTrash,
+  FaGripVertical,
+  FaPlus,
+  FaLightbulb,
+  FaUsers,
+  FaCheckCircle,
+  FaArrowRight,
+} from 'react-icons/fa'
 import { updateCourse } from '../../../utils/api/courseApi'
 import Swal from 'sweetalert2'
 import 'sweetalert2/dist/sweetalert2.min.css'
@@ -31,9 +39,6 @@ const IntendedLearners = () => {
   const handleRemoveRequirement = (idx) => {
     setRequirements(requirements.filter((_, i) => i !== idx))
   }
-
-  // Drag & drop (dummy, bisa diintegrasi react-beautiful-dnd jika perlu)
-  // ...
 
   // Pastikan handleSave async
   const handleSave = async (e) => {
@@ -76,124 +81,205 @@ const IntendedLearners = () => {
   }
 
   return (
-    <div className="min-h-screen flex bg-gradient-to-br from-white to-pink-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-pink-50 flex">
       <Tab />
       <div className="flex-1 flex flex-col min-h-screen">
         <DashboardHeader />
-        <div className="flex-1 flex items-center justify-center py-8 px-2">
-          <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-10 max-w-2xl w-full mx-auto">
-            <h2 className="text-2xl font-bold mb-2">Intended learners</h2>
-            <p className="text-gray-500 mb-8">
-              The following descriptions will be publicly visible on your Course
-              Landing Page and will have a direct impact on your course
-              performance. These descriptions will help learners decide if your
-              course is right for them.
-            </p>
-            <form onSubmit={handleSave}>
-              <div className="mb-8">
-                <h3 className="font-bold text-lg mb-2">
-                  What will students learn in your course?
+        <main className="flex-1 p-8">
+          <div className="max-w-4xl mx-auto">
+            {/* Header Section */}
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Intended Learners
+              </h1>
+              <p className="text-gray-600">
+                Define your target audience and what they'll learn from your
+                course
+              </p>
+            </div>
+
+            {/* Progress Indicator */}
+            <div className="mb-8 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Course Setup Progress
                 </h3>
-                <p className="text-gray-500 text-sm mb-4">
-                  You must enter at least 4 learning objectives or outcomes that
-                  learners can expect to achieve after completing your course.
-                </p>
-                <div className="flex flex-col gap-3">
-                  {objectives.map((obj, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center bg-gray-50 rounded-lg border border-gray-200 px-3 py-2"
-                    >
-                      <FaGripVertical className="text-gray-300 mr-2" />
-                      <input
-                        type="text"
-                        className="flex-1 bg-transparent border-none outline-none text-gray-800 text-base"
-                        placeholder={`Learning objective #${idx + 1}`}
-                        value={obj}
-                        onChange={(e) =>
-                          handleObjectiveChange(idx, e.target.value)
-                        }
-                      />
-                      {objectives.length > minObjectives && (
-                        <button
-                          type="button"
-                          className="ml-2 text-red-500 hover:text-red-700"
-                          onClick={() => handleRemoveObjective(idx)}
-                        >
-                          <FaTrash />
-                        </button>
-                      )}
+                <span className="text-sm text-gray-500">Step 2 of 4</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-gradient-to-r from-pink-500 to-pink-600 h-2 rounded-full transition-all duration-500"
+                  style={{ width: '50%' }}
+                ></div>
+              </div>
+              <div className="flex justify-between text-xs text-gray-500 mt-2">
+                <span>Course Info</span>
+                <span className="text-pink-600 font-medium">
+                  Intended Learners
+                </span>
+                <span>Curriculum</span>
+                <span>Publish</span>
+              </div>
+            </div>
+
+            {/* Main Form */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+              <form onSubmit={handleSave} className="space-y-8">
+                {/* Learning Objectives Section */}
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <FaLightbulb className="w-5 h-5 text-blue-600" />
                     </div>
-                  ))}
+                    <div>
+                      <h3 className="text-xl font-semibold text-gray-900">
+                        Learning Objectives
+                      </h3>
+                      <p className="text-gray-500 text-sm">
+                        What will students learn in your course? (Minimum 4
+                        objectives)
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    {objectives.map((obj, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center gap-3 bg-gray-50 rounded-xl border border-gray-200 px-4 py-3 hover:border-gray-300 transition-colors"
+                      >
+                        <FaGripVertical className="text-gray-400 flex-shrink-0" />
+                        <input
+                          type="text"
+                          className="flex-1 bg-transparent border-none outline-none text-gray-800 text-base placeholder-gray-500"
+                          placeholder={`Learning objective #${idx + 1} (e.g., Master Docker containerization fundamentals)`}
+                          value={obj}
+                          onChange={(e) =>
+                            handleObjectiveChange(idx, e.target.value)
+                          }
+                        />
+                        {objectives.length > minObjectives && (
+                          <button
+                            type="button"
+                            className="text-red-500 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition-colors"
+                            onClick={() => handleRemoveObjective(idx)}
+                          >
+                            <FaTrash className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+
+                    <button
+                      type="button"
+                      className="flex items-center gap-2 text-sm font-semibold text-pink-600 hover:text-pink-700 transition-colors"
+                      onClick={handleAddObjective}
+                    >
+                      <FaPlus className="w-4 h-4" />
+                      Add another learning objective
+                    </button>
+                  </div>
+                </div>
+
+                {/* Requirements Section */}
+                <div className="space-y-6 pt-8 border-t border-gray-200">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                      <FaUsers className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-gray-900">
+                        Prerequisites & Requirements
+                      </h3>
+                      <p className="text-gray-500 text-sm">
+                        What should students know before taking your course?
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    {requirements.map((req, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center gap-3 bg-gray-50 rounded-xl border border-gray-200 px-4 py-3 hover:border-gray-300 transition-colors"
+                      >
+                        <FaGripVertical className="text-gray-400 flex-shrink-0" />
+                        <input
+                          type="text"
+                          className="flex-1 bg-transparent border-none outline-none text-gray-800 text-base placeholder-gray-500"
+                          placeholder={`Requirement #${idx + 1} (e.g., Basic programming knowledge)`}
+                          value={req}
+                          onChange={(e) =>
+                            handleRequirementChange(idx, e.target.value)
+                          }
+                        />
+                        {requirements.length > 1 && (
+                          <button
+                            type="button"
+                            className="text-red-500 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition-colors"
+                            onClick={() => handleRemoveRequirement(idx)}
+                          >
+                            <FaTrash className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+
+                    <button
+                      type="button"
+                      className="flex items-center gap-2 text-sm font-semibold text-pink-600 hover:text-pink-700 transition-colors"
+                      onClick={handleAddRequirement}
+                    >
+                      <FaPlus className="w-4 h-4" />
+                      Add another requirement
+                    </button>
+                  </div>
+                </div>
+
+                {/* Tips Section */}
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-100">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-3">
+                    💡 Writing Tips
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
+                    <div className="flex items-start gap-3">
+                      <FaCheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      <p>
+                        Use action verbs like "Learn", "Master", "Build",
+                        "Create"
+                      </p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <FaCheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      <p>Be specific about what students will achieve</p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <FaCheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      <p>
+                        Keep requirements realistic for your target audience
+                      </p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <FaCheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      <p>Focus on skills and knowledge, not just tools</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Submit Button */}
+                <div className="flex justify-end pt-6 border-t border-gray-200">
                   <button
-                    type="button"
-                    className="flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-pink-600 mt-2"
-                    onClick={handleAddObjective}
+                    type="submit"
+                    className="bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-700 hover:to-pink-800 text-white font-semibold px-8 py-3 rounded-xl shadow-lg transition-all duration-200 hover:scale-105 flex items-center gap-2"
                   >
-                    <FaPlus className="text-gray-400" /> Add more to your
-                    response
+                    <span>Save & Continue</span>
+                    <FaArrowRight className="w-4 h-4" />
                   </button>
                 </div>
-              </div>
-              <div className="mb-8">
-                <h3 className="font-bold text-lg mb-2">
-                  What are the requirements or prerequisites for taking your
-                  course?
-                </h3>
-                <p className="text-gray-500 text-sm mb-4">
-                  List the required skills, experience, tools or equipment
-                  learners should have prior to taking your course. If there are
-                  no requirements, use this space as an opportunity to lower the
-                  barrier for beginners.
-                </p>
-                <div className="flex flex-col gap-3">
-                  {requirements.map((req, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center bg-gray-50 rounded-lg border border-gray-200 px-3 py-2"
-                    >
-                      <FaGripVertical className="text-gray-300 mr-2" />
-                      <input
-                        type="text"
-                        className="flex-1 bg-transparent border-none outline-none text-gray-800 text-base"
-                        placeholder={`Requirement #${idx + 1}`}
-                        value={req}
-                        onChange={(e) =>
-                          handleRequirementChange(idx, e.target.value)
-                        }
-                      />
-                      {requirements.length > 1 && (
-                        <button
-                          type="button"
-                          className="ml-2 text-red-500 hover:text-red-700"
-                          onClick={() => handleRemoveRequirement(idx)}
-                        >
-                          <FaTrash />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                  <button
-                    type="button"
-                    className="flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-pink-600 mt-2"
-                    onClick={handleAddRequirement}
-                  >
-                    <FaPlus className="text-gray-400" /> Add more to your
-                    response
-                  </button>
-                </div>
-              </div>
-              <div className="flex justify-end">
-                <button
-                  type="submit"
-                  className="bg-pink-600 hover:bg-pink-700 text-white font-semibold px-8 py-2 rounded-lg shadow text-base"
-                >
-                  Save Changes
-                </button>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
-        </div>
+        </main>
       </div>
     </div>
   )

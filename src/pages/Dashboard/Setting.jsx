@@ -15,7 +15,199 @@ import Swal from 'sweetalert2'
 import 'sweetalert2/dist/sweetalert2.min.css'
 
 const Setting = () => {
-  const [tab, setTab] = useState('faq')
+  // Deteksi role
+  const userRole = localStorage.getItem('role') || 'participant'
+  const userEmail = localStorage.getItem('email') || ''
+
+  // State untuk edit email
+  const [email, setEmail] = useState(userEmail)
+  const [emailLoading, setEmailLoading] = useState(false)
+  const [emailSuccess, setEmailSuccess] = useState(null)
+  const [emailError, setEmailError] = useState(null)
+
+  // State untuk edit password
+  const [oldPassword, setOldPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordLoading, setPasswordLoading] = useState(false)
+  const [passwordSuccess, setPasswordSuccess] = useState(null)
+  const [passwordError, setPasswordError] = useState(null)
+
+  // Simulasi API update email
+  const handleUpdateEmail = async (e) => {
+    e.preventDefault()
+    setEmailLoading(true)
+    setEmailSuccess(null)
+    setEmailError(null)
+    try {
+      // Simulasi delay dan validasi
+      await new Promise((res) => setTimeout(res, 800))
+      if (!email.includes('@')) throw new Error('Email tidak valid')
+      localStorage.setItem('email', email)
+      setEmailSuccess('Email berhasil diupdate!')
+      toast.success('Email berhasil diupdate!')
+    } catch (err) {
+      setEmailError(err.message)
+      toast.error('Gagal update email!')
+    } finally {
+      setEmailLoading(false)
+    }
+  }
+
+  // Simulasi API update password
+  const handleUpdatePassword = async (e) => {
+    e.preventDefault()
+    setPasswordLoading(true)
+    setPasswordSuccess(null)
+    setPasswordError(null)
+    try {
+      // Simulasi validasi
+      await new Promise((res) => setTimeout(res, 800))
+      if (!oldPassword || !newPassword || !confirmPassword)
+        throw new Error('Semua field wajib diisi')
+      if (newPassword.length < 6)
+        throw new Error('Password baru minimal 6 karakter')
+      if (newPassword !== confirmPassword)
+        throw new Error('Konfirmasi password tidak cocok')
+      // Simulasi sukses
+      setPasswordSuccess('Password berhasil diupdate!')
+      setOldPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+      toast.success('Password berhasil diupdate!')
+    } catch (err) {
+      setPasswordError(err.message)
+      toast.error('Gagal update password!')
+    } finally {
+      setPasswordLoading(false)
+    }
+  }
+
+  if (userRole === 'participant') {
+    return (
+      <div className="flex min-h-screen bg-gray-50">
+        <Sidebar />
+        <div className="flex-1 flex flex-col min-h-screen">
+          <DashboardHeader />
+          <div className="flex-1 flex flex-col items-center justify-start py-10 px-4">
+            <div className="max-w-lg w-full">
+              {/* Header Section */}
+              <div className="mb-8">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  Pengaturan Akun
+                </h1>
+                <p className="text-gray-600">
+                  Ubah email dan password akun Anda
+                </p>
+              </div>
+
+              {/* Edit Email */}
+              <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                  Edit Email
+                </h2>
+                <form onSubmit={handleUpdateEmail} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-500 transition-colors"
+                      required
+                    />
+                  </div>
+                  {emailError && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-700 text-sm">
+                      {emailError}
+                    </div>
+                  )}
+                  {emailSuccess && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 text-green-700 text-sm">
+                      {emailSuccess}
+                    </div>
+                  )}
+                  <button
+                    type="submit"
+                    className="bg-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-pink-700 transition-colors flex items-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={emailLoading}
+                  >
+                    {emailLoading ? 'Menyimpan...' : 'Simpan Email'}
+                  </button>
+                </form>
+              </div>
+
+              {/* Edit Password */}
+              <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                  Edit Password
+                </h2>
+                <form onSubmit={handleUpdatePassword} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Password Lama
+                    </label>
+                    <input
+                      type="password"
+                      value={oldPassword}
+                      onChange={(e) => setOldPassword(e.target.value)}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-500 transition-colors"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Password Baru
+                    </label>
+                    <input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-500 transition-colors"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Konfirmasi Password Baru
+                    </label>
+                    <input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-500 transition-colors"
+                      required
+                    />
+                  </div>
+                  {passwordError && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-700 text-sm">
+                      {passwordError}
+                    </div>
+                  )}
+                  {passwordSuccess && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 text-green-700 text-sm">
+                      {passwordSuccess}
+                    </div>
+                  )}
+                  <button
+                    type="submit"
+                    className="bg-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-pink-700 transition-colors flex items-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={passwordLoading}
+                  >
+                    {passwordLoading ? 'Menyimpan...' : 'Simpan Password'}
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+          <ToastContainer />
+        </div>
+      </div>
+    )
+  }
+
   // FAQ state
   const [faqs, setFaqs] = useState([])
   const [faqLoading, setFaqLoading] = useState(true)

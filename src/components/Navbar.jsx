@@ -6,8 +6,26 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [showSearchSuggestions, setShowSearchSuggestions] = useState(false)
+  const [searchSuggestions, setSearchSuggestions] = useState([])
   const dropdownRef = useRef(null)
+  const searchRef = useRef(null)
   const navigate = useNavigate()
+
+  // Dummy course data for search suggestions
+  const dummyCourses = [
+    'Membangun Aplikasi Absensi dengan Framework Laravel 12',
+    'Belajar React.js dari Dasar hingga Mahir',
+    'Kursus JavaScript Modern untuk Pemula',
+    'Pengembangan Web dengan HTML, CSS, dan JavaScript',
+    'Database Design dan SQL untuk Developer',
+    'Mobile App Development dengan Flutter',
+    'Machine Learning untuk Pemula',
+    'UI/UX Design Fundamentals',
+    'DevOps dan Deployment',
+    'Cybersecurity Basics',
+  ]
 
   useEffect(() => {
     const token =
@@ -20,8 +38,11 @@ const Navbar = () => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownOpen(false)
       }
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowSearchSuggestions(false)
+      }
     }
-    if (dropdownOpen) {
+    if (dropdownOpen || showSearchSuggestions) {
       document.addEventListener('mousedown', handleClickOutside)
     } else {
       document.removeEventListener('mousedown', handleClickOutside)
@@ -29,7 +50,44 @@ const Navbar = () => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [dropdownOpen])
+  }, [dropdownOpen, showSearchSuggestions])
+
+  // Handle search input changes
+  const handleSearchChange = (e) => {
+    const value = e.target.value
+    setSearchTerm(value)
+
+    if (value.length > 0) {
+      // Filter suggestions based on search term
+      const filtered = dummyCourses
+        .filter((course) => course.toLowerCase().includes(value.toLowerCase()))
+        .slice(0, 5)
+      setSearchSuggestions(filtered)
+      setShowSearchSuggestions(true)
+    } else {
+      setSearchSuggestions([])
+      setShowSearchSuggestions(false)
+    }
+  }
+
+  // Handle search submission
+  const handleSearchSubmit = (e) => {
+    e.preventDefault()
+    if (searchTerm.trim()) {
+      navigate(
+        `/student/courses?search=${encodeURIComponent(searchTerm.trim())}`,
+      )
+      setSearchTerm('')
+      setShowSearchSuggestions(false)
+    }
+  }
+
+  // Handle suggestion click
+  const handleSuggestionClick = (suggestion) => {
+    setSearchTerm(suggestion)
+    navigate(`/student/courses?search=${encodeURIComponent(suggestion)}`)
+    setShowSearchSuggestions(false)
+  }
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
@@ -64,15 +122,44 @@ const Navbar = () => {
             <span className="text-gray-900"> Academy</span>
           </Link>
           {/* Search Bar - Selalu di kanan logo */}
-          <div className="relative w-[180px] sm:w-[220px] md:w-[260px]">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              <FiSearch size={20} />
-            </span>
-            <input
-              type="text"
-              placeholder="Search courses..."
-              className="w-full pl-8 pr-3 py-1.5 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-200 text-gray-700 bg-white placeholder-gray-400 text-sm transition"
-            />
+          <div
+            className="relative w-[180px] sm:w-[220px] md:w-[260px]"
+            ref={searchRef}
+          >
+            <form onSubmit={handleSearchSubmit}>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <FiSearch size={20} />
+              </span>
+              <input
+                type="text"
+                placeholder="Search courses..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                onFocus={() =>
+                  searchTerm.length > 0 && setShowSearchSuggestions(true)
+                }
+                className="w-full pl-8 pr-3 py-1.5 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-200 text-gray-700 bg-white placeholder-gray-400 text-sm transition"
+              />
+            </form>
+
+            {/* Search Suggestions */}
+            {showSearchSuggestions && searchSuggestions.length > 0 && (
+              <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-50 mt-1 max-h-60 overflow-y-auto">
+                {searchSuggestions.map((suggestion, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleSuggestionClick(suggestion)}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-700 flex items-center gap-2 border-b border-gray-100 last:border-b-0"
+                  >
+                    <FiSearch className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                    <span className="truncate">{suggestion}</span>
+                  </button>
+                ))}
+                <div className="px-4 py-2 bg-gray-50 text-xs text-gray-500 border-t border-gray-100">
+                  Press Enter to search for "{searchTerm}"
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -181,15 +268,41 @@ const Navbar = () => {
       {isMenuOpen && (
         <div className="lg:hidden mt-4 pb-4 border-t border-gray-200">
           {/* Mobile Search Bar */}
-          <div className="md:hidden relative w-full mt-4 mb-4">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-              <FiSearch size={20} />
-            </span>
-            <input
-              type="text"
-              placeholder="Search courses..."
-              className="w-full pl-8 pr-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-200 text-gray-700 bg-white placeholder-gray-400"
-            />
+          <div className="md:hidden relative w-full mt-4 mb-4" ref={searchRef}>
+            <form onSubmit={handleSearchSubmit}>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <FiSearch size={20} />
+              </span>
+              <input
+                type="text"
+                placeholder="Search courses..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                onFocus={() =>
+                  searchTerm.length > 0 && setShowSearchSuggestions(true)
+                }
+                className="w-full pl-8 pr-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-200 text-gray-700 bg-white placeholder-gray-400"
+              />
+            </form>
+
+            {/* Mobile Search Suggestions */}
+            {showSearchSuggestions && searchSuggestions.length > 0 && (
+              <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-50 mt-1 max-h-60 overflow-y-auto">
+                {searchSuggestions.map((suggestion, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleSuggestionClick(suggestion)}
+                    className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-700 flex items-center gap-2 border-b border-gray-100 last:border-b-0"
+                  >
+                    <FiSearch className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                    <span className="truncate">{suggestion}</span>
+                  </button>
+                ))}
+                <div className="px-4 py-2 bg-gray-50 text-xs text-gray-500 border-t border-gray-100">
+                  Press Enter to search for "{searchTerm}"
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Mobile Menu Items */}

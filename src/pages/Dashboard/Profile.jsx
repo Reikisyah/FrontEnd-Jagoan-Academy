@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { getMe, updateProfileMentor } from '../../utils/api/authApi'
+import { getMe } from '../../utils/api/authApi'
 import { API_BASE_URL } from '../../utils/api/baseApi'
 import Sidebar from '../../components/Sidebar'
 import DashboardHeader from '../../components/DashboardHeader'
@@ -17,6 +17,7 @@ const Profile = () => {
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const cardRef = useRef(null)
   const initialForm = useRef({})
+  const userRole = localStorage.getItem('role') || 'participant'
 
   useEffect(() => {
     fetchProfile()
@@ -230,6 +231,115 @@ const Profile = () => {
     profile.profile.length > 0
   ) {
     profilePic = `${API_BASE_URL}/${profile.profile[0].path}`
+  }
+
+  if (userRole === 'participant') {
+    return (
+      <div className="flex min-h-screen bg-gray-50">
+        <Sidebar />
+        <div className="flex-1 flex flex-col min-h-screen">
+          <DashboardHeader />
+          <div className="flex-1 flex flex-col items-center justify-center p-6">
+            <div className="max-w-md w-full">
+              <div className="bg-white rounded-2xl shadow-xl p-8 flex flex-col items-center">
+                <img
+                  src={
+                    profilePic ||
+                    'https://ui-avatars.com/api/?name=' +
+                      encodeURIComponent(profile.name || 'User')
+                  }
+                  alt="Profile"
+                  className="w-32 h-32 rounded-full object-cover border-4 border-pink-200 shadow-lg mb-4"
+                />
+                {updateSuccess && (
+                  <div className="mb-4 bg-green-50 border border-green-200 rounded-xl p-3 text-green-800 text-center w-full">
+                    {updateSuccess}
+                  </div>
+                )}
+                {updateError && (
+                  <div className="mb-4 bg-red-50 border border-red-200 rounded-xl p-3 text-red-800 text-center w-full">
+                    {updateError}
+                  </div>
+                )}
+                {!editMode ? (
+                  <>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                      {profile.name}
+                    </h2>
+                    <p className="text-gray-600 mb-4 flex items-center gap-2">
+                      <svg
+                        className="w-4 h-4"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                      </svg>
+                      {profile.email}
+                    </p>
+                    <button
+                      className="bg-pink-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-pink-700 transition mt-2"
+                      onClick={() => setEditMode(true)}
+                    >
+                      Edit Profile
+                    </button>
+                  </>
+                ) : (
+                  <form
+                    onSubmit={handleSubmit}
+                    className="w-full flex flex-col gap-4 mt-4"
+                  >
+                    <div>
+                      <label className="block text-gray-700 font-semibold mb-1">
+                        Nama
+                      </label>
+                      <input
+                        type="text"
+                        name="name"
+                        value={form.name}
+                        onChange={handleChange}
+                        className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 font-semibold mb-1">
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={form.email}
+                        onChange={handleChange}
+                        className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200"
+                        required
+                      />
+                    </div>
+                    <div className="flex gap-3 mt-2">
+                      <button
+                        type="submit"
+                        className="bg-pink-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-pink-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={updateLoading}
+                      >
+                        {updateLoading ? 'Menyimpan...' : 'Simpan'}
+                      </button>
+                      <button
+                        type="button"
+                        className="px-6 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100"
+                        onClick={() => setEditMode(false)}
+                        disabled={updateLoading}
+                      >
+                        Batal
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

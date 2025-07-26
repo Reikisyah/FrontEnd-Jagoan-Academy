@@ -10,7 +10,9 @@ import FAQ from './pages/Homepage/FAQ'
 
 import Register from './pages/Auth/Register'
 import Login from './pages/Auth/Login'
-import Dashboard from './pages/Dashboard/Dashboard/DashboardAdmin' // atau DashboardStudent jika itu yang diinginkan
+import DashboardAdmin from './pages/Dashboard/Dashboard/DashboardAdmin'
+import DashboardMentor from './pages/Dashboard/Dashboard/DashboardMentor'
+import DashboardStudent from './pages/Dashboard/Dashboard/DasboardStudent'
 import Profile from './pages/Dashboard/Profile'
 import Categories from './pages/Dashboard/Categories'
 import CoursesDashboard from './pages/Dashboard/CourseAdmin/Courses'
@@ -39,11 +41,33 @@ import Sidebar from './components/Sidebar'
 import CourseStudent from './pages/Dashboard/CourseStudent/Course'
 import StartCourse from './pages/Dashboard/CourseStudent/StartCourse'
 
+// Komponen Dashboard yang dinamis berdasarkan role
+function DashboardComponent({ hideNavbarFooter }) {
+  // Ambil role dari localStorage
+  const userRole = localStorage.getItem('role') || 'admin'
+
+  console.log('🔍 [DashboardComponent] Role dari localStorage:', userRole)
+
+  // Tampilkan dashboard berdasarkan role
+  if (userRole === 'participant') {
+    console.log('🎯 [DashboardComponent] Menampilkan DashboardStudent')
+    return <DashboardStudent hideNavbarFooter={hideNavbarFooter} />
+  } else if (userRole === 'mentor') {
+    console.log('🎯 [DashboardComponent] Menampilkan DashboardMentor')
+    return <DashboardMentor hideNavbarFooter={hideNavbarFooter} />
+  } else {
+    console.log('🎯 [DashboardComponent] Menampilkan DashboardAdmin')
+    return <DashboardAdmin hideNavbarFooter={hideNavbarFooter} />
+  }
+}
+
 function AppRoutes() {
   const location = useLocation()
   // Path yang tidak ingin menampilkan Navbar/Footer
   const hideNavFooter = [
     '/dashboard',
+    '/dashboard-mentor',
+    '/dashboard-student',
     '/profile',
     '/categories',
     '/subcategories',
@@ -105,7 +129,15 @@ function AppRoutes() {
             <Route path="/course/:id" element={<DetailCourse />} />
             <Route
               path="/dashboard"
-              element={<Dashboard hideNavbarFooter={true} />}
+              element={<DashboardComponent hideNavbarFooter={true} />}
+            />
+            <Route
+              path="/dashboard-mentor"
+              element={<DashboardMentor hideNavbarFooter={true} />}
+            />
+            <Route
+              path="/dashboard-student"
+              element={<DashboardStudent hideNavbarFooter={true} />}
             />
             <Route path="/profile" element={<Profile />} />
             <Route path="/register" element={<Register />} />
