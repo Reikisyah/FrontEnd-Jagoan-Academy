@@ -1,4 +1,5 @@
 import React from 'react'
+import { IoExpand, IoContract, IoResize } from 'react-icons/io5'
 
 const OverviewSection = ({ dummyCourse }) => (
   <div>
@@ -233,20 +234,52 @@ const BottomBar = ({
   dummyAnnouncements,
   dummyReviews,
   dummyTools,
+  isExpanded,
+  setIsExpanded,
+  isFullscreen,
+  setIsFullscreen,
 }) => {
+  const toggleExpand = () => {
+    setIsExpanded(!isExpanded)
+  }
+
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen)
+  }
+
   return (
     <div className="bg-white border-t shadow-sm mt-1">
       <div className="px-8">
-        <div className="flex gap-6 pt-4 pb-2">
-          {tabList.map((tab) => (
+        <div className="flex justify-between items-center pt-4 pb-2">
+          <div className="flex gap-6">
+            {tabList.map((tab) => (
+              <button
+                key={tab}
+                className={`font-semibold px-2 pb-1 border-b-2 transition-all ${activeTab === tab ? 'border-pink-600 text-pink-600' : 'border-transparent text-gray-500 hover:text-pink-600'}`}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+
+          {/* Control buttons */}
+          <div className="flex items-center gap-2">
             <button
-              key={tab}
-              className={`font-semibold px-2 pb-1 border-b-2 transition-all ${activeTab === tab ? 'border-pink-600 text-pink-600' : 'border-transparent text-gray-500 hover:text-pink-600'}`}
-              onClick={() => setActiveTab(tab)}
+              onClick={toggleExpand}
+              className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors duration-200"
+              title={isExpanded ? 'Exit expanded view' : 'Expand view'}
             >
-              {tab}
+              {isExpanded ? <IoContract size={18} /> : <IoExpand size={18} />}
             </button>
-          ))}
+            <button
+              onClick={toggleFullscreen}
+              className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors duration-200"
+              title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+            >
+              <IoResize size={18} />
+            </button>
+          </div>
         </div>
         <div className="py-4 text-gray-700 text-base">
           {activeTab === 'Overview' && (

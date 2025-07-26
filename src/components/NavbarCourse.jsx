@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
+import { IoChevronDown } from 'react-icons/io5'
 
 const ShareIcon = () => (
   <svg width="18" height="18" fill="none" viewBox="0 0 24 24">
@@ -20,16 +21,21 @@ const DotsIcon = () => (
 // Tambah prop progress (0-1)
 const NavbarCourse = ({ title = 'Judul Course', progress = 0 }) => {
   const [showMenu, setShowMenu] = useState(false)
+  const [showProgressDropdown, setShowProgressDropdown] = useState(false)
   const menuRef = useRef(null)
+  const progressRef = useRef(null)
 
   useEffect(() => {
     const handleClick = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target))
         setShowMenu(false)
+      if (progressRef.current && !progressRef.current.contains(e.target))
+        setShowProgressDropdown(false)
     }
-    if (showMenu) document.addEventListener('mousedown', handleClick)
+    if (showMenu || showProgressDropdown)
+      document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
-  }, [showMenu])
+  }, [showMenu, showProgressDropdown])
 
   // Progress bar
   const radius = 14
@@ -60,47 +66,92 @@ const NavbarCourse = ({ title = 'Judul Course', progress = 0 }) => {
           <span className="text-lg">★</span> Leave a rating
         </button>
         <div className="flex items-center gap-2 text-gray-300 text-sm font-semibold">
-          <div className="w-10 h-10 rounded-full border-2 border-gray-500 flex items-center justify-center relative">
-            <svg
-              width="36"
-              height="36"
-              className="absolute top-0 left-0"
-              style={{ opacity: 0.15 }}
+          <div className="relative" ref={progressRef}>
+            <button
+              onClick={() => setShowProgressDropdown(!showProgressDropdown)}
+              className="flex items-center gap-2 hover:text-white transition-colors duration-200"
             >
-              <circle
-                cx="18"
-                cy="18"
-                r="14"
-                stroke="#fff"
-                strokeWidth="3"
-                fill="none"
+              <div className="w-10 h-10 rounded-full border-2 border-gray-500 flex items-center justify-center relative">
+                <svg
+                  width="36"
+                  height="36"
+                  className="absolute top-0 left-0"
+                  style={{ opacity: 0.15 }}
+                >
+                  <circle
+                    cx="18"
+                    cy="18"
+                    r="14"
+                    stroke="#fff"
+                    strokeWidth="3"
+                    fill="none"
+                  />
+                </svg>
+                <svg width="36" height="36" className="absolute top-0 left-0">
+                  <circle
+                    cx="18"
+                    cy="18"
+                    r="14"
+                    stroke="#ec4899"
+                    strokeWidth="3.5"
+                    fill="none"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={offset}
+                    style={{
+                      transition: 'stroke-dashoffset 0.5s',
+                      strokeLinecap: 'round',
+                    }}
+                  />
+                </svg>
+                <span
+                  className="absolute top-1/2 left-1/2 text-xs font-bold text-pink-600"
+                  style={{ transform: 'translate(-50%,-50%)' }}
+                >
+                  {percent}%
+                </span>
+              </div>
+              <span>Your progress</span>
+              <IoChevronDown
+                size={14}
+                className={`ml-1 transition-transform duration-200 ${showProgressDropdown ? 'rotate-180' : ''}`}
               />
-            </svg>
-            <svg width="36" height="36" className="absolute top-0 left-0">
-              <circle
-                cx="18"
-                cy="18"
-                r="14"
-                stroke="#ec4899"
-                strokeWidth="3.5"
-                fill="none"
-                strokeDasharray={circumference}
-                strokeDashoffset={offset}
-                style={{
-                  transition: 'stroke-dashoffset 0.5s',
-                  strokeLinecap: 'round',
-                }}
-              />
-            </svg>
-            <span
-              className="absolute top-1/2 left-1/2 text-xs font-bold text-pink-600"
-              style={{ transform: 'translate(-50%,-50%)' }}
+            </button>
+
+            {/* Progress Dropdown */}
+            <div
+              className={`absolute right-0 mt-2 w-64 bg-white text-gray-900 rounded-lg shadow-lg border py-3 z-50 transition-all duration-200 ease-in-out ${
+                showProgressDropdown
+                  ? 'opacity-100 transform translate-y-0 scale-100'
+                  : 'opacity-0 transform -translate-y-2 scale-95 pointer-events-none'
+              }`}
             >
-              {percent}%
-            </span>
+              <div className="px-4 py-2 border-b border-gray-200">
+                <div className="font-semibold text-sm">Course Progress</div>
+              </div>
+              <div className="px-4 py-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-gray-600">
+                    Overall Progress
+                  </span>
+                  <span className="text-sm font-semibold">{percent}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
+                  <div
+                    className="bg-pink-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${percent}%` }}
+                  ></div>
+                </div>
+                <div className="text-xs text-gray-500">
+                  {Math.round(progress * 30)} of 30 lectures completed
+                </div>
+              </div>
+              <div className="px-4 py-2 border-t border-gray-200">
+                <button className="w-full text-left text-sm text-pink-600 hover:text-pink-700 font-semibold">
+                  View course content
+                </button>
+              </div>
+            </div>
           </div>
-          <span>Your progress</span>
-          <span className="ml-1">▼</span>
         </div>
         <button className="flex items-center gap-1 border border-white/40 rounded px-3 py-1 text-sm font-semibold hover:bg-white/10 transition">
           <ShareIcon /> <span>Share</span>

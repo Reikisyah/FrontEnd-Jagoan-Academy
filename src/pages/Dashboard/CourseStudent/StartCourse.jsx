@@ -3,6 +3,12 @@ import NavbarCourse from '../../../components/NavbarCourse'
 import RightBarCourse from '../../../components/RightBarCourse'
 import BottomBar from './BottomBar'
 import Footer from '../../../components/Footer'
+import {
+  IoChevronForward,
+  IoExpand,
+  IoContract,
+  IoResize,
+} from 'react-icons/io5'
 
 const dummySections = [
   {
@@ -322,6 +328,8 @@ const StartCourse = () => {
   const [activeTab, setActiveTab] = useState('Overview')
   const [isLectureRead, setIsLectureRead] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const contentRef = useRef(null)
   const section = dummySections[activeSection]
   const lecture = section.lectures[activeLecture]
@@ -408,16 +416,24 @@ const StartCourse = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-white flex flex-row">
-        <div className="fixed top-0 left-0 right-0 z-30">
-          <NavbarCourse title={dummyCourse.title} progress={progress} />
-        </div>
+      <div
+        className={`min-h-screen bg-white flex flex-row ${isExpanded ? 'fixed inset-0 z-50' : ''} ${isFullscreen ? 'fixed inset-0 z-50 bg-white' : ''}`}
+      >
+        {/* Navbar - hanya muncul jika tidak fullscreen dan tidak expanded */}
+        {!isFullscreen && !isExpanded && (
+          <div className="fixed top-0 left-0 right-0 z-30">
+            <NavbarCourse title={dummyCourse.title} progress={progress} />
+          </div>
+        )}
+
         {/* Main content kiri */}
-        <div className="flex-1 flex flex-col min-h-screen">
+        <div
+          className={`flex flex-col min-h-screen transition-all duration-300 ease-in-out ${isSidebarOpen ? 'flex-1' : 'w-full'} ${isExpanded ? 'w-full' : ''} ${isFullscreen ? 'w-full h-full' : ''}`}
+        >
           {/* Section/Lecture content */}
           <div className="flex-1 flex flex-col">
             <div
-              className="flex-1 w-full max-h-[calc(100vh-120px)] min-h-[650px] md:min-h-[750px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 px-4 sm:px-8 md:px-12 lg:px-24 xl:px-32 pt-20 pb-8 flex flex-col justify-between h-full"
+              className={`flex-1 w-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 flex flex-col justify-between h-full transition-all duration-300 ease-in-out ${isSidebarOpen ? 'px-4 sm:px-8 md:px-12 lg:px-24 xl:px-32 pt-20 pb-8' : 'px-4 sm:px-8 md:px-12 lg:px-24 xl:px-32 2xl:px-48 pt-20 pb-8'} ${isExpanded ? 'px-4 sm:px-8 md:px-12 lg:px-24 xl:px-32 2xl:px-48 pt-20 pb-8' : ''} ${isFullscreen ? 'pt-8 px-8 sm:px-12 md:px-16 lg:px-24 xl:px-32 2xl:px-48 min-h-screen' : 'max-h-[calc(100vh-120px)] min-h-[650px] md:min-h-[750px]'}`}
               ref={contentRef}
               onScroll={handleContentScroll}
             >
@@ -447,37 +463,84 @@ const StartCourse = () => {
               </div>
             </div>
           </div>
-          {/* Tab navigasi bawah */}
-          <BottomBar
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            tabList={tabList}
-            dummyCourse={dummyCourse}
-            dummyNotes={dummyNotes}
-            dummyAnnouncements={dummyAnnouncements}
-            dummyReviews={dummyReviews}
-            dummyTools={dummyTools}
-          />
+
+          {/* Tab navigasi bawah - hanya muncul jika tidak fullscreen */}
+          {!isFullscreen && (
+            <BottomBar
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              tabList={tabList}
+              dummyCourse={dummyCourse}
+              dummyNotes={dummyNotes}
+              dummyAnnouncements={dummyAnnouncements}
+              dummyReviews={dummyReviews}
+              dummyTools={dummyTools}
+              isExpanded={isExpanded}
+              setIsExpanded={setIsExpanded}
+              isFullscreen={isFullscreen}
+              setIsFullscreen={setIsFullscreen}
+            />
+          )}
         </div>
-        {/* Sidebar kanan */}
-        <RightBarCourse
-          sections={dummySections}
-          activeSection={activeSection}
-          setActiveSection={setActiveSection}
-          activeLecture={activeLecture}
-          setActiveLecture={setActiveLecture}
-          completedLectures={completedLectures}
-          isLectureRead={isLectureRead}
-          isSidebarOpen={isSidebarOpen}
-          setIsSidebarOpen={setIsSidebarOpen}
-          colorClass={{
-            activeSection: 'bg-pink-50',
-            activeLecture: 'text-pink-600 font-bold',
-            accent: 'accent-pink-600',
-          }}
-        />
+
+        {/* Sidebar kanan - conditional rendering */}
+        {isSidebarOpen && !isExpanded && !isFullscreen && (
+          <RightBarCourse
+            sections={dummySections}
+            activeSection={activeSection}
+            setActiveSection={setActiveSection}
+            activeLecture={activeLecture}
+            setActiveLecture={setActiveLecture}
+            completedLectures={completedLectures}
+            isLectureRead={isLectureRead}
+            isSidebarOpen={isSidebarOpen}
+            setIsSidebarOpen={setIsSidebarOpen}
+            colorClass={{
+              activeSection: 'bg-pink-50',
+              activeLecture: 'text-pink-600 font-bold',
+              accent: 'accent-pink-600',
+            }}
+          />
+        )}
+
+        {/* Floating button when sidebar is closed */}
+        {!isSidebarOpen && !isExpanded && !isFullscreen && (
+          <button
+            onClick={() => setIsSidebarOpen(true)}
+            className="fixed right-4 top-20 z-50 bg-pink-600 text-white p-3 rounded-full shadow-lg hover:bg-pink-700 transition-colors duration-200"
+            title="Open course content"
+          >
+            <IoChevronForward size={20} />
+          </button>
+        )}
+
+        {/* Floating control buttons for fullscreen/expand mode */}
+        {(isFullscreen || isExpanded) && (
+          <div className="fixed bottom-4 right-4 z-50 flex gap-2">
+            {isExpanded && (
+              <button
+                onClick={() => setIsExpanded(false)}
+                className="bg-gray-800 text-white p-3 rounded shadow-lg hover:bg-gray-700 transition-colors duration-200"
+                title="Exit expanded view"
+              >
+                <IoContract size={18} />
+              </button>
+            )}
+            {isFullscreen && (
+              <button
+                onClick={() => setIsFullscreen(false)}
+                className="bg-gray-800 text-white p-3 rounded shadow-lg hover:bg-gray-700 transition-colors duration-200"
+                title="Exit fullscreen"
+              >
+                <IoResize size={18} />
+              </button>
+            )}
+          </div>
+        )}
       </div>
-      <Footer />
+
+      {/* Footer - hanya muncul jika tidak expanded dan tidak fullscreen */}
+      {!isExpanded && !isFullscreen && <Footer />}
     </>
   )
 }

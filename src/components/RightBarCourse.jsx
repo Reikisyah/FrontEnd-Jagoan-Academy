@@ -96,103 +96,85 @@ const RightBarCourse = ({
   console.log('RightBarCourse render - isSidebarOpen:', isSidebarOpen)
 
   return (
-    <>
-      {/* Sidebar */}
-      <div
-        className={`hidden md:block w-80 border-l bg-gray-50 p-0 sticky top-0 h-screen overflow-y-auto transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}
-      >
-        <div className="sticky top-0 z-20 bg-gray-50 border-b px-6 py-4 flex items-center justify-between mt-16">
-          <span className="font-bold text-lg">Course content</span>
-          <div className="relative group">
-            <button
-              className="text-gray-500 hover:text-gray-700 transition-colors duration-200 p-2 rounded hover:bg-gray-200 border border-gray-300"
-              onClick={toggleSidebar}
-              title="Close panel"
-            >
-              <IoClose size={18} />
-            </button>
-            {/* Tooltip */}
-            <div className="absolute right-0 top-full mt-1 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50">
-              Close panel
-              <div className="absolute -top-1 right-2 w-2 h-2 bg-black transform rotate-45"></div>
-            </div>
+    <div className="hidden md:block w-80 border-l bg-gray-50 p-0 sticky top-0 h-screen overflow-y-auto">
+      <div className="sticky top-0 z-20 bg-gray-50 border-b px-6 py-4 flex items-center justify-between mt-16">
+        <span className="font-bold text-lg">Course content</span>
+        <div className="relative group">
+          <button
+            className="text-gray-500 hover:text-gray-700 transition-colors duration-200 p-2 rounded hover:bg-gray-200 border border-gray-300"
+            onClick={toggleSidebar}
+            title="Close panel"
+          >
+            <IoClose size={18} />
+          </button>
+          {/* Tooltip */}
+          <div className="absolute right-0 top-full mt-1 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50">
+            Close panel
+            <div className="absolute -top-1 right-2 w-2 h-2 bg-black transform rotate-45"></div>
           </div>
         </div>
-        <div className="divide-y">
-          {sections.map((sec, i) => (
-            <div key={i}>
-              <button
-                className={`w-full text-left px-6 py-3 font-semibold text-gray-800 bg-gray-50 hover:bg-pink-50 border-b flex items-center justify-between transition-colors duration-200 ${i === activeSection ? activeSectionClass : ''}`}
-                onClick={() => toggleSection(i)}
-              >
-                <div className="flex flex-col items-start">
-                  <span>{sec.title}</span>
-                  <span className="text-xs text-gray-500 font-normal">
-                    {getSectionSummary(sec, i)}
-                  </span>
-                </div>
-                <span
-                  className={`ml-2 transition-transform duration-200 ${openSections.includes(i) ? 'rotate-90' : ''}`}
-                >
-                  <IoChevronForward size={16} />
+      </div>
+      <div className="divide-y">
+        {sections.map((sec, i) => (
+          <div key={i}>
+            <button
+              className={`w-full text-left px-6 py-3 font-semibold text-gray-800 bg-gray-50 hover:bg-pink-50 border-b flex items-center justify-between transition-colors duration-200 ${i === activeSection ? activeSectionClass : ''}`}
+              onClick={() => toggleSection(i)}
+            >
+              <div className="flex flex-col items-start">
+                <span>{sec.title}</span>
+                <span className="text-xs text-gray-500 font-normal">
+                  {getSectionSummary(sec, i)}
                 </span>
-              </button>
-              <div
-                className={`overflow-hidden transition-all duration-300 ease-in-out ${openSections.includes(i) ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}
+              </div>
+              <span
+                className={`ml-2 transition-transform duration-200 ${openSections.includes(i) ? 'rotate-90' : ''}`}
               >
-                <div className="pl-8 pb-2">
-                  {sec.lectures.map((lec, j) => {
-                    const isCompleted = completedLectures.some(
-                      (c) => c.section === i && c.lecture === j,
-                    )
-                    const enabled = isLectureEnabled(i, j)
-                    const isActive = i === activeSection && j === activeLecture
-                    return (
-                      <div
-                        key={j}
-                        className={`flex items-center gap-2 py-1 cursor-pointer rounded-lg pr-2 transition-all duration-200 ${isActive ? 'bg-pink-50' : ''} ${isActive ? activeLectureClass : 'text-gray-700'} ${!enabled ? 'opacity-50 pointer-events-none cursor-not-allowed' : ''}`}
-                        onClick={() => {
-                          if (enabled) {
-                            setActiveSection(i)
-                            setActiveLecture(j)
-                          }
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={isCompleted}
-                          readOnly
-                          className={accentClass}
-                        />
-                        <span>
-                          {j + 1}. {lec.title}
-                        </span>
-                        <span className="text-xs text-gray-400 ml-auto">
-                          {lec.duration}
-                        </span>
-                      </div>
-                    )
-                  })}
-                </div>
+                <IoChevronForward size={16} />
+              </span>
+            </button>
+            <div
+              className={`overflow-hidden transition-all duration-300 ease-in-out ${openSections.includes(i) ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}
+            >
+              <div className="pl-8 pb-2">
+                {sec.lectures.map((lec, j) => {
+                  const isCompleted = completedLectures.some(
+                    (c) => c.section === i && c.lecture === j,
+                  )
+                  const enabled = isLectureEnabled(i, j)
+                  const isActive = i === activeSection && j === activeLecture
+                  return (
+                    <div
+                      key={j}
+                      className={`flex items-center gap-2 py-1 cursor-pointer rounded-lg pr-2 transition-all duration-200 ${isActive ? 'bg-pink-50' : ''} ${isActive ? activeLectureClass : 'text-gray-700'} ${!enabled ? 'opacity-50 pointer-events-none cursor-not-allowed' : ''}`}
+                      onClick={() => {
+                        if (enabled) {
+                          setActiveSection(i)
+                          setActiveLecture(j)
+                        }
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isCompleted}
+                        readOnly
+                        className={accentClass}
+                      />
+                      <span>
+                        {j + 1}. {lec.title}
+                      </span>
+                      <span className="text-xs text-gray-400 ml-auto">
+                        {lec.duration}
+                      </span>
+                    </div>
+                  )
+                })}
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
-
-      {/* Toggle button when sidebar is closed */}
-      <div
-        className={`fixed right-4 top-20 z-50 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
-      >
-        <button
-          onClick={toggleSidebar}
-          className="bg-pink-600 text-white p-3 rounded-full shadow-lg hover:bg-pink-700 transition-colors duration-200"
-          title="Open course content"
-        >
-          <IoChevronForward size={20} />
-        </button>
-      </div>
-    </>
+    </div>
   )
 }
 
