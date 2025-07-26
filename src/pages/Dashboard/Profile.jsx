@@ -128,32 +128,53 @@ const Profile = () => {
 
   if (loading)
     return (
-      <div className="flex min-h-screen bg-white">
+      <div className="flex min-h-screen bg-gray-50">
         <Sidebar />
         <div className="flex-1 flex flex-col min-h-screen">
           <DashboardHeader />
-          <div className="flex justify-center items-center flex-1">
-            <div className="bg-white rounded-xl shadow-lg px-8 py-6 text-lg text-pink-600 font-semibold flex items-center gap-2">
-              <svg
-                className="animate-spin h-6 w-6 text-pink-500"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  fill="none"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8v8z"
-                />
-              </svg>
-              Loading profile...
+          <div className="flex-1 flex flex-col items-center justify-center p-6">
+            <div className="max-w-3xl w-full">
+              <div className="bg-white rounded-2xl shadow-lg p-8 animate-pulse">
+                {/* Profile Picture Skeleton */}
+                <div className="flex flex-col items-center mb-6">
+                  <div className="w-32 h-32 rounded-full bg-gray-200 mb-4"></div>
+                  <div className="h-8 w-48 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-4 w-32 bg-gray-100 rounded"></div>
+                </div>
+
+                {/* Info Grid Skeleton */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i}>
+                      <div className="h-4 w-24 bg-gray-200 rounded mb-2"></div>
+                      <div className="h-4 w-32 bg-gray-100 rounded"></div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Bio Skeleton */}
+                <div className="mb-6">
+                  <div className="h-4 w-16 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-4 w-full bg-gray-100 rounded"></div>
+                </div>
+
+                {/* Skills & Experience Skeleton */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                  {[...Array(2)].map((_, i) => (
+                    <div key={i}>
+                      <div className="h-4 w-20 bg-gray-200 rounded mb-2"></div>
+                      <div className="space-y-2">
+                        <div className="h-3 w-32 bg-gray-100 rounded"></div>
+                        <div className="h-3 w-28 bg-gray-100 rounded"></div>
+                        <div className="h-3 w-36 bg-gray-100 rounded"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Button Skeleton */}
+                <div className="h-10 w-32 bg-gray-200 rounded"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -161,45 +182,39 @@ const Profile = () => {
     )
   if (error)
     return (
-      <div className="flex min-h-screen bg-white">
+      <div className="flex min-h-screen bg-gray-50">
         <Sidebar />
         <div className="flex-1 flex flex-col min-h-screen">
           <DashboardHeader />
-          <div className="flex justify-center items-center flex-1">
-            <div className="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center w-full max-w-md animate-pulse">
-              <div className="w-32 h-32 rounded-full bg-gray-200 mb-6" />
-              <div className="h-7 w-40 bg-gray-200 rounded mb-2" />
-              <div className="h-4 w-32 bg-gray-100 rounded mb-4" />
-              <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i}>
-                    <div className="h-4 w-24 bg-gray-200 rounded mb-2" />
-                    <div className="h-4 w-32 bg-gray-100 rounded" />
-                  </div>
-                ))}
+          <div className="flex-1 flex flex-col items-center justify-center p-6">
+            <div className="max-w-md w-full">
+              <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
+                <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <svg
+                    className="w-12 h-12 text-red-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  Oops! Something went wrong
+                </h3>
+                <p className="text-gray-600 mb-6">{error}</p>
+                <button
+                  onClick={fetchProfile}
+                  className="bg-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-pink-700 transition-colors duration-200"
+                >
+                  Try Again
+                </button>
               </div>
-              <div className="w-full mb-6">
-                <div className="h-4 w-24 bg-gray-200 rounded mb-1" />
-                <div className="h-4 w-40 bg-gray-100 rounded" />
-              </div>
-              <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                {[...Array(2)].map((_, i) => (
-                  <div key={i}>
-                    <div className="h-4 w-24 bg-gray-200 rounded mb-1" />
-                    <div className="h-4 w-32 bg-gray-100 rounded" />
-                  </div>
-                ))}
-              </div>
-              <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                {[...Array(2)].map((_, i) => (
-                  <div key={i}>
-                    <div className="h-4 w-24 bg-gray-200 rounded mb-1" />
-                    <div className="h-4 w-32 bg-gray-100 rounded" />
-                  </div>
-                ))}
-              </div>
-              <div className="h-10 w-32 bg-gray-200 rounded" />
-              <div className="text-red-500 mt-6">{error}</div>
             </div>
           </div>
         </div>
@@ -218,39 +233,100 @@ const Profile = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
       <div className="flex-1 flex flex-col min-h-screen">
         <DashboardHeader />
-        <div className="flex-1 flex flex-col items-center justify-center">
-          <div className="max-w-3xl w-full py-10 px-4">
+        <div className="flex-1 flex flex-col items-center justify-center p-6">
+          <div className="max-w-4xl w-full">
             <div
               ref={cardRef}
-              className={`bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center transition-all duration-500 ${highlight ? 'ring-4 ring-pink-200' : ''}`}
+              className={`bg-white rounded-2xl shadow-xl p-8 transition-all duration-500 ${highlight ? 'ring-4 ring-pink-200 scale-105' : ''}`}
             >
-              <div className="mb-6">
-                <img
-                  src={
-                    profilePic ||
-                    'https://ui-avatars.com/api/?name=' +
-                      encodeURIComponent(profile.name || 'User')
-                  }
-                  alt="Profile"
-                  className="w-32 h-32 rounded-full object-cover border-4 border-pink-200 shadow"
-                />
+              {/* Header Section */}
+              <div className="flex flex-col md:flex-row items-center md:items-start gap-6 mb-8">
+                <div className="relative">
+                  <img
+                    src={
+                      profilePic ||
+                      'https://ui-avatars.com/api/?name=' +
+                        encodeURIComponent(profile.name || 'User')
+                    }
+                    alt="Profile"
+                    className="w-32 h-32 rounded-full object-cover border-4 border-pink-200 shadow-lg"
+                  />
+                  <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-white flex items-center justify-center">
+                    <svg
+                      className="w-4 h-4 text-white"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                </div>
+                <div className="text-center md:text-left flex-1">
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                    {profile.name}
+                  </h2>
+                  <p className="text-gray-600 mb-4 flex items-center justify-center md:justify-start gap-2">
+                    <svg
+                      className="w-4 h-4"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                      <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                    </svg>
+                    {profile.email}
+                  </p>
+                  {profile.job_role && (
+                    <span className="inline-block bg-pink-100 text-pink-800 px-3 py-1 rounded-full text-sm font-medium">
+                      {profile.job_role}
+                    </span>
+                  )}
+                </div>
               </div>
-              <h2 className="text-2xl font-bold text-pink-600 mb-1">
-                {profile.name}
-              </h2>
-              <p className="text-gray-500 mb-4">{profile.email}</p>
+
+              {/* Success/Error Messages */}
               {updateSuccess && (
-                <div className="text-green-600 mb-4 bg-green-50 border border-green-200 rounded-lg px-4 py-2 font-semibold">
-                  {updateSuccess}
+                <div className="mb-6 bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3">
+                  <svg
+                    className="w-5 h-5 text-green-500"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <span className="text-green-800 font-medium">
+                    {updateSuccess}
+                  </span>
                 </div>
               )}
               {updateError && (
-                <div className="text-red-500 mb-4 bg-red-50 border border-red-200 rounded-lg px-4 py-2 font-semibold">
-                  {updateError}
+                <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
+                  <svg
+                    className="w-5 h-5 text-red-500"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <span className="text-red-800 font-medium">
+                    {updateError}
+                  </span>
                 </div>
               )}
               {!editMode ? (

@@ -199,109 +199,300 @@ const Language = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
       <div className="flex-1 flex flex-col min-h-screen">
         <DashboardHeader />
         <div className="flex-1 flex flex-col items-center justify-start py-10 px-4">
-          <div className="max-w-2xl w-full">
-            <h1 className="text-2xl font-bold text-pink-700 mb-6">
-              Language Management
-            </h1>
+          <div className="max-w-4xl w-full">
+            {/* Header Section */}
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Language Management
+              </h1>
+              <p className="text-gray-600">
+                Manage available languages for the platform
+              </p>
+            </div>
+
+            {/* Add Language Form */}
             {isAdmin && (
-              <form onSubmit={handleAdd} className="flex gap-2 mb-6">
-                <input
-                  type="text"
-                  className="border rounded-lg px-4 py-2 flex-1"
-                  placeholder="Tambah bahasa baru..."
-                  value={newLang}
-                  onChange={(e) => setNewLang(e.target.value)}
-                  disabled={saving}
-                />
-                <button
-                  type="submit"
-                  className="bg-pink-600 hover:bg-pink-700 text-white font-semibold px-6 py-2 rounded-lg shadow"
-                  disabled={saving}
-                >
-                  {saving ? 'Menyimpan...' : 'Tambah'}
-                </button>
-              </form>
-            )}
-            {loading ? (
-              <div className="text-center text-gray-500">Loading...</div>
-            ) : error ? (
-              <div className="text-center text-red-500">{error}</div>
-            ) : (
-              <table className="min-w-full border border-pink-100 rounded-xl bg-white">
-                <thead>
-                  <tr className="bg-pink-600 text-white">
-                    <th className="py-2 px-4 text-left">No</th>
-                    <th className="py-2 px-4 text-left">Language</th>
-                    {isAdmin && (
-                      <th className="py-2 px-4 text-left">Actions</th>
+              <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <svg
+                    className="w-5 h-5 text-pink-600"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  Add New Language
+                </h2>
+                <form onSubmit={handleAdd} className="flex gap-3">
+                  <input
+                    type="text"
+                    className="flex-1 border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-500 transition-colors"
+                    placeholder="Enter language name..."
+                    value={newLang}
+                    onChange={(e) => setNewLang(e.target.value)}
+                    disabled={saving}
+                  />
+                  <button
+                    type="submit"
+                    className="bg-pink-600 hover:bg-pink-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    disabled={saving || !newLang.trim()}
+                  >
+                    {saving ? (
+                      <>
+                        <svg
+                          className="animate-spin h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                            fill="none"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v8z"
+                          />
+                        </svg>
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <svg
+                          className="w-4 h-4"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        Add Language
+                      </>
                     )}
-                  </tr>
-                </thead>
-                <tbody>
-                  {languages.map((lang, idx) => (
-                    <tr key={lang.id} className="border-b hover:bg-pink-50">
-                      <td className="py-2 px-4">{idx + 1}</td>
-                      <td className="py-2 px-4">
-                        {editId === lang.id ? (
-                          <form
-                            onSubmit={handleEditSave}
-                            className="flex gap-2"
-                          >
-                            <input
-                              type="text"
-                              className="border rounded-lg px-2 py-1"
-                              value={editName}
-                              onChange={(e) => setEditName(e.target.value)}
-                              autoFocus
-                            />
-                            <button
-                              type="submit"
-                              className="bg-pink-600 text-white px-3 py-1 rounded-lg"
-                              disabled={saving}
-                            >
-                              Simpan
-                            </button>
-                            <button
-                              type="button"
-                              className="text-gray-500 px-3 py-1"
-                              onClick={() => setEditId(null)}
-                              disabled={saving}
-                            >
-                              Batal
-                            </button>
-                          </form>
-                        ) : (
-                          lang.name
-                        )}
-                      </td>
-                      {isAdmin && (
-                        <td className="py-2 px-4 flex gap-2">
-                          <button
-                            className="text-blue-600 hover:text-blue-800 underline text-sm"
-                            onClick={() => handleEdit(lang.id, lang.name)}
-                            disabled={saving || deleting}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            className="text-red-500 hover:text-red-700 underline text-sm"
-                            onClick={() => handleDelete(lang.id)}
-                            disabled={saving || deleting === lang.id}
-                          >
-                            {deleting === lang.id ? 'Menghapus...' : 'Hapus'}
-                          </button>
-                        </td>
-                      )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </button>
+                </form>
+              </div>
             )}
+
+            {/* Languages Table */}
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <svg
+                    className="w-5 h-5 text-pink-600"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  Available Languages
+                </h2>
+              </div>
+
+              {loading ? (
+                <div className="p-8">
+                  <div className="animate-pulse space-y-4">
+                    {[...Array(5)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between py-3"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-8 h-4 bg-gray-200 rounded"></div>
+                          <div className="h-4 w-32 bg-gray-200 rounded"></div>
+                        </div>
+                        <div className="flex gap-2">
+                          <div className="h-6 w-12 bg-gray-200 rounded"></div>
+                          <div className="h-6 w-12 bg-gray-200 rounded"></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : error ? (
+                <div className="p-8 text-center">
+                  <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg
+                      className="w-8 h-8 text-red-500"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Error Loading Languages
+                  </h3>
+                  <p className="text-gray-600 mb-4">{error}</p>
+                  <button
+                    onClick={fetchLanguages}
+                    className="bg-pink-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-pink-700 transition-colors"
+                  >
+                    Try Again
+                  </button>
+                </div>
+              ) : languages.length === 0 ? (
+                <div className="p-8 text-center">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg
+                      className="w-8 h-8 text-gray-400"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    No Languages Found
+                  </h3>
+                  <p className="text-gray-600">
+                    Start by adding your first language above.
+                  </p>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-200">
+                  {languages.map((lang, idx) => (
+                    <div
+                      key={lang.id}
+                      className="px-6 py-4 hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="w-8 h-6 bg-pink-100 rounded flex items-center justify-center">
+                            <span className="text-pink-600 font-medium text-sm">
+                              {idx + 1}
+                            </span>
+                          </div>
+                          <div className="flex-1">
+                            {editId === lang.id ? (
+                              <form
+                                onSubmit={handleEditSave}
+                                className="flex gap-3"
+                              >
+                                <input
+                                  type="text"
+                                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-500"
+                                  value={editName}
+                                  onChange={(e) => setEditName(e.target.value)}
+                                  autoFocus
+                                />
+                                <button
+                                  type="submit"
+                                  className="bg-pink-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-pink-700 transition-colors disabled:opacity-50"
+                                  disabled={saving}
+                                >
+                                  {saving ? 'Saving...' : 'Save'}
+                                </button>
+                                <button
+                                  type="button"
+                                  className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                                  onClick={() => setEditId(null)}
+                                  disabled={saving}
+                                >
+                                  Cancel
+                                </button>
+                              </form>
+                            ) : (
+                              <span className="text-gray-900 font-medium">
+                                {lang.name}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        {isAdmin && editId !== lang.id && (
+                          <div className="flex gap-2">
+                            <button
+                              className="text-blue-600 hover:text-blue-800 p-2 rounded-lg hover:bg-blue-50 transition-colors"
+                              onClick={() => handleEdit(lang.id, lang.name)}
+                              disabled={saving || deleting}
+                              title="Edit language"
+                            >
+                              <svg
+                                className="w-4 h-4"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                              </svg>
+                            </button>
+                            <button
+                              className="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-colors"
+                              onClick={() => handleDelete(lang.id)}
+                              disabled={saving || deleting === lang.id}
+                              title="Delete language"
+                            >
+                              {deleting === lang.id ? (
+                                <svg
+                                  className="animate-spin w-4 h-4"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                    fill="none"
+                                  />
+                                  <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8v8z"
+                                  />
+                                </svg>
+                              ) : (
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="currentColor"
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                              )}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

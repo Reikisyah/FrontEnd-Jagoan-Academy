@@ -7,8 +7,14 @@ import {
 } from '../../utils/api/categoryApi'
 import Sidebar from '../../components/Sidebar'
 import DashboardHeader from '../../components/DashboardHeader'
-import { FaEdit, FaTrash } from 'react-icons/fa'
-import { FaGripVertical } from 'react-icons/fa'
+import {
+  FaEdit,
+  FaTrash,
+  FaSearch,
+  FaPlus,
+  FaFolder,
+  FaGripVertical,
+} from 'react-icons/fa'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -31,6 +37,7 @@ const Categories = () => {
   const [deleteError, setDeleteError] = useState(null)
   const [successMsg, setSuccessMsg] = useState(null)
   const [orderChanged, setOrderChanged] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
   const dragItem = useRef()
   const dragOverItem = useRef()
 
@@ -55,6 +62,11 @@ const Categories = () => {
     }
     clearSelection()
   }
+
+  // Filter categories based on search
+  const filteredCategories = categories.filter((category) =>
+    category.name.toLowerCase().includes(searchTerm.toLowerCase()),
+  )
 
   // State for confirmation modal
   const [confirmModal, setConfirmModal] = useState({
@@ -271,139 +283,424 @@ const Categories = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-white">
-      <Sidebar />
-      <div className="flex-1 flex flex-col min-h-screen">
-        <DashboardHeader />
-        <div className="flex-1 flex flex-col items-center justify-start py-10 px-4">
-          <div className="max-w-3xl w-full">
-            <div className="flex items-center justify-between mb-6">
-              <h1 className="text-2xl font-bold text-pink-700">Categories</h1>
-              <button
-                className="bg-pink-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-pink-700 transition shadow"
-                onClick={() => setShowAdd(true)}
-                disabled={editId}
-              >
-                + Add Category
-              </button>
-            </div>
-            {successMsg && (
-              <div className="mb-4 text-green-600 font-semibold bg-green-50 border border-green-200 rounded-lg px-4 py-2">
-                {successMsg}
-              </div>
-            )}
-            {orderChanged && (
-              <div className="mb-4 text-yellow-700 font-semibold bg-yellow-50 border-yellow-200 rounded-lg px-4 py-2">
-                Order changed (not saved to backend)
-              </div>
-            )}
-            {loading && (
-              <div className="overflow-x-auto animate-pulse">
-                <table className="min-w-full border border-pink-100 rounded-xl bg-white">
-                  <thead>
-                    <tr className="bg-pink-50">
-                      <th className="py-2 px-4 text-left w-8">
-                        <div className="h-4 w-4 bg-gray-200 rounded" />
-                      </th>
-                      <th className="py-2 px-4 text-left w-12">
-                        <div className="h-4 w-6 bg-gray-200 rounded" />
-                      </th>
-                      <th className="py-2 px-4 text-left">
-                        <div className="h-4 w-32 bg-gray-200 rounded" />
-                      </th>
-                      <th className="py-2 px-4 text-left">
-                        <div className="h-4 w-20 bg-gray-200 rounded" />
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[...Array(5)].map((_, idx) => (
-                      <tr key={idx} className="border-b">
-                        <td className="py-2 px-4">
-                          <div className="h-4 w-4 bg-gray-200 rounded" />
-                        </td>
-                        <td className="py-2 px-4">
-                          <div className="h-4 w-6 bg-gray-200 rounded" />
-                        </td>
-                        <td className="py-2 px-4">
-                          <div className="h-4 w-32 bg-gray-200 rounded" />
-                        </td>
-                        <td className="py-2 px-4">
-                          <div className="flex gap-2">
-                            <div className="h-8 w-8 bg-gray-100 rounded" />
-                            <div className="h-8 w-8 bg-gray-100 rounded" />
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-            {!loading && !error && categories.length === 0 && (
-              <div className="flex flex-col items-center py-10">
-                <div className="mb-4 text-gray-500 text-lg font-semibold">
-                  No categories found.
+    <>
+      <ToastContainer
+        position="top-right"
+        autoClose={2000}
+        hideProgressBar
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+      <div className="flex min-h-screen bg-gray-50">
+        <Sidebar />
+        <div className="flex-1 flex flex-col min-h-screen">
+          <DashboardHeader />
+          <div className="flex-1 max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+            {/* Header Section */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                    Categories Management
+                  </h1>
+                  <p className="text-gray-600">
+                    Organize courses with categories for better navigation
+                  </p>
                 </div>
+                <div className="flex items-center space-x-3">
+                  <div className="bg-white rounded-lg shadow-sm px-4 py-2">
+                    <span className="text-sm text-gray-500">
+                      Total Categories:
+                    </span>
+                    <span className="ml-2 font-semibold text-gray-900">
+                      {categories.length}
+                    </span>
+                  </div>
+                  <button
+                    className="bg-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-pink-700 transition shadow-lg flex items-center space-x-2"
+                    onClick={() => setShowAdd(true)}
+                    disabled={editId}
+                  >
+                    <FaPlus className="w-4 h-4" />
+                    <span>Add Category</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Search Bar */}
+              <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-1">
+                    <div className="relative">
+                      <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                      <input
+                        type="text"
+                        placeholder="Search categories..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    className="px-4 py-3 text-gray-600 hover:text-gray-800 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Success/Error Messages */}
+            {successMsg && (
+              <div className="mb-6 bg-green-50 border border-green-200 rounded-xl p-4">
+                <div className="flex items-center">
+                  <FaPlus className="text-green-500 mr-3" />
+                  <span className="text-green-800 font-medium">
+                    {successMsg}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {error && (
+              <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4">
+                <div className="flex items-center">
+                  <FaTrash className="text-red-500 mr-3" />
+                  <span className="text-red-800 font-medium">{error}</span>
+                </div>
+              </div>
+            )}
+
+            {orderChanged && (
+              <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                <div className="flex items-center">
+                  <FaFolder className="text-yellow-500 mr-3" />
+                  <span className="text-yellow-800 font-medium">
+                    Order changed (not saved to backend)
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Categories List */}
+            {loading ? (
+              <div className="bg-white rounded-xl shadow-sm p-8">
+                <div className="animate-pulse">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+                    <div className="h-8 bg-gray-200 rounded w-1/6"></div>
+                  </div>
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="border-b border-gray-100 py-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
+                          <div>
+                            <div className="h-4 bg-gray-200 rounded w-32 mb-2"></div>
+                            <div className="h-3 bg-gray-200 rounded w-48"></div>
+                          </div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <div className="h-8 w-8 bg-gray-200 rounded"></div>
+                          <div className="h-8 w-8 bg-gray-200 rounded"></div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : filteredCategories.length === 0 ? (
+              <div className="bg-white rounded-xl shadow-sm p-12 text-center">
+                <FaFolder className="mx-auto text-gray-400 text-4xl mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  {searchTerm ? 'No categories found' : 'No categories yet'}
+                </h3>
+                <p className="text-gray-500 mb-4">
+                  {searchTerm
+                    ? 'Try adjusting your search criteria'
+                    : 'Categories will appear here once they are created'}
+                </p>
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    className="text-pink-600 hover:text-pink-700 font-medium"
+                  >
+                    Clear search
+                  </button>
+                )}
+                {!searchTerm && (
+                  <button
+                    className="bg-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-pink-700 transition shadow-lg flex items-center space-x-2 mx-auto"
+                    onClick={() => setShowAdd(true)}
+                  >
+                    <FaPlus className="w-4 h-4" />
+                    <span>Add First Category</span>
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                {/* Table Header */}
+                <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <input
+                        type="checkbox"
+                        checked={isAllSelected}
+                        onChange={toggleSelectAll}
+                        className="rounded border-gray-300 text-pink-600 focus:ring-pink-500"
+                      />
+                      <span className="text-sm font-medium text-gray-700">
+                        {selectedIds.length > 0
+                          ? `${selectedIds.length} selected`
+                          : 'Select all'}
+                      </span>
+                    </div>
+                    {selectedIds.length > 0 && (
+                      <button
+                        onClick={() =>
+                          openConfirmModal(
+                            selectedIds,
+                            categories
+                              .filter((c) => selectedIds.includes(c.id))
+                              .map((c) => c.name),
+                          )
+                        }
+                        className="px-3 py-1 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                      >
+                        Delete Selected
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Categories Cards */}
+                <div className="divide-y divide-gray-100">
+                  {filteredCategories.map((cat, idx) => (
+                    <div
+                      key={cat.id}
+                      className="px-6 py-4 hover:bg-gray-50 transition-colors cursor-move"
+                      draggable
+                      onDragStart={() => handleDragStart(idx)}
+                      onDragEnter={() => handleDragEnter(idx)}
+                      onDragEnd={handleDragEnd}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.includes(cat.id)}
+                            onChange={() => toggleSelectOne(cat.id)}
+                            className="rounded border-gray-300 text-pink-600 focus:ring-pink-500"
+                          />
+                          <div className="h-10 w-10 bg-gradient-to-br from-pink-400 to-pink-600 rounded-full flex items-center justify-center">
+                            <FaFolder className="text-white w-4 h-4" />
+                          </div>
+                          <div>
+                            <h3 className="font-medium text-gray-900">
+                              {cat.name}
+                            </h3>
+                            <p className="text-sm text-gray-500">
+                              Category #{idx + 1}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleEdit(cat)}
+                            className="p-2 text-gray-400 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition-colors"
+                            title="Edit category"
+                            disabled={
+                              editLoading || deleteLoading === cat.id || showAdd
+                            }
+                          >
+                            <FaEdit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() =>
+                              openConfirmModal([cat.id], [cat.name])
+                            }
+                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Delete category"
+                            disabled={
+                              deleteLoading === cat.id || editLoading || showAdd
+                            }
+                          >
+                            {deleteLoading === cat.id ? (
+                              <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                              <FaTrash className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                      {deleteError && deleteLoading === cat.id && (
+                        <div className="text-red-500 text-sm mt-2 ml-14">
+                          {deleteError}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Confirmation Modal */}
+            {confirmModal.open && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm relative">
+                  <button
+                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold"
+                    onClick={closeConfirmModal}
+                  >
+                    ×
+                  </button>
+                  <div className="text-center">
+                    <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                      <FaTrash className="h-6 w-6 text-red-600" />
+                    </div>
+                    <h2 className="text-xl font-bold mb-4 text-gray-900">
+                      Delete{' '}
+                      {confirmModal.ids.length > 1 ? 'Categories' : 'Category'}
+                    </h2>
+                    <p className="text-gray-600 mb-4">
+                      Are you sure you want to delete{' '}
+                      {confirmModal.ids.length > 1
+                        ? 'these categories'
+                        : 'this category'}
+                      ? This action cannot be undone.
+                    </p>
+                    <div className="bg-gray-50 rounded-lg p-3 mb-6">
+                      {confirmModal.names.map((name, i) => (
+                        <div key={i} className="font-medium text-gray-900">
+                          {name}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex gap-3">
+                      <button
+                        className="flex-1 bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition"
+                        onClick={handleConfirmDelete}
+                      >
+                        Delete
+                      </button>
+                      <button
+                        className="flex-1 px-6 py-3 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 transition"
+                        onClick={closeConfirmModal}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Undo Delete Toast */}
+            {undoData && (
+              <div className="fixed top-20 right-6 z-50 px-6 py-3 rounded-lg shadow-lg font-semibold text-white bg-yellow-600 flex items-center gap-4 animate-fade-in">
+                Category "{undoData.name}" deleted.
                 <button
-                  className="bg-pink-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-pink-700 transition shadow"
-                  onClick={() => setShowAdd(true)}
+                  className="bg-white text-yellow-700 font-bold px-3 py-1 rounded hover:bg-yellow-100 transition"
+                  onClick={handleUndoDelete}
+                  disabled={addLoading}
                 >
-                  + Add Category
+                  Undo
                 </button>
               </div>
             )}
-            {/* Bulk Action Bar */}
-            {selectedIds.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-2 items-center bg-pink-50 border border-pink-200 rounded-lg px-4 py-2">
-                <span className="font-semibold text-pink-700">
-                  {selectedIds.length} selected
-                </span>
-                <button
-                  className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
-                  onClick={() =>
-                    openConfirmModal(
-                      selectedIds,
-                      categories
-                        .filter((c) => selectedIds.includes(c.id))
-                        .map((c) => c.name),
-                    )
-                  }
-                >
-                  Delete Selected
-                </button>
-                <button
-                  className="ml-2 text-gray-500 hover:text-pink-600 underline text-sm"
-                  onClick={clearSelection}
-                >
-                  Clear
-                </button>
+
+            {/* Edit Category Modal */}
+            {showEdit && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md relative">
+                  <button
+                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold"
+                    onClick={closeEditModal}
+                  >
+                    ×
+                  </button>
+                  <h2 className="text-xl font-bold mb-6 text-gray-900">
+                    Edit Category
+                  </h2>
+                  <form onSubmit={handleEditSubmit} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Category Name
+                      </label>
+                      <input
+                        type="text"
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                        required
+                        autoFocus
+                      />
+                    </div>
+                    {editError && (
+                      <div className="text-red-500 text-sm bg-red-50 p-3 rounded-lg">
+                        {editError}
+                      </div>
+                    )}
+                    <div className="flex gap-3 pt-4">
+                      <button
+                        type="submit"
+                        className="flex-1 bg-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-pink-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={editLoading}
+                      >
+                        {editLoading ? 'Saving...' : 'Save Changes'}
+                      </button>
+                      <button
+                        type="button"
+                        className="px-6 py-3 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 transition"
+                        onClick={closeEditModal}
+                        disabled={editLoading}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </div>
               </div>
             )}
+
             {/* Add Category Modal */}
             {showAdd && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-                <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md relative">
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl relative">
                   <button
-                    className="absolute top-2 right-3 text-gray-400 hover:text-pink-600 text-2xl font-bold"
+                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold"
                     onClick={closeAddModal}
                   >
                     ×
                   </button>
-                  <h2 className="text-lg font-bold mb-4 text-pink-700">
+                  <h2 className="text-xl font-bold mb-6 text-gray-900">
                     Add Categories
                   </h2>
-                  <div className="text-sm text-gray-500 mb-2">
-                    Masukkan beberapa nama kategori. Satu nama per baris.
-                    Urutkan dengan drag & drop jika perlu.
+                  <div className="text-sm text-gray-600 mb-4 bg-blue-50 p-4 rounded-lg">
+                    <p className="font-medium mb-2">💡 Tips:</p>
+                    <ul className="space-y-1 text-sm">
+                      <li>
+                        • Enter multiple category names to add them all at once
+                      </li>
+                      <li>• Use drag & drop to reorder the categories</li>
+                      <li>• Empty fields will be automatically ignored</li>
+                    </ul>
                   </div>
-                  <form onSubmit={addCategory} className="flex flex-col gap-4">
+                  <form onSubmit={addCategory} className="space-y-4">
                     <DragDropContext onDragEnd={handleAddDragEnd}>
                       <Droppable droppableId="add-names-list">
                         {(provided) => (
                           <div
                             ref={provided.innerRef}
                             {...provided.droppableProps}
+                            className="space-y-3"
                           >
                             {addNames.map((name, idx) => (
                               <Draggable
@@ -415,11 +712,15 @@ const Categories = () => {
                                   <div
                                     ref={prov.innerRef}
                                     {...prov.draggableProps}
-                                    className={`flex items-center gap-2 mb-2 bg-gray-50 rounded px-2 py-1 ${snapshot.isDragging ? 'ring-2 ring-pink-300' : ''}`}
+                                    className={`flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-2 ${
+                                      snapshot.isDragging
+                                        ? 'border-pink-300 shadow-lg'
+                                        : 'border-transparent'
+                                    }`}
                                   >
                                     <span
                                       {...prov.dragHandleProps}
-                                      className="cursor-move text-pink-500"
+                                      className="cursor-move text-pink-500 hover:text-pink-600"
                                     >
                                       <FaGripVertical />
                                     </span>
@@ -430,17 +731,17 @@ const Categories = () => {
                                         handleAddNameChange(idx, e.target.value)
                                       }
                                       placeholder={`Category name #${idx + 1}`}
-                                      className="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200"
+                                      className="flex-1 border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                                       required
                                     />
                                     {addNames.length > 1 && (
                                       <button
                                         type="button"
-                                        className="text-red-500 hover:text-red-700 px-2"
+                                        className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-colors"
                                         onClick={() => handleAddNameRemove(idx)}
                                         title="Remove"
                                       >
-                                        <FaTrash />
+                                        <FaTrash className="w-4 h-4" />
                                       </button>
                                     )}
                                   </div>
@@ -454,232 +755,42 @@ const Categories = () => {
                     </DragDropContext>
                     <button
                       type="button"
-                      className="text-pink-600 hover:underline text-sm font-semibold self-start"
+                      className="text-pink-600 hover:text-pink-700 font-medium flex items-center space-x-2"
                       onClick={handleAddNameAdd}
                     >
-                      + Add another
+                      <FaPlus className="w-4 h-4" />
+                      <span>Add another category</span>
                     </button>
-                    <button
-                      type="submit"
-                      className="bg-pink-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-pink-700 transition"
-                      disabled={addLoading}
-                    >
-                      {addLoading ? 'Adding...' : 'Add'}
-                    </button>
+                    <div className="flex gap-3 pt-4">
+                      <button
+                        type="submit"
+                        className="flex-1 bg-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-pink-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={addLoading}
+                      >
+                        {addLoading ? 'Adding...' : 'Add Categories'}
+                      </button>
+                      <button
+                        type="button"
+                        className="px-6 py-3 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 transition"
+                        onClick={closeAddModal}
+                        disabled={addLoading}
+                      >
+                        Cancel
+                      </button>
+                    </div>
                     {addError && (
-                      <div className="text-red-500 mt-2">{addError}</div>
+                      <div className="text-red-500 text-sm bg-red-50 p-3 rounded-lg">
+                        {addError}
+                      </div>
                     )}
                   </form>
                 </div>
               </div>
             )}
-            {!loading && !error && categories.length > 0 && (
-              <div className="overflow-x-auto">
-                <table className="min-w-full border border-pink-100 rounded-xl bg-white">
-                  <thead>
-                    <tr className="bg-pink-600 text-white text-base font-bold border-b-2 border-pink-700">
-                      <th className="py-2 px-4 text-left w-8">
-                        <input
-                          type="checkbox"
-                          checked={isAllSelected}
-                          onChange={toggleSelectAll}
-                          className="w-4 h-4"
-                        />
-                      </th>
-                      <th className="py-2 px-4 text-left w-12">No</th>
-                      <th className="py-2 px-4 text-left">Name</th>
-                      <th className="py-2 px-4 text-left">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {categories.map((cat, idx) => (
-                      <tr
-                        key={cat.id}
-                        className={`border-b ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-pink-50 transition-all duration-200`}
-                      >
-                        <td className="py-2 px-4">
-                          <input
-                            type="checkbox"
-                            checked={selectedIds.includes(cat.id)}
-                            onChange={() => toggleSelectOne(cat.id)}
-                            className="w-4 h-4"
-                          />
-                        </td>
-                        <td className="py-3 px-5 text-base">{idx + 1}</td>
-                        <td className="py-3 px-5 text-base">{cat.name}</td>
-                        <td className="py-3 px-5 text-base">
-                          <div className="flex gap-2">
-                            <button
-                              className="p-2 rounded-lg border border-pink-500 text-pink-600 font-semibold hover:bg-pink-50 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                              onClick={() => handleEdit(cat)}
-                              disabled={
-                                editLoading ||
-                                deleteLoading === cat.id ||
-                                showAdd
-                              }
-                              title="Edit Category"
-                            >
-                              <FaEdit />
-                            </button>
-                            <button
-                              className="p-2 rounded-lg border border-red-400 text-red-500 font-semibold hover:bg-red-50 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                              onClick={() =>
-                                openConfirmModal([cat.id], [cat.name])
-                              }
-                              disabled={
-                                deleteLoading === cat.id ||
-                                editLoading ||
-                                showAdd
-                              }
-                              title="Delete Category"
-                            >
-                              {deleteLoading === cat.id ? '...' : <FaTrash />}
-                            </button>
-                          </div>
-                          {deleteError && deleteLoading === cat.id && (
-                            <div className="text-red-500 mt-1">
-                              {deleteError}
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
           </div>
         </div>
       </div>
-      {/* Confirmation Modal */}
-      {confirmModal.open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-          <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-sm relative flex flex-col items-center">
-            <button
-              className="absolute top-2 right-3 text-gray-400 hover:text-pink-600 text-2xl font-bold"
-              onClick={closeConfirmModal}
-            >
-              ×
-            </button>
-            <h2 className="text-lg font-bold mb-4 text-pink-700">
-              Delete{' '}
-              {confirmModal.ids.length > 1
-                ? 'these categories?'
-                : 'this category?'}
-            </h2>
-            <div className="mb-4 text-gray-700 text-center">
-              {confirmModal.names.map((name, i) => (
-                <div key={i} className="font-semibold">
-                  {name}
-                </div>
-              ))}
-            </div>
-            <div className="flex gap-3 mt-2">
-              <button
-                className="bg-pink-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-pink-700 transition"
-                onClick={handleConfirmDelete}
-              >
-                Yes, Delete
-              </button>
-              <button
-                className="px-6 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100"
-                onClick={closeConfirmModal}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* Feedback Toast */}
-      {(successMsg || addError || editError || deleteError) && (
-        <div
-          className={`fixed top-6 right-6 z-50 px-6 py-3 rounded-lg shadow-lg font-semibold text-white transition-all animate-fade-in ${successMsg ? 'bg-green-600' : 'bg-red-500'}`}
-        >
-          {successMsg || addError || editError || deleteError}
-        </div>
-      )}
-      {/* Undo Delete Toast */}
-      {undoData && (
-        <div className="fixed top-20 right-6 z-50 px-6 py-3 rounded-lg shadow-lg font-semibold text-white bg-yellow-600 flex items-center gap-4 animate-fade-in">
-          Category "{undoData.name}" deleted.
-          <button
-            className="bg-white text-yellow-700 font-bold px-3 py-1 rounded hover:bg-yellow-100 transition"
-            onClick={handleUndoDelete}
-            disabled={addLoading}
-          >
-            Undo
-          </button>
-        </div>
-      )}
-      {/* Edit Category Modal */}
-      {showEdit && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-          <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-sm relative">
-            <button
-              className="absolute top-2 right-3 text-gray-400 hover:text-pink-600 text-2xl font-bold"
-              onClick={closeEditModal}
-            >
-              ×
-            </button>
-            <h2 className="text-lg font-bold mb-4 text-pink-700">
-              Edit Category
-            </h2>
-            <div className="text-sm text-gray-500 mb-2">
-              Edit nama kategori sesuai kebutuhan.
-            </div>
-            <form onSubmit={handleEditSubmit} className="flex flex-col gap-4">
-              <label
-                htmlFor="edit-category-name"
-                className="font-semibold text-sm text-gray-700"
-              >
-                Category Name
-              </label>
-              <input
-                id="edit-category-name"
-                type="text"
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200"
-                required
-                autoFocus
-              />
-              <div className="flex gap-3 mt-2">
-                <button
-                  type="submit"
-                  className="bg-pink-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-pink-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={editLoading}
-                >
-                  {editLoading ? 'Saving...' : 'Save'}
-                </button>
-                <button
-                  type="button"
-                  className="px-6 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100"
-                  onClick={closeEditModal}
-                  disabled={editLoading}
-                >
-                  Cancel
-                </button>
-              </div>
-              {editError && (
-                <div className="text-red-500 mt-2">{editError}</div>
-              )}
-            </form>
-          </div>
-        </div>
-      )}
-      <ToastContainer
-        position="top-right"
-        autoClose={2000}
-        hideProgressBar
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
-    </div>
+    </>
   )
 }
 

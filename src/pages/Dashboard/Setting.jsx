@@ -244,451 +244,791 @@ const Setting = () => {
     return `https://lms.alanwari.ponpes.id/storage/${logo}`
   }
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
       <div className="flex-1 flex flex-col min-h-screen">
         <DashboardHeader />
         <div className="flex-1 flex flex-col items-center justify-start py-10 px-4">
-          <div className="max-w-5xl w-full">
-            <h1 className="text-2xl font-bold text-pink-700 mb-6">Settings</h1>
-            <div className="flex items-center justify-between mb-6 mt-6">
-              <div className="flex gap-4">
-                <button
-                  className={`px-4 py-2 rounded-t-lg font-semibold ${tab === 'faq' ? 'bg-pink-600 text-white' : 'bg-gray-100 text-pink-700'}`}
-                  onClick={() => setTab('faq')}
-                >
-                  FAQ
-                </button>
-                <button
-                  className={`px-4 py-2 rounded-t-lg font-semibold ${tab === 'partner' ? 'bg-pink-600 text-white' : 'bg-gray-100 text-pink-700'}`}
-                  onClick={() => setTab('partner')}
-                >
-                  Partner
-                </button>
+          <div className="max-w-6xl w-full">
+            {/* Header Section */}
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Settings
+              </h1>
+              <p className="text-gray-600">
+                Manage FAQ and Partner data for the platform
+              </p>
+            </div>
+
+            {/* Tab Navigation */}
+            <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex gap-4">
+                  <button
+                    className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
+                      tab === 'faq'
+                        ? 'bg-pink-600 text-white shadow-lg'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                    onClick={() => setTab('faq')}
+                  >
+                    <div className="flex items-center gap-2">
+                      <svg
+                        className="w-5 h-5"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      FAQ Management
+                    </div>
+                  </button>
+                  <button
+                    className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
+                      tab === 'partner'
+                        ? 'bg-pink-600 text-white shadow-lg'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                    onClick={() => setTab('partner')}
+                  >
+                    <div className="flex items-center gap-2">
+                      <svg
+                        className="w-5 h-5"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
+                      </svg>
+                      Partner Management
+                    </div>
+                  </button>
+                </div>
+                {tab === 'faq' && (
+                  <button
+                    className="bg-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-pink-700 transition-colors flex items-center gap-2 shadow-lg"
+                    onClick={() => setShowAddFaq(true)}
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    Add FAQ
+                  </button>
+                )}
+                {tab === 'partner' && (
+                  <button
+                    className="bg-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-pink-700 transition-colors flex items-center gap-2 shadow-lg"
+                    onClick={() => setShowAddPartner(true)}
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    Add Partner
+                  </button>
+                )}
               </div>
+            </div>
+
+            {/* Content Section */}
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
               {tab === 'faq' && (
-                <button
-                  className="bg-pink-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-pink-700"
-                  onClick={() => setShowAddFaq(true)}
-                >
-                  + Add FAQ
-                </button>
+                <div>
+                  <div className="px-6 py-4 border-b border-gray-200">
+                    <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                      <svg
+                        className="w-5 h-5 text-pink-600"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      FAQ List
+                    </h2>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full">
+                      <thead>
+                        <tr className="bg-gray-50">
+                          <th className="py-4 px-6 text-left text-sm font-semibold text-gray-900">
+                            Question
+                          </th>
+                          <th className="py-4 px-6 text-left text-sm font-semibold text-gray-900">
+                            Answer
+                          </th>
+                          <th className="py-4 px-6 text-left text-sm font-semibold text-gray-900">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {faqLoading ? (
+                          <tr>
+                            <td colSpan={3} className="py-8 text-center">
+                              <div className="flex items-center justify-center gap-2">
+                                <svg
+                                  className="animate-spin h-5 w-5 text-pink-600"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                    fill="none"
+                                  />
+                                  <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8v8z"
+                                  />
+                                </svg>
+                                Loading...
+                              </div>
+                            </td>
+                          </tr>
+                        ) : faqs.length === 0 ? (
+                          <tr>
+                            <td
+                              colSpan={3}
+                              className="py-8 text-center text-gray-500"
+                            >
+                              <div className="flex flex-col items-center gap-2">
+                                <svg
+                                  className="w-8 h-8 text-gray-400"
+                                  fill="currentColor"
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                                No FAQ found. Start by adding your first FAQ.
+                              </div>
+                            </td>
+                          </tr>
+                        ) : (
+                          faqs.map((faq) => (
+                            <tr
+                              key={faq.id}
+                              className="hover:bg-gray-50 transition-colors"
+                            >
+                              <td className="py-4 px-6 text-sm text-gray-900 max-w-xs truncate">
+                                {faq.question}
+                              </td>
+                              <td className="py-4 px-6 text-sm text-gray-600 max-w-xs truncate">
+                                {faq.answer}
+                              </td>
+                              <td className="py-4 px-6">
+                                <div className="flex gap-2">
+                                  <button
+                                    className="text-pink-600 hover:text-pink-700 p-2 rounded-lg hover:bg-pink-50 transition-colors"
+                                    title="Edit FAQ"
+                                    onClick={() => openEditFaq(faq)}
+                                  >
+                                    <FaEdit />
+                                  </button>
+                                  <button
+                                    className="text-red-600 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition-colors"
+                                    title="Delete FAQ"
+                                    onClick={() => handleDeleteFaq(faq.id)}
+                                  >
+                                    <FaTrash />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               )}
+
               {tab === 'partner' && (
-                <button
-                  className="bg-pink-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-pink-700"
-                  onClick={() => setShowAddPartner(true)}
-                >
-                  + Add Partner
-                </button>
+                <div>
+                  <div className="px-6 py-4 border-b border-gray-200">
+                    <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                      <svg
+                        className="w-5 h-5 text-pink-600"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
+                      </svg>
+                      Partner List
+                    </h2>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full">
+                      <thead>
+                        <tr className="bg-gray-50">
+                          <th className="py-4 px-6 text-left text-sm font-semibold text-gray-900">
+                            Logo
+                          </th>
+                          <th className="py-4 px-6 text-left text-sm font-semibold text-gray-900">
+                            Name
+                          </th>
+                          <th className="py-4 px-6 text-left text-sm font-semibold text-gray-900">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {partnerLoading ? (
+                          <tr>
+                            <td colSpan={3} className="py-8 text-center">
+                              <div className="flex items-center justify-center gap-2">
+                                <svg
+                                  className="animate-spin h-5 w-5 text-pink-600"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                    fill="none"
+                                  />
+                                  <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8v8z"
+                                  />
+                                </svg>
+                                Loading...
+                              </div>
+                            </td>
+                          </tr>
+                        ) : partners.length === 0 ? (
+                          <tr>
+                            <td
+                              colSpan={3}
+                              className="py-8 text-center text-gray-500"
+                            >
+                              <div className="flex flex-col items-center gap-2">
+                                <svg
+                                  className="w-8 h-8 text-gray-400"
+                                  fill="currentColor"
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
+                                </svg>
+                                No partners found. Start by adding your first
+                                partner.
+                              </div>
+                            </td>
+                          </tr>
+                        ) : (
+                          partners.map((partner) => (
+                            <tr
+                              key={partner.id}
+                              className="hover:bg-gray-50 transition-colors"
+                            >
+                              <td className="py-4 px-6">
+                                <img
+                                  src={getLogoUrl(partner.logo)}
+                                  alt={partner.name}
+                                  className="h-12 w-12 object-contain rounded-lg bg-white border shadow-sm"
+                                  onError={(e) => {
+                                    e.target.onerror = null
+                                    e.target.src =
+                                      'https://via.placeholder.com/48x48?text=No+Logo'
+                                  }}
+                                />
+                              </td>
+                              <td className="py-4 px-6 text-sm font-medium text-gray-900">
+                                {partner.name}
+                              </td>
+                              <td className="py-4 px-6">
+                                <div className="flex gap-2">
+                                  <button
+                                    className="text-pink-600 hover:text-pink-700 p-2 rounded-lg hover:bg-pink-50 transition-colors"
+                                    title="Edit Partner"
+                                    onClick={() => openEditPartner(partner)}
+                                  >
+                                    <FaEdit />
+                                  </button>
+                                  <button
+                                    className="text-red-600 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition-colors"
+                                    title="Delete Partner"
+                                    onClick={() =>
+                                      handleDeletePartner(partner.id)
+                                    }
+                                  >
+                                    <FaTrash />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               )}
             </div>
-            {tab === 'faq' && (
-              <div>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full border border-pink-100 rounded-xl bg-white">
-                    <thead>
-                      <tr className="bg-pink-600 text-white">
-                        <th className="py-2 px-4 text-left">Question</th>
-                        <th className="py-2 px-4 text-left">Answer</th>
-                        <th className="py-2 px-4 text-left">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {faqLoading ? (
-                        <tr>
-                          <td colSpan={3} className="py-8 text-center">
-                            Loading...
-                          </td>
-                        </tr>
-                      ) : faqs.length === 0 ? (
-                        <tr>
-                          <td
-                            colSpan={3}
-                            className="py-8 text-center text-gray-500"
-                          >
-                            No FAQ found.
-                          </td>
-                        </tr>
-                      ) : (
-                        faqs.map((faq) => (
-                          <tr
-                            key={faq.id}
-                            className="border-b hover:bg-pink-50"
-                          >
-                            <td className="py-2 px-4">{faq.question}</td>
-                            <td className="py-2 px-4">{faq.answer}</td>
-                            <td className="py-2 px-4 flex gap-2">
-                              <button
-                                className="text-pink-500 hover:text-pink-700 p-2"
-                                title="Edit"
-                                onClick={() => openEditFaq(faq)}
-                              >
-                                <FaEdit />
-                              </button>
-                              <button
-                                className="text-red-500 hover:text-red-700 p-2"
-                                title="Delete"
-                                onClick={() => handleDeleteFaq(faq.id)}
-                              >
-                                <FaTrash />
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-                {/* Modal Add FAQ */}
-                {showAddFaq && (
-                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-                    <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md relative">
-                      <button
-                        className="absolute top-2 right-3 text-gray-400 hover:text-pink-600 text-2xl font-bold"
-                        onClick={() => setShowAddFaq(false)}
-                      >
-                        ×
-                      </button>
-                      <h2 className="text-lg font-bold mb-4 text-pink-700">
-                        Add FAQ
-                      </h2>
-                      <form
-                        onSubmit={handleAddFaq}
-                        className="flex flex-col gap-4"
-                      >
-                        <input
-                          type="text"
-                          placeholder="Question"
-                          value={faqForm.question}
-                          onChange={(e) =>
-                            setFaqForm((f) => ({
-                              ...f,
-                              question: e.target.value,
-                            }))
-                          }
-                          className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200"
-                          required
-                        />
-                        <textarea
-                          placeholder="Answer"
-                          value={faqForm.answer}
-                          onChange={(e) =>
-                            setFaqForm((f) => ({
-                              ...f,
-                              answer: e.target.value,
-                            }))
-                          }
-                          className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200"
-                          required
-                        />
-                        {faqFormError && (
-                          <div className="text-red-500 text-sm">
-                            {faqFormError}
-                          </div>
-                        )}
-                        <div className="flex gap-3 mt-2">
-                          <button
-                            type="submit"
-                            className="bg-pink-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-pink-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                            disabled={faqFormLoading}
-                          >
-                            {faqFormLoading ? 'Saving...' : 'Add'}
-                          </button>
-                          <button
-                            type="button"
-                            className="px-6 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100"
-                            onClick={() => setShowAddFaq(false)}
-                            disabled={faqFormLoading}
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </form>
-                    </div>
-                  </div>
-                )}
-                {/* Modal Edit FAQ */}
-                {showEditFaq && (
-                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-                    <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md relative">
-                      <button
-                        className="absolute top-2 right-3 text-gray-400 hover:text-pink-600 text-2xl font-bold"
-                        onClick={closeEditFaq}
-                      >
-                        ×
-                      </button>
-                      <h2 className="text-lg font-bold mb-4 text-pink-700">
-                        Edit FAQ
-                      </h2>
-                      <form
-                        onSubmit={handleEditFaq}
-                        className="flex flex-col gap-4"
-                      >
-                        <input
-                          type="text"
-                          placeholder="Question"
-                          value={editFaqForm.question}
-                          onChange={(e) =>
-                            setEditFaqForm((f) => ({
-                              ...f,
-                              question: e.target.value,
-                            }))
-                          }
-                          className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200"
-                          required
-                        />
-                        <textarea
-                          placeholder="Answer"
-                          value={editFaqForm.answer}
-                          onChange={(e) =>
-                            setEditFaqForm((f) => ({
-                              ...f,
-                              answer: e.target.value,
-                            }))
-                          }
-                          className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200"
-                          required
-                        />
-                        {editFaqError && (
-                          <div className="text-red-500 text-sm">
-                            {editFaqError}
-                          </div>
-                        )}
-                        <div className="flex gap-3 mt-2">
-                          <button
-                            type="submit"
-                            className="bg-pink-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-pink-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                            disabled={editFaqLoading}
-                          >
-                            {editFaqLoading ? 'Saving...' : 'Save'}
-                          </button>
-                          <button
-                            type="button"
-                            className="px-6 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100"
-                            onClick={closeEditFaq}
-                            disabled={editFaqLoading}
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </form>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-            {tab === 'partner' && (
-              <div>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full border border-pink-100 rounded-xl bg-white">
-                    <thead>
-                      <tr className="bg-pink-600 text-white">
-                        <th className="py-2 px-4 text-left">Logo</th>
-                        <th className="py-2 px-4 text-left">Name</th>
-                        <th className="py-2 px-4 text-left">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {partnerLoading ? (
-                        <tr>
-                          <td colSpan={3} className="py-8 text-center">
-                            Loading...
-                          </td>
-                        </tr>
-                      ) : partners.length === 0 ? (
-                        <tr>
-                          <td
-                            colSpan={3}
-                            className="py-8 text-center text-gray-500"
-                          >
-                            No partner found.
-                          </td>
-                        </tr>
-                      ) : (
-                        partners.map((partner) => (
-                          <tr
-                            key={partner.id}
-                            className="border-b hover:bg-pink-50"
-                          >
-                            <td className="py-2 px-4">
-                              <img
-                                src={getLogoUrl(partner.logo)}
-                                alt={partner.name}
-                                className="h-10 w-10 object-contain rounded bg-white border"
-                                onError={(e) => {
-                                  e.target.onerror = null
-                                  e.target.src =
-                                    'https://via.placeholder.com/40x40?text=No+Logo'
-                                }}
-                              />
-                            </td>
-                            <td className="py-2 px-4">{partner.name}</td>
-                            <td className="py-2 px-4 flex gap-2">
-                              <button
-                                className="text-pink-500 hover:text-pink-700 p-2"
-                                title="Edit"
-                                onClick={() => openEditPartner(partner)}
-                              >
-                                <FaEdit />
-                              </button>
-                              <button
-                                className="text-red-500 hover:text-red-700 p-2"
-                                title="Delete"
-                                onClick={() => handleDeletePartner(partner.id)}
-                              >
-                                <FaTrash />
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-                {/* Modal Add Partner */}
-                {showAddPartner && (
-                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-                    <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md relative">
-                      <button
-                        className="absolute top-2 right-3 text-gray-400 hover:text-pink-600 text-2xl font-bold"
-                        onClick={() => setShowAddPartner(false)}
-                      >
-                        ×
-                      </button>
-                      <h2 className="text-lg font-bold mb-4 text-pink-700">
-                        Add Partner
-                      </h2>
-                      <form
-                        onSubmit={handleAddPartner}
-                        className="flex flex-col gap-4"
-                      >
-                        <input
-                          type="text"
-                          placeholder="Name"
-                          value={partnerForm.name}
-                          onChange={(e) =>
-                            setPartnerForm((f) => ({
-                              ...f,
-                              name: e.target.value,
-                            }))
-                          }
-                          className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200"
-                          required
-                        />
-                        <input
-                          type="text"
-                          placeholder="Logo URL"
-                          value={partnerForm.logo}
-                          onChange={(e) =>
-                            setPartnerForm((f) => ({
-                              ...f,
-                              logo: e.target.value,
-                            }))
-                          }
-                          className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200"
-                          required
-                        />
-                        {partnerFormError && (
-                          <div className="text-red-500 text-sm">
-                            {partnerFormError}
-                          </div>
-                        )}
-                        <div className="flex gap-3 mt-2">
-                          <button
-                            type="submit"
-                            className="bg-pink-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-pink-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                            disabled={partnerFormLoading}
-                          >
-                            {partnerFormLoading ? 'Saving...' : 'Add'}
-                          </button>
-                          <button
-                            type="button"
-                            className="px-6 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100"
-                            onClick={() => setShowAddPartner(false)}
-                            disabled={partnerFormLoading}
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </form>
-                    </div>
-                  </div>
-                )}
-                {/* Modal Edit Partner */}
-                {showEditPartner && (
-                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-                    <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md relative">
-                      <button
-                        className="absolute top-2 right-3 text-gray-400 hover:text-pink-600 text-2xl font-bold"
-                        onClick={closeEditPartner}
-                      >
-                        ×
-                      </button>
-                      <h2 className="text-lg font-bold mb-4 text-pink-700">
-                        Edit Partner
-                      </h2>
-                      <form
-                        onSubmit={handleEditPartner}
-                        className="flex flex-col gap-4"
-                      >
-                        <input
-                          type="text"
-                          placeholder="Name"
-                          value={editPartnerForm.name}
-                          onChange={(e) =>
-                            setEditPartnerForm((f) => ({
-                              ...f,
-                              name: e.target.value,
-                            }))
-                          }
-                          className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200"
-                          required
-                        />
-                        <input
-                          type="text"
-                          placeholder="Logo URL"
-                          value={editPartnerForm.logo}
-                          onChange={(e) =>
-                            setEditPartnerForm((f) => ({
-                              ...f,
-                              logo: e.target.value,
-                            }))
-                          }
-                          className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200"
-                          required
-                        />
-                        {editPartnerError && (
-                          <div className="text-red-500 text-sm">
-                            {editPartnerError}
-                          </div>
-                        )}
-                        <div className="flex gap-3 mt-2">
-                          <button
-                            type="submit"
-                            className="bg-pink-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-pink-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                            disabled={editPartnerLoading}
-                          >
-                            {editPartnerLoading ? 'Saving...' : 'Save'}
-                          </button>
-                          <button
-                            type="button"
-                            className="px-6 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100"
-                            onClick={closeEditPartner}
-                            disabled={editPartnerLoading}
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </form>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </div>
       </div>
+
+      {/* Enhanced Modals */}
+      {/* Add FAQ Modal */}
+      {showAddFaq && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4 relative">
+            <button
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold transition-colors"
+              onClick={() => setShowAddFaq(false)}
+            >
+              ×
+            </button>
+            <h2 className="text-xl font-bold mb-6 text-gray-900 flex items-center gap-2">
+              <svg
+                className="w-6 h-6 text-pink-600"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Add New FAQ
+            </h2>
+            <form onSubmit={handleAddFaq} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Question
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter question..."
+                  value={faqForm.question}
+                  onChange={(e) =>
+                    setFaqForm((f) => ({ ...f, question: e.target.value }))
+                  }
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-500 transition-colors"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Answer
+                </label>
+                <textarea
+                  placeholder="Enter answer..."
+                  value={faqForm.answer}
+                  onChange={(e) =>
+                    setFaqForm((f) => ({ ...f, answer: e.target.value }))
+                  }
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-500 transition-colors resize-none"
+                  rows={4}
+                  required
+                />
+              </div>
+              {faqFormError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-700 text-sm">
+                  {faqFormError}
+                </div>
+              )}
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="submit"
+                  className="flex-1 bg-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-pink-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  disabled={faqFormLoading}
+                >
+                  {faqFormLoading ? (
+                    <>
+                      <svg
+                        className="animate-spin h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          fill="none"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v8z"
+                        />
+                      </svg>
+                      Saving...
+                    </>
+                  ) : (
+                    'Add FAQ'
+                  )}
+                </button>
+                <button
+                  type="button"
+                  className="px-6 py-3 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                  onClick={() => setShowAddFaq(false)}
+                  disabled={faqFormLoading}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit FAQ Modal */}
+      {showEditFaq && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4 relative">
+            <button
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold transition-colors"
+              onClick={closeEditFaq}
+            >
+              ×
+            </button>
+            <h2 className="text-xl font-bold mb-6 text-gray-900 flex items-center gap-2">
+              <svg
+                className="w-6 h-6 text-pink-600"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+              </svg>
+              Edit FAQ
+            </h2>
+            <form onSubmit={handleEditFaq} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Question
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter question..."
+                  value={editFaqForm.question}
+                  onChange={(e) =>
+                    setEditFaqForm((f) => ({ ...f, question: e.target.value }))
+                  }
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-500 transition-colors"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Answer
+                </label>
+                <textarea
+                  placeholder="Enter answer..."
+                  value={editFaqForm.answer}
+                  onChange={(e) =>
+                    setEditFaqForm((f) => ({ ...f, answer: e.target.value }))
+                  }
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-500 transition-colors resize-none"
+                  rows={4}
+                  required
+                />
+              </div>
+              {editFaqError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-700 text-sm">
+                  {editFaqError}
+                </div>
+              )}
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="submit"
+                  className="flex-1 bg-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-pink-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  disabled={editFaqLoading}
+                >
+                  {editFaqLoading ? (
+                    <>
+                      <svg
+                        className="animate-spin h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          fill="none"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v8z"
+                        />
+                      </svg>
+                      Saving...
+                    </>
+                  ) : (
+                    'Save Changes'
+                  )}
+                </button>
+                <button
+                  type="button"
+                  className="px-6 py-3 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                  onClick={closeEditFaq}
+                  disabled={editFaqLoading}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add Partner Modal */}
+      {showAddPartner && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4 relative">
+            <button
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold transition-colors"
+              onClick={() => setShowAddPartner(false)}
+            >
+              ×
+            </button>
+            <h2 className="text-xl font-bold mb-6 text-gray-900 flex items-center gap-2">
+              <svg
+                className="w-6 h-6 text-pink-600"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Add New Partner
+            </h2>
+            <form onSubmit={handleAddPartner} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Partner Name
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter partner name..."
+                  value={partnerForm.name}
+                  onChange={(e) =>
+                    setPartnerForm((f) => ({ ...f, name: e.target.value }))
+                  }
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-500 transition-colors"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Logo URL
+                </label>
+                <input
+                  type="url"
+                  placeholder="Enter logo URL..."
+                  value={partnerForm.logo}
+                  onChange={(e) =>
+                    setPartnerForm((f) => ({ ...f, logo: e.target.value }))
+                  }
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-500 transition-colors"
+                  required
+                />
+              </div>
+              {partnerFormError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-700 text-sm">
+                  {partnerFormError}
+                </div>
+              )}
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="submit"
+                  className="flex-1 bg-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-pink-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  disabled={partnerFormLoading}
+                >
+                  {partnerFormLoading ? (
+                    <>
+                      <svg
+                        className="animate-spin h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          fill="none"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v8z"
+                        />
+                      </svg>
+                      Saving...
+                    </>
+                  ) : (
+                    'Add Partner'
+                  )}
+                </button>
+                <button
+                  type="button"
+                  className="px-6 py-3 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                  onClick={() => setShowAddPartner(false)}
+                  disabled={partnerFormLoading}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Partner Modal */}
+      {showEditPartner && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4 relative">
+            <button
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold transition-colors"
+              onClick={closeEditPartner}
+            >
+              ×
+            </button>
+            <h2 className="text-xl font-bold mb-6 text-gray-900 flex items-center gap-2">
+              <svg
+                className="w-6 h-6 text-pink-600"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+              </svg>
+              Edit Partner
+            </h2>
+            <form onSubmit={handleEditPartner} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Partner Name
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter partner name..."
+                  value={editPartnerForm.name}
+                  onChange={(e) =>
+                    setEditPartnerForm((f) => ({ ...f, name: e.target.value }))
+                  }
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-500 transition-colors"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Logo URL
+                </label>
+                <input
+                  type="url"
+                  placeholder="Enter logo URL..."
+                  value={editPartnerForm.logo}
+                  onChange={(e) =>
+                    setEditPartnerForm((f) => ({ ...f, logo: e.target.value }))
+                  }
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-500 transition-colors"
+                  required
+                />
+              </div>
+              {editPartnerError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-700 text-sm">
+                  {editPartnerError}
+                </div>
+              )}
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="submit"
+                  className="flex-1 bg-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-pink-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  disabled={editPartnerLoading}
+                >
+                  {editPartnerLoading ? (
+                    <>
+                      <svg
+                        className="animate-spin h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          fill="none"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v8z"
+                        />
+                      </svg>
+                      Saving...
+                    </>
+                  ) : (
+                    'Save Changes'
+                  )}
+                </button>
+                <button
+                  type="button"
+                  className="px-6 py-3 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                  onClick={closeEditPartner}
+                  disabled={editPartnerLoading}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <ToastContainer />
     </div>
   )

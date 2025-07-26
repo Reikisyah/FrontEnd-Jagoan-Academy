@@ -6,7 +6,15 @@ import {
   updateSubcategory,
   deleteSubcategory,
 } from '../../utils/api/subCategoryApi'
-import { FaEdit, FaTrash, FaGripVertical } from 'react-icons/fa'
+import {
+  FaEdit,
+  FaTrash,
+  FaGripVertical,
+  FaSearch,
+  FaPlus,
+  FaTags,
+  FaFilter,
+} from 'react-icons/fa'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -28,6 +36,8 @@ const SubcategoriesMentor = () => {
   const [deleteLoading, setDeleteLoading] = useState(null)
   const [deleteError, setDeleteError] = useState(null)
   const [successMsg, setSuccessMsg] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
+
   // Bulk action state
   const [selectedIds, setSelectedIds] = useState([])
   const allIds = subcategories.map((s) => s.id)
@@ -43,6 +53,12 @@ const SubcategoriesMentor = () => {
     )
   }
   const clearSelection = () => setSelectedIds([])
+
+  // Filter subcategories based on search
+  const filteredSubcategories = subcategories.filter((subcategory) =>
+    subcategory.name.toLowerCase().includes(searchTerm.toLowerCase()),
+  )
+
   // Modal konfirmasi
   const [confirmModal, setConfirmModal] = useState({
     open: false,
@@ -59,11 +75,14 @@ const SubcategoriesMentor = () => {
     }
     closeConfirmModal()
   }
+
   // Modal edit
   const [showEdit, setShowEdit] = useState(false)
+
   useEffect(() => {
     fetchSubcategories()
   }, [])
+
   const fetchSubcategories = () => {
     setLoading(true)
     setError(null)
@@ -72,6 +91,7 @@ const SubcategoriesMentor = () => {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false))
   }
+
   // Add subcategory
   // State untuk add multiple
   const [addNames, setAddNames] = useState([''])
@@ -118,6 +138,7 @@ const SubcategoriesMentor = () => {
       setAddLoading(false)
     }
   }
+
   // Delete subcategory
   const handleDelete = async (id) => {
     const result = await Swal.fire({
@@ -159,6 +180,7 @@ const SubcategoriesMentor = () => {
       setDeleteLoading(null)
     }
   }
+
   // Edit subcategory
   const handleEdit = (sub) => {
     setEditId(sub.id)
@@ -204,370 +226,9 @@ const SubcategoriesMentor = () => {
     setAddNames([''])
     setAddError(null)
   }
+
   return (
-    <div className="flex flex-col min-h-screen bg-white">
-      <DashboardHeader />
-      <div className="flex-1 flex flex-col items-center justify-start py-10 px-4">
-        <div className="max-w-3xl w-full">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold text-pink-700">Subcategories</h1>
-            <button
-              className="bg-pink-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-pink-700 transition shadow"
-              onClick={() => setShowAdd(true)}
-              disabled={editId}
-            >
-              + Add Subcategory
-            </button>
-          </div>
-          {successMsg && (
-            <div className="mb-4 text-green-600 font-semibold bg-green-50 border border-green-200 rounded-lg px-4 py-2">
-              {successMsg}
-            </div>
-          )}
-          {loading && (
-            <div className="overflow-x-auto animate-pulse">
-              <table className="min-w-full border border-pink-100 rounded-xl bg-white">
-                <thead>
-                  <tr className="bg-pink-50">
-                    <th className="py-2 px-4 text-left w-8">
-                      <div className="h-4 w-4 bg-gray-200 rounded" />
-                    </th>
-                    <th className="py-2 px-4 text-left w-12">
-                      <div className="h-4 w-6 bg-gray-200 rounded" />
-                    </th>
-                    <th className="py-2 px-4 text-left">
-                      <div className="h-4 w-32 bg-gray-200 rounded" />
-                    </th>
-                    <th className="py-2 px-4 text-left">
-                      <div className="h-4 w-20 bg-gray-200 rounded" />
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[...Array(5)].map((_, idx) => (
-                    <tr key={idx} className="border-b">
-                      <td className="py-2 px-4">
-                        <div className="h-4 w-4 bg-gray-200 rounded" />
-                      </td>
-                      <td className="py-2 px-4">
-                        <div className="h-4 w-6 bg-gray-200 rounded" />
-                      </td>
-                      <td className="py-2 px-4">
-                        <div className="h-4 w-32 bg-gray-200 rounded" />
-                      </td>
-                      <td className="py-2 px-4">
-                        <div className="flex gap-2">
-                          <div className="h-8 w-8 bg-gray-100 rounded" />
-                          <div className="h-8 w-8 bg-gray-100 rounded" />
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-          {!loading && !error && subcategories.length === 0 && (
-            <div className="flex flex-col items-center py-10">
-              <div className="mb-4 text-gray-500 text-lg font-semibold">
-                No subcategories found.
-              </div>
-              <button
-                className="bg-pink-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-pink-700 transition shadow"
-                onClick={() => setShowAdd(true)}
-              >
-                + Add Subcategory
-              </button>
-            </div>
-          )}
-          {/* Bulk Action Bar */}
-          {selectedIds.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-2 items-center bg-pink-50 border border-pink-200 rounded-lg px-4 py-2">
-              <span className="font-semibold text-pink-700">
-                {selectedIds.length} selected
-              </span>
-              <button
-                className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
-                onClick={() =>
-                  openConfirmModal(
-                    selectedIds,
-                    subcategories
-                      .filter((s) => selectedIds.includes(s.id))
-                      .map((s) => s.name),
-                  )
-                }
-              >
-                Delete Selected
-              </button>
-              <button
-                className="ml-2 text-gray-500 hover:text-pink-600 underline text-sm"
-                onClick={clearSelection}
-              >
-                Clear
-              </button>
-            </div>
-          )}
-          {!loading && !error && subcategories.length > 0 && (
-            <div className="overflow-x-auto">
-              <table className="min-w-full border border-pink-100 rounded-xl bg-white">
-                <thead>
-                  <tr className="bg-pink-600 text-white text-base font-bold border-b-2 border-pink-700">
-                    <th className="py-2 px-4 text-left w-8">
-                      <input
-                        type="checkbox"
-                        checked={isAllSelected}
-                        onChange={toggleSelectAll}
-                        className="w-4 h-4"
-                      />
-                    </th>
-                    <th className="py-2 px-4 text-left w-12">No</th>
-                    <th className="py-2 px-4 text-left">Name</th>
-                    <th className="py-2 px-4 text-left">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {subcategories.map((sub, idx) => (
-                    <tr
-                      key={sub.id}
-                      className={`border-b ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-pink-50 transition-all duration-200`}
-                    >
-                      <td className="py-2 px-4">
-                        <input
-                          type="checkbox"
-                          checked={selectedIds.includes(sub.id)}
-                          onChange={() => toggleSelectOne(sub.id)}
-                          className="w-4 h-4"
-                        />
-                      </td>
-                      <td className="py-3 px-5 text-base">{idx + 1}</td>
-                      <td className="py-3 px-5 text-base">{sub.name}</td>
-                      <td className="py-3 px-5 text-base">
-                        <div className="flex gap-2">
-                          <button
-                            className="p-2 rounded-lg border border-pink-500 text-pink-600 font-semibold hover:bg-pink-50 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                            onClick={() => handleEdit(sub)}
-                            disabled={
-                              editLoading || deleteLoading === sub.id || showAdd
-                            }
-                            title="Edit Subcategory"
-                          >
-                            <FaEdit />
-                          </button>
-                          <button
-                            className="p-2 rounded-lg border border-red-400 text-red-500 font-semibold hover:bg-red-50 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                            onClick={() =>
-                              openConfirmModal([sub.id], [sub.name])
-                            }
-                            disabled={
-                              deleteLoading === sub.id || editLoading || showAdd
-                            }
-                            title="Delete Subcategory"
-                          >
-                            {deleteLoading === sub.id ? '...' : <FaTrash />}
-                          </button>
-                        </div>
-                        {deleteError && deleteLoading === sub.id && (
-                          <div className="text-red-500 mt-1">{deleteError}</div>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-          {/* Confirmation Modal */}
-          {confirmModal.open && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-              <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-sm relative flex flex-col items-center">
-                <button
-                  className="absolute top-2 right-3 text-gray-400 hover:text-pink-600 text-2xl font-bold"
-                  onClick={closeConfirmModal}
-                >
-                  ×
-                </button>
-                <h2 className="text-lg font-bold mb-4 text-pink-700">
-                  Delete{' '}
-                  {confirmModal.ids.length > 1
-                    ? 'these subcategories?'
-                    : 'this subcategory?'}
-                </h2>
-                <div className="mb-4 text-gray-700 text-center">
-                  {confirmModal.names.map((name, i) => (
-                    <div key={i} className="font-semibold">
-                      {name}
-                    </div>
-                  ))}
-                </div>
-                <div className="flex gap-3 mt-2">
-                  <button
-                    className="bg-pink-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-pink-700 transition"
-                    onClick={handleConfirmDelete}
-                  >
-                    Yes, Delete
-                  </button>
-                  <button
-                    className="px-6 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100"
-                    onClick={closeConfirmModal}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-          {/* Feedback Toast */}
-          {(successMsg || addError || editError || deleteError) && (
-            <div
-              className={`fixed top-6 right-6 z-50 px-6 py-3 rounded-lg shadow-lg font-semibold text-white transition-all animate-fade-in ${successMsg ? 'bg-green-600' : 'bg-red-500'}`}
-            >
-              {successMsg || addError || editError || deleteError}
-            </div>
-          )}
-          {/* Edit Subcategory Modal */}
-          {showEdit && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-              <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-sm relative">
-                <button
-                  className="absolute top-2 right-3 text-gray-400 hover:text-pink-600 text-2xl font-bold"
-                  onClick={closeEditModal}
-                >
-                  ×
-                </button>
-                <h2 className="text-lg font-bold mb-4 text-pink-700">
-                  Edit Subcategory
-                </h2>
-                <form
-                  onSubmit={handleEditSubmit}
-                  className="flex flex-col gap-4"
-                >
-                  <input
-                    type="text"
-                    value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
-                    className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200"
-                    required
-                    autoFocus
-                  />
-                  <div className="flex gap-3 mt-2">
-                    <button
-                      type="submit"
-                      className="bg-pink-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-pink-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={editLoading}
-                    >
-                      {editLoading ? 'Saving...' : 'Save'}
-                    </button>
-                    <button
-                      type="button"
-                      className="px-6 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100"
-                      onClick={closeEditModal}
-                      disabled={editLoading}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                  {editError && (
-                    <div className="text-red-500 mt-2">{editError}</div>
-                  )}
-                </form>
-              </div>
-            </div>
-          )}
-          {/* Add Subcategory Modal */}
-          {showAdd && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-              <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md relative">
-                <button
-                  className="absolute top-2 right-3 text-gray-400 hover:text-pink-600 text-2xl font-bold"
-                  onClick={closeAddModal}
-                >
-                  ×
-                </button>
-                <h2 className="text-lg font-bold mb-4 text-pink-700">
-                  Add Subcategories
-                </h2>
-                <div className="text-sm text-gray-500 mb-2">
-                  Masukkan beberapa nama subcategory. Satu nama per baris.
-                  Urutkan dengan drag & drop jika perlu.
-                </div>
-                <form onSubmit={addSubcat} className="flex flex-col gap-4">
-                  <DragDropContext onDragEnd={handleAddDragEnd}>
-                    <Droppable droppableId="add-names-list">
-                      {(provided) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.droppableProps}
-                        >
-                          {addNames.map((name, idx) => (
-                            <Draggable
-                              key={idx}
-                              draggableId={String(idx)}
-                              index={idx}
-                            >
-                              {(prov, snapshot) => (
-                                <div
-                                  ref={prov.innerRef}
-                                  {...prov.draggableProps}
-                                  className={`flex items-center gap-2 mb-2 bg-gray-50 rounded px-2 py-1 ${snapshot.isDragging ? 'ring-2 ring-pink-300' : ''}`}
-                                >
-                                  <span
-                                    {...prov.dragHandleProps}
-                                    className="cursor-move text-pink-500"
-                                  >
-                                    <FaGripVertical />
-                                  </span>
-                                  <input
-                                    type="text"
-                                    value={name}
-                                    onChange={(e) =>
-                                      handleAddNameChange(idx, e.target.value)
-                                    }
-                                    placeholder={`Subcategory name #${idx + 1}`}
-                                    className="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200"
-                                    required
-                                  />
-                                  {addNames.length > 1 && (
-                                    <button
-                                      type="button"
-                                      className="text-red-500 hover:text-red-700 px-2"
-                                      onClick={() => handleAddNameRemove(idx)}
-                                      title="Remove"
-                                    >
-                                      <FaTrash />
-                                    </button>
-                                  )}
-                                </div>
-                              )}
-                            </Draggable>
-                          ))}
-                          {provided.placeholder}
-                        </div>
-                      )}
-                    </Droppable>
-                  </DragDropContext>
-                  <button
-                    type="button"
-                    className="text-pink-600 hover:underline text-sm font-semibold self-start"
-                    onClick={handleAddNameAdd}
-                  >
-                    + Add another
-                  </button>
-                  <button
-                    type="submit"
-                    className="bg-pink-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-pink-700 transition"
-                    disabled={addLoading}
-                  >
-                    {addLoading ? 'Adding...' : 'Add'}
-                  </button>
-                  {addError && (
-                    <div className="text-red-500 mt-2">{addError}</div>
-                  )}
-                </form>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+    <>
       <ToastContainer
         position="top-right"
         autoClose={2000}
@@ -579,7 +240,477 @@ const SubcategoriesMentor = () => {
         draggable
         pauseOnHover
       />
-    </div>
+      <div className="flex min-h-screen bg-gray-50">
+        <div className="flex-1 flex flex-col min-h-screen">
+          <DashboardHeader />
+          <div className="flex-1 max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+            {/* Header Section */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                    Subcategories Management
+                  </h1>
+                  <p className="text-gray-600">
+                    Manage subcategories for better course organization
+                  </p>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="bg-white rounded-lg shadow-sm px-4 py-2">
+                    <span className="text-sm text-gray-500">
+                      Total Subcategories:
+                    </span>
+                    <span className="ml-2 font-semibold text-gray-900">
+                      {subcategories.length}
+                    </span>
+                  </div>
+                  <button
+                    className="bg-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-pink-700 transition shadow-lg flex items-center space-x-2"
+                    onClick={() => setShowAdd(true)}
+                    disabled={editId}
+                  >
+                    <FaPlus className="w-4 h-4" />
+                    <span>Add Subcategory</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Search Bar */}
+              <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-1">
+                    <div className="relative">
+                      <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                      <input
+                        type="text"
+                        placeholder="Search subcategories..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    className="px-4 py-3 text-gray-600 hover:text-gray-800 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Success/Error Messages */}
+            {successMsg && (
+              <div className="mb-6 bg-green-50 border border-green-200 rounded-xl p-4">
+                <div className="flex items-center">
+                  <FaPlus className="text-green-500 mr-3" />
+                  <span className="text-green-800 font-medium">
+                    {successMsg}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {error && (
+              <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4">
+                <div className="flex items-center">
+                  <FaTrash className="text-red-500 mr-3" />
+                  <span className="text-red-800 font-medium">{error}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Subcategories List */}
+            {loading ? (
+              <div className="bg-white rounded-xl shadow-sm p-8">
+                <div className="animate-pulse">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+                    <div className="h-8 bg-gray-200 rounded w-1/6"></div>
+                  </div>
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="border-b border-gray-100 py-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
+                          <div>
+                            <div className="h-4 bg-gray-200 rounded w-32 mb-2"></div>
+                            <div className="h-3 bg-gray-200 rounded w-48"></div>
+                          </div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <div className="h-8 w-8 bg-gray-200 rounded"></div>
+                          <div className="h-8 w-8 bg-gray-200 rounded"></div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : filteredSubcategories.length === 0 ? (
+              <div className="bg-white rounded-xl shadow-sm p-12 text-center">
+                <FaTags className="mx-auto text-gray-400 text-4xl mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  {searchTerm
+                    ? 'No subcategories found'
+                    : 'No subcategories yet'}
+                </h3>
+                <p className="text-gray-500 mb-4">
+                  {searchTerm
+                    ? 'Try adjusting your search criteria'
+                    : 'Subcategories will appear here once they are created'}
+                </p>
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    className="text-pink-600 hover:text-pink-700 font-medium"
+                  >
+                    Clear search
+                  </button>
+                )}
+                {!searchTerm && (
+                  <button
+                    className="bg-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-pink-700 transition shadow-lg flex items-center space-x-2 mx-auto"
+                    onClick={() => setShowAdd(true)}
+                  >
+                    <FaPlus className="w-4 h-4" />
+                    <span>Add First Subcategory</span>
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                {/* Table Header */}
+                <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <input
+                        type="checkbox"
+                        checked={isAllSelected}
+                        onChange={toggleSelectAll}
+                        className="rounded border-gray-300 text-pink-600 focus:ring-pink-500"
+                      />
+                      <span className="text-sm font-medium text-gray-700">
+                        {selectedIds.length > 0
+                          ? `${selectedIds.length} selected`
+                          : 'Select all'}
+                      </span>
+                    </div>
+                    {selectedIds.length > 0 && (
+                      <button
+                        onClick={() =>
+                          openConfirmModal(
+                            selectedIds,
+                            subcategories
+                              .filter((s) => selectedIds.includes(s.id))
+                              .map((s) => s.name),
+                          )
+                        }
+                        className="px-3 py-1 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                      >
+                        Delete Selected
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Subcategories Cards */}
+                <div className="divide-y divide-gray-100">
+                  {filteredSubcategories.map((sub, idx) => (
+                    <div
+                      key={sub.id}
+                      className="px-6 py-4 hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.includes(sub.id)}
+                            onChange={() => toggleSelectOne(sub.id)}
+                            className="rounded border-gray-300 text-pink-600 focus:ring-pink-500"
+                          />
+                          <div className="h-10 w-10 bg-gradient-to-br from-pink-400 to-pink-600 rounded-full flex items-center justify-center">
+                            <FaTags className="text-white w-4 h-4" />
+                          </div>
+                          <div>
+                            <h3 className="font-medium text-gray-900">
+                              {sub.name}
+                            </h3>
+                            <p className="text-sm text-gray-500">
+                              Subcategory #{idx + 1}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleEdit(sub)}
+                            className="p-2 text-gray-400 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition-colors"
+                            title="Edit subcategory"
+                            disabled={
+                              editLoading || deleteLoading === sub.id || showAdd
+                            }
+                          >
+                            <FaEdit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() =>
+                              openConfirmModal([sub.id], [sub.name])
+                            }
+                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Delete subcategory"
+                            disabled={
+                              deleteLoading === sub.id || editLoading || showAdd
+                            }
+                          >
+                            {deleteLoading === sub.id ? (
+                              <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                              <FaTrash className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                      {deleteError && deleteLoading === sub.id && (
+                        <div className="text-red-500 text-sm mt-2 ml-14">
+                          {deleteError}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Confirmation Modal */}
+            {confirmModal.open && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm relative">
+                  <button
+                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold"
+                    onClick={closeConfirmModal}
+                  >
+                    ×
+                  </button>
+                  <div className="text-center">
+                    <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                      <FaTrash className="h-6 w-6 text-red-600" />
+                    </div>
+                    <h2 className="text-xl font-bold mb-4 text-gray-900">
+                      Delete{' '}
+                      {confirmModal.ids.length > 1
+                        ? 'Subcategories'
+                        : 'Subcategory'}
+                    </h2>
+                    <p className="text-gray-600 mb-4">
+                      Are you sure you want to delete{' '}
+                      {confirmModal.ids.length > 1
+                        ? 'these subcategories'
+                        : 'this subcategory'}
+                      ? This action cannot be undone.
+                    </p>
+                    <div className="bg-gray-50 rounded-lg p-3 mb-6">
+                      {confirmModal.names.map((name, i) => (
+                        <div key={i} className="font-medium text-gray-900">
+                          {name}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex gap-3">
+                      <button
+                        className="flex-1 bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition"
+                        onClick={handleConfirmDelete}
+                      >
+                        Delete
+                      </button>
+                      <button
+                        className="flex-1 px-6 py-3 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 transition"
+                        onClick={closeConfirmModal}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Edit Subcategory Modal */}
+            {showEdit && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md relative">
+                  <button
+                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold"
+                    onClick={closeEditModal}
+                  >
+                    ×
+                  </button>
+                  <h2 className="text-xl font-bold mb-6 text-gray-900">
+                    Edit Subcategory
+                  </h2>
+                  <form onSubmit={handleEditSubmit} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Subcategory Name
+                      </label>
+                      <input
+                        type="text"
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                        required
+                        autoFocus
+                      />
+                    </div>
+                    {editError && (
+                      <div className="text-red-500 text-sm bg-red-50 p-3 rounded-lg">
+                        {editError}
+                      </div>
+                    )}
+                    <div className="flex gap-3 pt-4">
+                      <button
+                        type="submit"
+                        className="flex-1 bg-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-pink-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={editLoading}
+                      >
+                        {editLoading ? 'Saving...' : 'Save Changes'}
+                      </button>
+                      <button
+                        type="button"
+                        className="px-6 py-3 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 transition"
+                        onClick={closeEditModal}
+                        disabled={editLoading}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* Add Subcategory Modal */}
+            {showAdd && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl relative">
+                  <button
+                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold"
+                    onClick={closeAddModal}
+                  >
+                    ×
+                  </button>
+                  <h2 className="text-xl font-bold mb-6 text-gray-900">
+                    Add Subcategories
+                  </h2>
+                  <div className="text-sm text-gray-600 mb-4 bg-blue-50 p-4 rounded-lg">
+                    <p className="font-medium mb-2">💡 Tips:</p>
+                    <ul className="space-y-1 text-sm">
+                      <li>
+                        • Enter multiple subcategory names to add them all at
+                        once
+                      </li>
+                      <li>• Use drag & drop to reorder the subcategories</li>
+                      <li>• Empty fields will be automatically ignored</li>
+                    </ul>
+                  </div>
+                  <form onSubmit={addSubcat} className="space-y-4">
+                    <DragDropContext onDragEnd={handleAddDragEnd}>
+                      <Droppable droppableId="add-names-list">
+                        {(provided) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.droppableProps}
+                            className="space-y-3"
+                          >
+                            {addNames.map((name, idx) => (
+                              <Draggable
+                                key={idx}
+                                draggableId={String(idx)}
+                                index={idx}
+                              >
+                                {(prov, snapshot) => (
+                                  <div
+                                    ref={prov.innerRef}
+                                    {...prov.draggableProps}
+                                    className={`flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-2 ${
+                                      snapshot.isDragging
+                                        ? 'border-pink-300 shadow-lg'
+                                        : 'border-transparent'
+                                    }`}
+                                  >
+                                    <span
+                                      {...prov.dragHandleProps}
+                                      className="cursor-move text-pink-500 hover:text-pink-600"
+                                    >
+                                      <FaGripVertical />
+                                    </span>
+                                    <input
+                                      type="text"
+                                      value={name}
+                                      onChange={(e) =>
+                                        handleAddNameChange(idx, e.target.value)
+                                      }
+                                      placeholder={`Subcategory name #${idx + 1}`}
+                                      className="flex-1 border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                      required
+                                    />
+                                    {addNames.length > 1 && (
+                                      <button
+                                        type="button"
+                                        className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-colors"
+                                        onClick={() => handleAddNameRemove(idx)}
+                                        title="Remove"
+                                      >
+                                        <FaTrash className="w-4 h-4" />
+                                      </button>
+                                    )}
+                                  </div>
+                                )}
+                              </Draggable>
+                            ))}
+                            {provided.placeholder}
+                          </div>
+                        )}
+                      </Droppable>
+                    </DragDropContext>
+                    <button
+                      type="button"
+                      className="text-pink-600 hover:text-pink-700 font-medium flex items-center space-x-2"
+                      onClick={handleAddNameAdd}
+                    >
+                      <FaPlus className="w-4 h-4" />
+                      <span>Add another subcategory</span>
+                    </button>
+                    <div className="flex gap-3 pt-4">
+                      <button
+                        type="submit"
+                        className="flex-1 bg-pink-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-pink-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={addLoading}
+                      >
+                        {addLoading ? 'Adding...' : 'Add Subcategories'}
+                      </button>
+                      <button
+                        type="button"
+                        className="px-6 py-3 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 transition"
+                        onClick={closeAddModal}
+                        disabled={addLoading}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                    {addError && (
+                      <div className="text-red-500 text-sm bg-red-50 p-3 rounded-lg">
+                        {addError}
+                      </div>
+                    )}
+                  </form>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
   )
 }
 

@@ -547,12 +547,23 @@ const CoursesDashboard = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-white">
-      <Sidebar />
-      <div className="flex-1 flex flex-col min-h-screen">
-        <DashboardHeader />
-        <div className="flex-1 flex flex-col items-center justify-start py-10 px-4">
-          <div className="max-w-6xl w-full">
+    <>
+      <ToastContainer
+        position="top-right"
+        autoClose={2000}
+        hideProgressBar
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+      <div className="flex min-h-screen bg-gray-50">
+        <Sidebar />
+        <div className="flex-1 flex flex-col min-h-screen">
+          <DashboardHeader />
+          <div className="flex-1 max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
               <h1 className="text-2xl font-bold text-pink-700">Courses</h1>
               <div className="flex gap-2 w-full sm:w-auto">
@@ -1274,18 +1285,7 @@ const CoursesDashboard = () => {
           </div>
         </div>
       </div>
-      <ToastContainer
-        position="top-right"
-        autoClose={2000}
-        hideProgressBar
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
-    </div>
+    </>
   )
 }
 
