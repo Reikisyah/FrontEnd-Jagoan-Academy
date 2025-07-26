@@ -92,26 +92,36 @@ export async function getMe(token) {
 // Update profile mentor
 export async function updateProfileMentor(data, token) {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/update-profile/mentor`, {
+    const formData = new FormData();
+    for (const key in data) {
+      if (Array.isArray(data[key])) {
+        data[key].forEach((val, idx) => {
+          formData.append(`${key}[${idx}]`, val);
+        });
+      } else if (data[key] !== undefined && data[key] !== null) {
+        formData.append(key, data[key]);
+      }
+    }
+    formData.append('_method', 'PUT');
+    const response = await fetch(`${API_BASE_URL}/auth/update-profile`, {
       method: 'POST',
       headers: {
-        ...getHeaders(),
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(data),
-    })
-    const resJson = await response.json()
+      body: formData,
+    });
+    const resJson = await response.json();
     if (!response.ok) {
-      throw new Error(resJson.message || 'Gagal update profile mentor')
+      throw new Error(resJson.message || 'Gagal update profile mentor');
     }
-    return resJson.data || resJson
+    return resJson.data || resJson;
   } catch (error) {
     if (error.name === 'TypeError' && error.message.includes('fetch')) {
       throw new Error(
         'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.',
-      )
+      );
     }
-    throw error
+    throw error;
   }
 }
 
@@ -128,6 +138,32 @@ export async function getProfileMentor(token) {
     const resJson = await response.json()
     if (!response.ok) {
       throw new Error(resJson.message || 'Gagal mengambil data profile mentor')
+    }
+    return resJson.data || resJson
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      throw new Error(
+        'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.',
+      )
+    }
+    throw error
+  }
+}
+
+// Update profile participant
+export async function updateProfileParticipant(data, token) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/update-profile`, {
+      method: 'PUT',
+      headers: {
+        ...getHeaders(),
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    })
+    const resJson = await response.json()
+    if (!response.ok) {
+      throw new Error(resJson.message || 'Gagal update profile participant')
     }
     return resJson.data || resJson
   } catch (error) {

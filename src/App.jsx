@@ -40,6 +40,7 @@ import Footer from './components/Footer'
 import Sidebar from './components/Sidebar'
 import CourseStudent from './pages/Dashboard/CourseStudent/Course'
 import StartCourse from './pages/Dashboard/CourseStudent/StartCourse'
+import Enrollment from './pages/Dashboard/PlanCourse/Enrollment'
 
 // Komponen Dashboard yang dinamis berdasarkan role
 function DashboardComponent({ hideNavbarFooter }) {
@@ -90,6 +91,7 @@ function AppRoutes() {
     '/plan-course/intended-learners',
     '/student/courses',
     '/student/course', // untuk prefix
+    '/enrollment-dashboard',
   ]
   const hide = hideNavFooter.some(
     (p) => location.pathname === p || location.pathname.startsWith(p + '/'),
@@ -201,6 +203,7 @@ function AppRoutes() {
             />
             <Route path="/student/courses" element={<CourseStudent />} />
             <Route path="/student/course/:id" element={<StartCourse />} />
+            <Route path="/enrollment-dashboard" element={<Enrollment />} />
           </Routes>
         </div>
         {!hide && <Footer />}

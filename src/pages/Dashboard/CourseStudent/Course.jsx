@@ -73,9 +73,30 @@ const CourseStudent = () => {
       .finally(() => setLoading(false))
   }, [])
 
+  // Auto-refresh enrollments setiap 5 detik untuk update status approval
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const enrollList = await getAllEnrollments()
+        console.log('Auto-refreshed enrollments:', enrollList)
+        setEnrollments(enrollList)
+      } catch (err) {
+        console.error('Failed to refresh enrollments:', err)
+      }
+    }, 5000)
+
+    return () => clearInterval(interval)
+  }, [])
+
   // Helper: cek apakah student sudah enroll course
-  const getEnrollment = (courseId) =>
-    enrollments.find((e) => e.course_id === courseId)
+  const getEnrollment = (courseId) => {
+    console.log('Looking for courseId:', courseId)
+    console.log('Available enrollment course_ids:', enrollments.map(e => e.course_id))
+    
+    const enrollment = enrollments.find((e) => e.course_id === courseId)
+    console.log(`getEnrollment result:`, enrollment ? 'FOUND' : 'NOT FOUND')
+    return enrollment
+  }
 
   // Get unique categories
   const categories = [
@@ -146,7 +167,7 @@ const CourseStudent = () => {
     setProofError(null)
   }
 
-  // Handle submit bukti bayar (DUMMY)
+  // Handle submit bukti bayar (REAL API)
   const handleSubmitPay = async (e) => {
     e.preventDefault()
     if (!proofFile) {
@@ -156,22 +177,19 @@ const CourseStudent = () => {
     setEnrollLoading(modalCourse.id)
     setProofError(null)
     try {
-      // DUMMY: Simulasikan sukses enroll
-      setSuccessMsg('Enrollment & bukti bayar berhasil (dummy)!')
-      // Update enrollments lokal agar card berubah status
-      setEnrollments((prev) => [
-        ...prev,
-        {
-          course_id: modalCourse.id,
-          status: 'success',
-          proof_of_payment: [{ path: URL.createObjectURL(proofFile) }],
-        },
-      ])
+      const formData = new FormData()
+      formData.append('proof_of_payments', proofFile)
+      formData.append('course_id', modalCourse.id)
+      await createEnrollment(modalCourse.id, formData)
+      setSuccessMsg('Enrollment & bukti bayar berhasil!')
+      // Fetch ulang enrollments
+      const enrollList = await getAllEnrollments()
+      setEnrollments(enrollList)
       setTimeout(() => {
         closePayModal()
       }, 1200)
     } catch (err) {
-      setProofError('Gagal dummy enroll')
+      setProofError(err.message)
     } finally {
       setEnrollLoading(null)
     }
@@ -441,16 +459,8 @@ const CourseStudent = () => {
                       {/* Status badges */}
                       {enrollment && (
                         <div className="absolute top-3 right-3">
-                          <div
-                            className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                              enrollment.status === 'success'
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-yellow-100 text-yellow-800'
-                            }`}
-                          >
-                            {enrollment.status === 'success'
-                              ? 'Enrolled'
-                              : 'Pending'}
+                          <div className="px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                            Enrolled
                           </div>
                         </div>
                       )}
@@ -530,21 +540,15 @@ const CourseStudent = () => {
 
                         {enrollment ? (
                           <div className="flex items-center gap-2">
-                            {enrollment.status === 'success' ? (
-                              <button
-                                onClick={() =>
-                                  navigate(`/student/course/${course.id}`)
-                                }
-                                className="w-full bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 mt-2"
-                              >
-                                <FiPlay className="w-4 h-4" />
-                                Mulai Belajar
-                              </button>
-                            ) : (
-                              <div className="text-yellow-600 font-semibold text-sm mt-2">
-                                Menunggu Pembayaran
-                              </div>
-                            )}
+                            <button
+                              onClick={() =>
+                                navigate(`/student/course/${course.id}`)
+                              }
+                              className="w-full bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 mt-2"
+                            >
+                              <FiPlay className="w-4 h-4" />
+                              Mulai Belajar
+                            </button>
                           </div>
                         ) : (
                           <button

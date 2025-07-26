@@ -126,22 +126,24 @@ const Sidebar = () => {
           )}
 
           {/* Languages selalu tampil */}
-          <Link
-            to="/languages"
-            className={`${baseClass} ${isActive('/languages') ? activeClass : 'hover:bg-white/10 hover:scale-105'}`}
-            onMouseEnter={() => setHoveredItem('languages')}
-            onMouseLeave={() => setHoveredItem(null)}
-          >
-            <div
-              className={`w-5 h-5 transition-all duration-200 ${isActive('/languages') ? 'text-pink-600' : 'text-white'} ${hoveredItem === 'languages' ? 'scale-110' : ''}`}
+          {!isParticipant && (
+            <Link
+              to="/languages"
+              className={`${baseClass} ${isActive('/languages') ? activeClass : 'hover:bg-white/10 hover:scale-105'}`}
+              onMouseEnter={() => setHoveredItem('languages')}
+              onMouseLeave={() => setHoveredItem(null)}
             >
-              <FiGlobe />
-            </div>
-            <span className="font-medium">Languages</span>
-            {isActive('/languages') && (
-              <div className="ml-auto w-2 h-2 bg-pink-500 rounded-full animate-pulse"></div>
-            )}
-          </Link>
+              <div
+                className={`w-5 h-5 transition-all duration-200 ${isActive('/languages') ? 'text-pink-600' : 'text-white'} ${hoveredItem === 'languages' ? 'scale-110' : ''}`}
+              >
+                <FiGlobe />
+              </div>
+              <span className="font-medium">Languages</span>
+              {isActive('/languages') && (
+                <div className="ml-auto w-2 h-2 bg-pink-500 rounded-full animate-pulse"></div>
+              )}
+            </Link>
+          )}
 
           {/* Only show the rest if not participant */}
           {!isParticipant && (
@@ -232,6 +234,26 @@ const Sidebar = () => {
                 )}
               </Link>
             </>
+          )}
+
+          {/* Enrollment hanya untuk mentor */}
+          {isMentor && (
+            <Link
+              to="/enrollment-dashboard"
+              className={`${baseClass} ${isActive('/enrollment-dashboard') ? activeClass : 'hover:bg-white/10 hover:scale-105'}`}
+              onMouseEnter={() => setHoveredItem('enrollment')}
+              onMouseLeave={() => setHoveredItem(null)}
+            >
+              <div
+                className={`w-5 h-5 transition-all duration-200 ${isActive('/enrollment-dashboard') ? 'text-pink-600' : 'text-white'} ${hoveredItem === 'enrollment' ? 'scale-110' : ''}`}
+              >
+                <FiUsers />
+              </div>
+              <span className="font-medium">Enrollment</span>
+              {isActive('/enrollment-dashboard') && (
+                <div className="ml-auto w-2 h-2 bg-pink-500 rounded-full animate-pulse"></div>
+              )}
+            </Link>
           )}
 
           <Link
