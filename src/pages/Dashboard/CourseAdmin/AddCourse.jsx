@@ -1,21 +1,14 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-
-const categories = [
-  'Programming',
-  'Design',
-  'Business',
-  'Marketing',
-  'Photography',
-]
+import { addCourse } from '../../../utils/api/courseApi'
+import { getAllCategories } from '../../../utils/api/categoryApi'
 
 const stepTitles = ['Course Title', 'Description', 'Category']
 
 const initialForm = {
   title: '',
   description: '',
-  category: '',
-  sub_category: '',
+  category_id: '',
 }
 
 const AddCourse = () => {
@@ -24,6 +17,18 @@ const AddCourse = () => {
   const [addStep, setAddStep] = useState(1)
   const [formError, setFormError] = useState(null)
   const [formLoading, setFormLoading] = useState(false)
+  const [categories, setCategories] = useState([])
+  const [categoryError, setCategoryError] = useState(null)
+
+  // Fetch categories from backend
+  React.useEffect(() => {
+    getAllCategories()
+      .then((data) => setCategories(data || []))
+      .catch((err) => {
+        setCategories([])
+        setCategoryError(err.message || 'Gagal memuat kategori')
+      })
+  }, [])
 
   // Step info
   const stepIndex = addStep - 1
@@ -45,7 +50,7 @@ const AddCourse = () => {
       setFormError('Description is required')
       return
     }
-    if (addStep === 3 && !form.category.trim()) {
+    if (addStep === 3 && !form.category_id) {
       setFormError('Category is required')
       return
     }
@@ -61,12 +66,38 @@ const AddCourse = () => {
     e.preventDefault()
     setFormError(null)
     setFormLoading(true)
-    // Simulasi submit, bisa diganti dengan API call
-    setTimeout(() => {
+    try {
+      const { title, description, category_id } = form
+      const mentor_id = localStorage.getItem('mentor_id')
+      // Siapkan payload hanya dengan field yang ada nilainya
+      const payload = { title }
+      if (description && description.trim()) payload.description = description
+      if (category_id) payload.category_id = category_id
+      if (mentor_id) payload.mentor_id = mentor_id
+      console.log('[ADD COURSE] Payload yang dikirim:', payload)
+      const res = await addCourse(payload)
+      localStorage.setItem('lastCourse', JSON.stringify(res))
+      navigate('/plan-course/landing-page', { state: { course: res } })
+    } catch (err) {
+      console.error('[ADD COURSE] Error response:', err)
+      if (err.errors) {
+        const errorMessages = Object.values(err.errors).flat().join(', ')
+        setFormError(errorMessages)
+      } else if (typeof err === 'object') {
+        // Jika object kosong, tampilkan pesan user-friendly
+        if (Object.keys(err).length === 0) {
+          setFormError(
+            'Terjadi kesalahan validasi, silakan cek data yang diinput.',
+          )
+        } else {
+          setFormError(JSON.stringify(err))
+        }
+      } else {
+        setFormError(err.message || String(err))
+      }
+    } finally {
       setFormLoading(false)
-      localStorage.setItem('lastCourse', JSON.stringify(form))
-      navigate('/plan-course/landing-page', { state: { course: form } })
-    }, 1000)
+    }
   }
 
   return (
@@ -154,28 +185,23 @@ const AddCourse = () => {
             <div className="text-gray-500 mb-4">
               Choose a category that best describes your course.
             </div>
+            {categoryError && (
+              <div className="text-red-500 text-sm mb-2">{categoryError}</div>
+            )}
             <select
-              name="category"
-              value={form.category}
+              name="category_id"
+              value={form.category_id}
               onChange={handleFormChange}
               className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200 w-full bg-white mb-4"
               required
             >
               <option value="">Select a category</option>
               {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
                 </option>
               ))}
             </select>
-            <input
-              type="text"
-              name="sub_category"
-              value={form.sub_category}
-              onChange={handleFormChange}
-              placeholder="Sub Category (optional)"
-              className="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-200 w-full bg-white"
-            />
           </div>
         )}
         {formError && (

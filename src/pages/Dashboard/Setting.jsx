@@ -1,19 +1,18 @@
 import React, { useEffect, useState } from 'react'
 import Sidebar from '../../components/Sidebar'
 import DashboardHeader from '../../components/DashboardHeader'
+import { getAllFAQ, addFAQ, deleteFAQ, updateFAQ } from '../../utils/api/faqApi'
 import {
-  getAllFAQ,
-  addFAQ,
-  deleteFAQ,
-  updateFAQ,
   getAllPartners,
   addPartner,
   deletePartner,
   updatePartner,
-} from '../../utils/api'
+} from '../../utils/api/partnerApi'
 import { FaTrash, FaEdit } from 'react-icons/fa'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import Swal from 'sweetalert2'
+import 'sweetalert2/dist/sweetalert2.min.css'
 
 const Setting = () => {
   const [tab, setTab] = useState('faq')
@@ -96,12 +95,36 @@ const Setting = () => {
   }
   // Delete FAQ
   const handleDeleteFaq = async (id) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'Delete this FAQ?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#e11d48',
+      cancelButtonColor: '#aaa',
+      confirmButtonText: 'Yes',
+      customClass: { popup: 'rounded-xl' },
+    })
+    if (!result.isConfirmed) return
     try {
       await deleteFAQ(id)
       fetchFaqs()
-      toast.success('FAQ berhasil dihapus!')
+      await Swal.fire({
+        icon: 'success',
+        title: 'FAQ deleted!',
+        showConfirmButton: false,
+        timer: 1200,
+        customClass: { popup: 'rounded-xl' },
+        position: 'center',
+      })
     } catch (err) {
-      toast.error('Gagal menghapus FAQ!')
+      await Swal.fire({
+        icon: 'error',
+        title: 'Failed to delete FAQ',
+        text: err.message,
+        confirmButtonColor: '#e11d48',
+        customClass: { popup: 'rounded-xl' },
+      })
     }
   }
   // Edit FAQ handlers
@@ -153,12 +176,36 @@ const Setting = () => {
   }
   // Delete Partner
   const handleDeletePartner = async (id) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'Delete this Partner?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#e11d48',
+      cancelButtonColor: '#aaa',
+      confirmButtonText: 'Yes',
+      customClass: { popup: 'rounded-xl' },
+    })
+    if (!result.isConfirmed) return
     try {
       await deletePartner(id)
       fetchPartners()
-      toast.success('Partner berhasil dihapus!')
+      await Swal.fire({
+        icon: 'success',
+        title: 'Partner deleted!',
+        showConfirmButton: false,
+        timer: 1200,
+        customClass: { popup: 'rounded-xl' },
+        position: 'center',
+      })
     } catch (err) {
-      toast.error('Gagal menghapus Partner!')
+      await Swal.fire({
+        icon: 'error',
+        title: 'Failed to delete Partner',
+        text: err.message,
+        confirmButtonColor: '#e11d48',
+        customClass: { popup: 'rounded-xl' },
+      })
     }
   }
   // Edit Partner handlers

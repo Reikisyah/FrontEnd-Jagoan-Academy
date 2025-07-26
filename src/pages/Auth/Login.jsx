@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import { FaEye, FaEyeSlash } from 'react-icons/fa'
-import { login as loginApi, getMe } from '../../utils/api'
+import { login as loginApi, getMe } from '../../utils/api/authApi'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
@@ -57,12 +57,14 @@ const Login = () => {
       const role = res.role || (res.data && res.data.role)
       const name = res.name || (res.data && res.data.name)
       const email = res.email || (res.data && res.data.email)
+      const mentor_id = res.id || (res.data && res.data.id)
       if (token) {
         if (remember) {
           localStorage.setItem('token', token)
           if (role) localStorage.setItem('role', role)
           if (name) localStorage.setItem('name', name)
           if (email) localStorage.setItem('email', email)
+          if (mentor_id) localStorage.setItem('mentor_id', mentor_id)
           console.log(
             '💾 [LOGIN] Token dan role tersimpan di localStorage (remember = true)',
           )
@@ -72,16 +74,18 @@ const Login = () => {
           if (role) localStorage.setItem('role', role)
           if (name) localStorage.setItem('name', name)
           if (email) localStorage.setItem('email', email)
+          if (mentor_id) localStorage.setItem('mentor_id', mentor_id)
           console.log(
             '💾 [LOGIN] Token tersimpan di sessionStorage (remember = false)',
           )
         }
-        // Jika name/email belum ada, ambil dari /me
-        if (!name || !email) {
+        // Jika name/email/mentor_id belum ada, ambil dari /me
+        if (!name || !email || !mentor_id) {
           try {
             const userData = await getMe(token)
             if (userData.name) localStorage.setItem('name', userData.name)
             if (userData.email) localStorage.setItem('email', userData.email)
+            if (userData.id) localStorage.setItem('mentor_id', userData.id)
           } catch (err) {
             console.error('[LOGIN] Gagal mengambil data user dari /me:', err)
           }

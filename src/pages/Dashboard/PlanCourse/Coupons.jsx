@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import DashboardHeader from '../../../components/DashboardHeader'
 import Tab from '../../../components/Tab'
+import Swal from 'sweetalert2'
+import 'sweetalert2/dist/sweetalert2.min.css'
 
 const Coupons = () => {
   const [form, setForm] = useState({
@@ -18,9 +20,16 @@ const Coupons = () => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    alert('Coupon saved!')
+    await Swal.fire({
+      icon: 'success',
+      title: 'Coupon saved!',
+      showConfirmButton: false,
+      timer: 1500,
+      customClass: { popup: 'rounded-xl' },
+      position: 'center',
+    })
   }
 
   return (

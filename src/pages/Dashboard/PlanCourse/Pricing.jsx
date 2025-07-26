@@ -1,14 +1,23 @@
 import React, { useState } from 'react'
 import DashboardHeader from '../../../components/DashboardHeader'
 import Tab from '../../../components/Tab'
+import Swal from 'sweetalert2'
+import 'sweetalert2/dist/sweetalert2.min.css'
 
 const Pricing = () => {
   const [type, setType] = useState('paid')
   const [price, setPrice] = useState('')
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    alert('Harga course disimpan!')
+    await Swal.fire({
+      icon: 'success',
+      title: 'Harga course disimpan!',
+      showConfirmButton: false,
+      timer: 1500,
+      customClass: { popup: 'rounded-xl' },
+      position: 'center',
+    })
   }
 
   return (

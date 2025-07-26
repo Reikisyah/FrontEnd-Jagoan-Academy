@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import DashboardHeader from '../../../components/DashboardHeader'
 import Tab from '../../../components/Tab'
 import {
@@ -12,6 +12,19 @@ import {
   FaRegCircle,
 } from 'react-icons/fa'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
+import {
+  getChaptersByCourseId,
+  addChapter,
+  updateChapter,
+  deleteChapter,
+  deleteSubChapter,
+  addSubChapter,
+  updateSubChapter,
+  updateSubChapterOrder,
+} from '../../../utils/api/chapterApi'
+import { addResource, deleteResource } from '../../../utils/api/resourceApi'
+import Swal from 'sweetalert2'
+import 'sweetalert2/dist/sweetalert2.min.css'
 
 const initialSection = {
   title: '',
@@ -36,6 +49,19 @@ const reorder = (list, startIndex, endIndex) => {
   const [removed] = result.splice(startIndex, 1)
   result.splice(endIndex, 0, removed)
   return result
+}
+
+// Helper untuk ambil thumbnail YouTube
+const getYouTubeThumbnail = (url) => {
+  if (!url) return null
+  // Regex ambil video ID dari berbagai format YouTube
+  const match = url.match(
+    /(?:youtube\.com\/(?:.*v=|v\/|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/,
+  )
+  if (match && match[1]) {
+    return `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg`
+  }
+  return null
 }
 
 const Curriculum = () => {
@@ -66,18 +92,135 @@ const Curriculum = () => {
     itemIdx: null,
   })
 
-  // Add Section
-  const handleAddSection = (e) => {
+  // Tambahkan state loading dan error
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  // Tambahkan state untuk konten video/slide
+  const [contentEdit, setContentEdit] = useState({
+    sectionIdx: null,
+    itemIdx: null,
+    value: '',
+    file: null,
+  })
+
+  // Ambil course dari localStorage
+  let course = null
+  const saved = localStorage.getItem('lastCourse')
+  if (saved) course = JSON.parse(saved)
+
+  // Refetch data dari backend
+  const fetchSections = async () => {
+    if (course?.id) {
+      setLoading(true)
+      setError(null)
+      try {
+        const data = await getChaptersByCourseId(course.id)
+        const mapped = (data || []).map((chapter) => ({
+          title: chapter.title,
+          id: chapter.id,
+          items: (chapter.sub_chapters || []).map((sub) => ({
+            id: sub.id, // pastikan id sub-chapter ada
+            type:
+              sub.content_type === 'video'
+                ? 'lecture'
+                : sub.content_type || 'lecture',
+            contentType: sub.content_type || 'video',
+            title: sub.title,
+            preview: sub.content_link || '',
+            content_link: sub.content_link || '', // <--- tambahkan ini
+            content_file: sub.content_file || '', // <--- tambahkan ini
+            description: sub.description || '',
+            resources: sub.resources || [], // pastikan ini benar
+            expanded: false,
+            editing: false,
+            subSubs: sub.sub_sub_chapters || [],
+          })),
+          expanded: false,
+          editing: false,
+        }))
+        setSections(mapped)
+      } catch (err) {
+        setError(err.message)
+        setSections([])
+      } finally {
+        setLoading(false)
+      }
+    }
+  }
+
+  // Gunakan fetchSections di useEffect
+  useEffect(() => {
+    fetchSections()
+    // eslint-disable-next-line
+  }, [course?.id])
+
+  // Tambah Section (chapter)
+  const handleAddSection = async (e) => {
     e.preventDefault()
-    if (!newSection.trim()) return
-    setSections([
-      ...sections,
-      { ...initialSection, title: newSection, expanded: true, items: [] },
-    ])
-    setNewSection('')
-    setTimeout(() => {
-      setAddItemSectionIdx(sections.length) // index section baru
-    }, 0)
+    // Validasi FE: hanya title yang wajib
+    if (!newSection.trim()) {
+      setError('Judul section (title) wajib diisi.')
+      return
+    }
+    if (!course?.id) {
+      setError('Course ID tidak ditemukan.')
+      return
+    }
+    if (sections.length === undefined) {
+      setError('Order section tidak valid.')
+      return
+    }
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'Tambah section baru?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#e11d48',
+      cancelButtonColor: '#aaa',
+      confirmButtonText: 'Yes',
+      customClass: { popup: 'rounded-xl' },
+    })
+    if (!result.isConfirmed) return
+    setLoading(true)
+    setError(null)
+    try {
+      const response = await addChapter({
+        course_id: course.id,
+        title: newSection,
+        order: sections.length,
+        // description tidak dikirim
+      })
+      console.log('Add Chapter Response:', response)
+      setNewSection('')
+      fetchSections()
+      await Swal.fire({
+        icon: 'success',
+        title: 'Section added!',
+        showConfirmButton: false,
+        timer: 1200,
+        customClass: { popup: 'rounded-xl' },
+        position: 'center',
+      })
+    } catch (err) {
+      // Tangani error dari addChapter yang melempar {status, response}
+      if (err && err.status && err.response) {
+        console.log('Add Chapter Error Response:', err.response)
+        if (err.response.errors) {
+          const messages = Object.values(err.response.errors).flat().join(', ')
+          setError(messages)
+        } else if (err.response.message) {
+          setError(err.response.message)
+        } else {
+          setError('Validation error')
+        }
+      } else {
+        console.log('Add Chapter Error:', err)
+        setError(err.message)
+      }
+    } finally {
+      setLoading(false)
+    }
   }
 
   // Expand/collapse section
@@ -88,70 +231,176 @@ const Curriculum = () => {
   }
 
   // Add new item to section
-  const handleAddItem = (sectionIdx, type) => {
-    setSections(
-      sections.map((section, idx) => {
-        if (idx !== sectionIdx) return section
-        let iconTitle = 'New Lecture',
-          contentType = 'video'
-        if (type === 'quiz') {
-          iconTitle = 'New Quiz'
-          contentType = undefined
-        }
-        if (type === 'assignment') {
-          iconTitle = 'New Assignment'
-          contentType = undefined
-        }
-        return {
-          ...section,
-          items: [
-            ...section.items,
-            {
-              type,
-              contentType,
-              title: iconTitle,
-              preview: '',
-              description: '',
-              resources: [],
-              expanded: true,
-              editing: false,
-            },
-          ],
-        }
-      }),
-    )
+  const handleAddItem = async (sectionIdx, type) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'Tambah item baru ke section ini?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#e11d48',
+      cancelButtonColor: '#aaa',
+      confirmButtonText: 'Yes',
+      customClass: { popup: 'rounded-xl' },
+    })
+    if (!result.isConfirmed) return
+    setLoading(true)
+    setError(null)
+    try {
+      const section = sections[sectionIdx]
+      // Validasi
+      if (!section.id) throw new Error('Section belum tersimpan di backend')
+      // Siapkan payload
+      const payload = {
+        chapter_id: section.id,
+        title:
+          type === 'lecture'
+            ? 'New Lecture'
+            : type === 'quiz'
+              ? 'New Quiz'
+              : 'New Assignment',
+        type,
+        order: (section.items?.length || 0) + 1,
+        content_type: type === 'lecture' ? 'video' : undefined,
+      }
+      // Hapus content_type jika bukan lecture
+      if (type !== 'lecture') delete payload.content_type
+      const resp = await addSubChapter(payload)
+      console.log('Add sub-chapter response:', resp)
+      fetchSections()
+      await Swal.fire({
+        icon: 'success',
+        title: 'Item added!',
+        showConfirmButton: false,
+        timer: 1200,
+        customClass: { popup: 'rounded-xl' },
+        position: 'center',
+      })
+    } catch (err) {
+      setError(err.message)
+      console.log('Add sub-chapter error:', err)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  // Hapus section
-  const handleDeleteSection = (idx) => {
-    setSections(sections.filter((_, i) => i !== idx))
+  // Hapus section (chapter)
+  const handleDeleteSection = async (idx) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'Yakin ingin menghapus section ini?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#e11d48',
+      cancelButtonColor: '#aaa',
+      confirmButtonText: 'Yes',
+      customClass: { popup: 'rounded-xl' },
+    })
+    if (!result.isConfirmed) return
+    setLoading(true)
+    setError(null)
+    try {
+      const section = sections[idx]
+      await deleteChapter(section.id)
+      fetchSections()
+      await Swal.fire({
+        icon: 'success',
+        title: 'Section deleted!',
+        showConfirmButton: false,
+        timer: 1200,
+        customClass: { popup: 'rounded-xl' },
+        position: 'center',
+      })
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  // Hapus item
-  const handleDeleteItem = (sectionIdx, itemIdx) => {
-    setSections(
-      sections.map((section, idx) => {
-        if (idx !== sectionIdx) return section
-        return {
-          ...section,
-          items: section.items.filter((_, i) => i !== itemIdx),
-        }
-      }),
-    )
+  // Hapus item (sub-chapter) ke backend jika ada id, lalu refetch
+  const handleDeleteItem = async (sectionIdx, itemIdx) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'Yakin ingin menghapus item ini?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#e11d48',
+      cancelButtonColor: '#aaa',
+      confirmButtonText: 'Yes',
+      customClass: { popup: 'rounded-xl' },
+    })
+    if (!result.isConfirmed) return
+    setLoading(true)
+    setError(null)
+    try {
+      const item = sections[sectionIdx].items[itemIdx]
+      if (item.id) {
+        console.log('Deleting sub-chapter id:', item.id)
+        const resp = await deleteSubChapter(item.id)
+        console.log('Delete sub-chapter response:', resp)
+      } else {
+        console.warn(
+          'No id found for sub-chapter, cannot delete from backend:',
+          item,
+        )
+      }
+      fetchSections()
+      await Swal.fire({
+        icon: 'success',
+        title: 'Item deleted!',
+        showConfirmButton: false,
+        timer: 1200,
+        customClass: { popup: 'rounded-xl' },
+        position: 'center',
+      })
+    } catch (err) {
+      console.log('Delete sub-chapter error:', err)
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  // Edit judul section
+  // Edit judul section (chapter)
   const handleEditSection = (idx) => {
     setEditingSectionIdx(idx)
     setEditSectionTitle(sections[idx].title)
   }
-  const handleEditSectionSave = (idx) => {
-    setSections(
-      sections.map((section, i) =>
-        i === idx ? { ...section, title: editSectionTitle } : section,
-      ),
-    )
-    setEditingSectionIdx(null)
+  const handleEditSectionSave = async (idx) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'Simpan perubahan judul section ini?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#e11d48',
+      cancelButtonColor: '#aaa',
+      confirmButtonText: 'Yes',
+      customClass: { popup: 'rounded-xl' },
+    })
+    if (!result.isConfirmed) {
+      setEditingSectionIdx(null)
+      return
+    }
+    setLoading(true)
+    setError(null)
+    try {
+      const section = sections[idx]
+      await updateChapter(section.id, { title: editSectionTitle })
+      fetchSections()
+      await Swal.fire({
+        icon: 'success',
+        title: 'Section title updated!',
+        showConfirmButton: false,
+        timer: 1200,
+        customClass: { popup: 'rounded-xl' },
+        position: 'center',
+      })
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setEditingSectionIdx(null)
+      setLoading(false)
+    }
   }
 
   // Edit judul item
@@ -159,7 +408,22 @@ const Curriculum = () => {
     setEditingItem({ sectionIdx, itemIdx })
     setEditItemTitle(sections[sectionIdx].items[itemIdx].title)
   }
-  const handleEditItemSave = (sectionIdx, itemIdx) => {
+  // Ubah handleEditItemSave jadi async
+  const handleEditItemSave = async (sectionIdx, itemIdx) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'Simpan perubahan judul item ini?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#e11d48',
+      cancelButtonColor: '#aaa',
+      confirmButtonText: 'Yes',
+      customClass: { popup: 'rounded-xl' },
+    })
+    if (!result.isConfirmed) {
+      setEditingItem({ sectionIdx: null, itemIdx: null })
+      return
+    }
     setSections(
       sections.map((section, idx) => {
         if (idx !== sectionIdx) return section
@@ -206,17 +470,37 @@ const Curriculum = () => {
   }
 
   // Drag and drop handler
-  const onDragEnd = (result) => {
+  const onDragEnd = async (result) => {
     if (!result.destination) return
     // Section drag
     if (result.type === 'section') {
-      setSections(
-        reorder(sections, result.source.index, result.destination.index),
+      const newSections = reorder(
+        sections,
+        result.source.index,
+        result.destination.index,
       )
+      setSections(newSections)
+      // Update order ke BE
+      try {
+        const orderPayload = newSections.map((section, idx) => ({
+          id: section.id,
+          order: Number(idx + 1),
+        }))
+        await updateSubChapterOrder(orderPayload) // Ganti updateChapterOrder dengan updateSubChapterOrder
+        fetchSections()
+      } catch (err) {
+        setError('Gagal update urutan chapter: ' + err.message)
+      }
       return
     }
     // Item drag
     const sectionIdx = parseInt(result.type.replace('item-', ''))
+    if (
+      isNaN(sectionIdx) ||
+      !sections[sectionIdx] ||
+      !sections[sectionIdx].items
+    )
+      return
     const items = reorder(
       sections[sectionIdx].items,
       result.source.index,
@@ -227,6 +511,17 @@ const Curriculum = () => {
         idx === sectionIdx ? { ...section, items } : section,
       ),
     )
+    // Update order ke BE
+    try {
+      const orderPayload = items.map((item, idx) => ({
+        id: item.id,
+        order: idx,
+      }))
+      // updateSubChapterOrder(orderPayload) // Hapus ini
+      fetchSections()
+    } catch (err) {
+      setError('Gagal update urutan sub-chapter: ' + err.message)
+    }
   }
 
   // Icon sesuai tipe
@@ -258,22 +553,147 @@ const Curriculum = () => {
     )
     setDescEdit({ sectionIdx: null, itemIdx: null, value: '' })
   }
-  // Tambahkan handler untuk simpan resource
-  const handleAddResource = (sectionIdx, itemIdx, file) => {
-    setSections(
-      sections.map((section, idx) => {
-        if (idx !== sectionIdx) return section
-        return {
-          ...section,
-          items: section.items.map((item, i) =>
-            i === itemIdx
-              ? { ...item, resources: [...(item.resources || []), file] }
-              : item,
-          ),
-        }
-      }),
-    )
-    setResourceEdit({ sectionIdx: null, itemIdx: null })
+  // Tambah resource ke backend
+  const handleAddResource = async (sectionIdx, itemIdx, file) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'Tambah resource ke item ini?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#e11d48',
+      cancelButtonColor: '#aaa',
+      confirmButtonText: 'Yes',
+      customClass: { popup: 'rounded-xl' },
+    })
+    if (!result.isConfirmed) return
+    if (!file.name.toLowerCase().endsWith('.pdf')) {
+      alert('File harus berformat PDF (.pdf)')
+      return
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Ukuran file maksimal 10 MB')
+      return
+    }
+    setLoading(true)
+    setError(null)
+    try {
+      const item = sections[sectionIdx].items[itemIdx]
+      const formData = new FormData()
+      formData.append('sub_chapter_id', item.id)
+      formData.append('title', file.name || 'Resource')
+      formData.append('file_type', 'file')
+      formData.append('file_path', file) // file asli
+      // Jangan kirim field link jika kosong
+      // formData.append('link', '')
+      console.log('FormData addResource:', formData)
+      const resp = await addResource(formData)
+      console.log('Add resource response:', resp)
+      fetchSections()
+      await Swal.fire({
+        icon: 'success',
+        title: 'Resource added!',
+        showConfirmButton: false,
+        timer: 1200,
+        customClass: { popup: 'rounded-xl' },
+        position: 'center',
+      })
+    } catch (err) {
+      console.log('Add resource error:', err)
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+  // Hapus resource ke backend
+  const handleDeleteResource = async (resourceId) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'Yakin ingin menghapus resource ini?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#e11d48',
+      cancelButtonColor: '#aaa',
+      confirmButtonText: 'Yes',
+      customClass: { popup: 'rounded-xl' },
+    })
+    if (!result.isConfirmed) return
+    setLoading(true)
+    setError(null)
+    try {
+      await deleteResource(resourceId)
+      fetchSections()
+      await Swal.fire({
+        icon: 'success',
+        title: 'Resource deleted!',
+        showConfirmButton: false,
+        timer: 1200,
+        customClass: { popup: 'rounded-xl' },
+        position: 'center',
+      })
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Handler simpan konten video/slide ke BE
+  const handleSaveContent = async (sectionIdx, itemIdx) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'Simpan perubahan konten item ini?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#e11d48',
+      cancelButtonColor: '#aaa',
+      confirmButtonText: 'Yes',
+      customClass: { popup: 'rounded-xl' },
+    })
+    if (!result.isConfirmed) {
+      setContentEdit({ sectionIdx: null, itemIdx: null, value: '', file: null })
+      return
+    }
+    setLoading(true)
+    setError(null)
+    try {
+      const item = sections[sectionIdx].items[itemIdx]
+      if (!item.id) throw new Error('Item belum tersimpan di backend')
+      const formData = new FormData()
+      formData.append('_method', 'PUT')
+      formData.append('content_type', item.contentType)
+      if (item.contentType === 'video') {
+        if (!contentEdit.value) throw new Error('Link video wajib diisi')
+        formData.append('content_link', contentEdit.value)
+      } else if (item.contentType === 'slide') {
+        if (!contentEdit.file) throw new Error('File slide wajib diupload')
+        formData.append('content_file', contentEdit.file)
+      }
+      // Tambahkan field lain jika ada
+      if (item.description) formData.append('description', item.description)
+      if (item.contentText) formData.append('content_text', item.contentText)
+      if (item.title) formData.append('content_title', item.title)
+      // Debug isi FormData
+      for (let pair of formData.entries()) {
+        console.log('FormData', pair[0], pair[1])
+      }
+      const resp = await updateSubChapter(item.id, formData)
+      console.log('Update sub-chapter content response:', resp)
+      setContentEdit({ sectionIdx: null, itemIdx: null, value: '', file: null })
+      fetchSections()
+      await Swal.fire({
+        icon: 'success',
+        title: 'Content updated!',
+        showConfirmButton: false,
+        timer: 1200,
+        customClass: { popup: 'rounded-xl' },
+        position: 'center',
+      })
+    } catch (err) {
+      setError(err.message)
+      console.log('Update sub-chapter content error:', err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -281,13 +701,42 @@ const Curriculum = () => {
       <Tab />
       <div className="flex-1 flex flex-col min-h-screen">
         <DashboardHeader />
-        <main className="flex-1 max-w-4xl ml-8 md:ml-16 lg:ml-32 px-4 md:px-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">Curriculum</h1>
+        <main className="flex-1 w-full max-w-2xl mx-auto px-2 sm:px-4 md:px-8 py-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+            Curriculum
+          </h1>
           {/* Empty state */}
           {sections.length === 0 && (
             <div className="text-center text-gray-400 mb-8">
               No sections yet. Add your first section.
             </div>
+          )}
+          {loading && (
+            <div className="flex justify-center my-4">
+              <svg
+                className="animate-spin h-6 w-6 text-pink-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8z"
+                ></path>
+              </svg>
+            </div>
+          )}
+          {error && (
+            <div className="text-center text-red-500 my-4">{error}</div>
           )}
           <DragDropContext onDragEnd={onDragEnd}>
             <Droppable droppableId="section-droppable" type="section">
@@ -295,15 +744,25 @@ const Curriculum = () => {
                 <div ref={provided.innerRef} {...provided.droppableProps}>
                   {sections.map((section, idx) => (
                     <Draggable
-                      key={idx}
-                      draggableId={`section-${idx}`}
+                      key={section.id || `section-${idx}`}
+                      draggableId={
+                        section.id ? `section-${section.id}` : `section-${idx}`
+                      }
                       index={idx}
                     >
                       {(provided, snapshot) => (
                         <div
                           ref={provided.innerRef}
                           {...provided.draggableProps}
-                          className={`bg-white rounded-2xl border border-gray-200 p-8 mb-8 w-full transition hover:shadow-md ${snapshot.isDragging ? 'shadow-lg border-pink-200' : ''}`}
+                          className={`bg-white rounded-2xl border border-gray-200 p-4 sm:p-6 md:p-8 mb-8 w-full max-w-full transition-all duration-200
+        ${snapshot.isDragging ? 'shadow-2xl scale-[1.03] border-pink-400 z-30' : ''}
+        ${snapshot.isDropAnimating ? 'ring-2 ring-pink-300' : ''}
+        hover:shadow-lg hover:border-pink-300`}
+                          style={{
+                            marginLeft: 'auto',
+                            marginRight: 'auto',
+                            ...provided.draggableProps.style,
+                          }}
                         >
                           <div className="flex items-center gap-2 mb-4">
                             <span
@@ -337,12 +796,14 @@ const Curriculum = () => {
                             <button
                               className="text-gray-400 hover:text-pink-600 p-1"
                               onClick={() => handleEditSection(idx)}
+                              title="Edit"
                             >
                               <FaRegEdit size={15} />
                             </button>
                             <button
                               className="text-gray-400 hover:text-pink-600 p-1"
                               onClick={() => handleDeleteSection(idx)}
+                              title="Delete"
                             >
                               <FaTrash size={15} />
                             </button>
@@ -357,74 +818,48 @@ const Curriculum = () => {
                               )}
                             </button>
                           </div>
-                          {/* Jika section belum punya item, tampilkan pilihan add item pertama */}
-                          {section.items.length === 0 &&
-                            addItemSectionIdx === idx && (
-                              <div className="flex flex-col gap-2 mt-2">
-                                <div className="font-semibold mb-2">
-                                  Add First Item:
-                                </div>
-                                <div className="flex gap-2">
-                                  <button
-                                    className={`flex-1 border border-gray-300 rounded-lg px-4 py-2 flex items-center justify-center gap-2 bg-white font-semibold hover:bg-blue-50 ${firstItemType === 'lecture' ? 'text-blue-700' : 'text-gray-700'}`}
-                                    onClick={() => setFirstItemType('lecture')}
-                                    type="button"
-                                  >
-                                    <FaRegFileAlt className="text-blue-500" />{' '}
-                                    LECTURE
-                                  </button>
-                                  <button
-                                    className={`flex-1 border border-gray-300 rounded-lg px-4 py-2 flex items-center justify-center gap-2 bg-white font-semibold hover:bg-green-50 ${firstItemType === 'quiz' ? 'text-green-700' : 'text-gray-700'}`}
-                                    onClick={() => setFirstItemType('quiz')}
-                                    type="button"
-                                  >
-                                    <FaRegCircle className="text-green-500" />{' '}
-                                    QUIZ
-                                  </button>
-                                  <button
-                                    className={`flex-1 border border-gray-300 rounded-lg px-4 py-2 flex items-center justify-center gap-2 bg-white font-semibold hover:bg-yellow-50 ${firstItemType === 'assignment' ? 'text-yellow-700' : 'text-gray-700'}`}
-                                    onClick={() =>
-                                      setFirstItemType('assignment')
-                                    }
-                                    type="button"
-                                  >
-                                    <FaRegCircle className="text-yellow-500" />{' '}
-                                    ASSIGNMENT
-                                  </button>
-                                  <button
-                                    className="ml-2 bg-pink-600 hover:bg-pink-700 text-white font-semibold px-4 py-2 rounded-lg shadow"
-                                    type="button"
-                                    onClick={() => {
-                                      handleAddItem(idx, firstItemType)
-                                      setAddItemSectionIdx(null)
-                                    }}
-                                  >
-                                    Add
-                                  </button>
-                                </div>
-                              </div>
-                            )}
                           {section.expanded && (
                             <Droppable
-                              droppableId={`item-droppable-${idx}`}
-                              type={`item-${idx}`}
+                              droppableId={
+                                section.id
+                                  ? `item-droppable-${section.id}`
+                                  : `item-droppable-${idx}`
+                              }
+                              type={
+                                section.id
+                                  ? `item-${section.id}`
+                                  : `item-${idx}`
+                              }
                             >
                               {(itemProvided) => (
                                 <div
                                   ref={itemProvided.innerRef}
                                   {...itemProvided.droppableProps}
                                 >
+                                  {idx > 0 && (
+                                    <div className="border-t border-gray-100 mb-8"></div>
+                                  )}
                                   {section.items.map((item, itemIdx) => (
                                     <Draggable
-                                      key={itemIdx}
-                                      draggableId={`item-${idx}-${itemIdx}`}
+                                      key={item.id || `item-${itemIdx}`}
+                                      draggableId={
+                                        item.id
+                                          ? `item-${item.id}`
+                                          : `item-${itemIdx}`
+                                      }
                                       index={itemIdx}
                                     >
                                       {(itemDraggable, itemSnap) => (
                                         <div
                                           ref={itemDraggable.innerRef}
                                           {...itemDraggable.draggableProps}
-                                          className={`bg-white rounded-xl border border-gray-200 p-6 mb-4 w-full flex flex-col relative transition hover:shadow-sm ${itemSnap.isDragging ? 'shadow-lg border-pink-200' : ''}`}
+                                          className={`bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mb-4 w-full flex flex-col relative transition-all duration-200
+        ${itemSnap.isDragging ? 'shadow-2xl scale-[1.03] border-pink-400 z-20' : ''}
+        ${itemSnap.isDropAnimating ? 'ring-2 ring-pink-300' : ''}
+        hover:shadow-md hover:border-pink-200`}
+                                          style={
+                                            itemDraggable.draggableProps.style
+                                          }
                                         >
                                           <div className="flex items-center gap-2 mb-2">
                                             <span
@@ -535,6 +970,7 @@ const Curriculum = () => {
                                               onClick={() =>
                                                 handleEditItem(idx, itemIdx)
                                               }
+                                              title="Edit"
                                             >
                                               <FaRegEdit size={15} />
                                             </button>
@@ -543,6 +979,7 @@ const Curriculum = () => {
                                               onClick={() =>
                                                 handleDeleteItem(idx, itemIdx)
                                               }
+                                              title="Delete"
                                             >
                                               <FaTrash size={15} />
                                             </button>
@@ -564,14 +1001,254 @@ const Curriculum = () => {
                                           </div>
                                           {item.expanded && (
                                             <>
-                                              <div className="mb-2">
-                                                <span className="font-semibold">
-                                                  Preview
-                                                </span>
-                                                <div className="text-gray-400 text-xs">
-                                                  No video or slide added yet.
+                                              {/* Konten Video/Slide */}
+                                              {item.contentType === 'video' && (
+                                                <div className="mb-2">
+                                                  <span className="font-semibold">
+                                                    Video URL
+                                                  </span>
+                                                  {contentEdit.sectionIdx ===
+                                                    idx &&
+                                                  contentEdit.itemIdx ===
+                                                    itemIdx ? (
+                                                    <div className="flex gap-2 mt-1">
+                                                      <input
+                                                        className="border rounded-lg px-3 py-2 w-full"
+                                                        type="text"
+                                                        placeholder="Masukkan link video (YouTube, Vimeo, dll)"
+                                                        value={
+                                                          contentEdit.value
+                                                        }
+                                                        onChange={(e) =>
+                                                          setContentEdit({
+                                                            ...contentEdit,
+                                                            value:
+                                                              e.target.value,
+                                                          })
+                                                        }
+                                                        autoFocus
+                                                      />
+                                                      <button
+                                                        className="bg-pink-600 hover:bg-pink-700 text-white font-semibold px-4 py-1 rounded-lg"
+                                                        onClick={() =>
+                                                          handleSaveContent(
+                                                            idx,
+                                                            itemIdx,
+                                                          )
+                                                        }
+                                                        type="button"
+                                                      >
+                                                        Simpan
+                                                      </button>
+                                                      <button
+                                                        className="text-gray-500 px-3 py-1"
+                                                        onClick={() =>
+                                                          setContentEdit({
+                                                            sectionIdx: null,
+                                                            itemIdx: null,
+                                                            value: '',
+                                                            file: null,
+                                                          })
+                                                        }
+                                                        type="button"
+                                                      >
+                                                        Batal
+                                                      </button>
+                                                    </div>
+                                                  ) : item.content_link ? (
+                                                    <>
+                                                      <div
+                                                        className="text-blue-700 underline cursor-pointer mt-1 mb-1"
+                                                        onClick={() =>
+                                                          window.open(
+                                                            item.content_link,
+                                                            '_blank',
+                                                          )
+                                                        }
+                                                      >
+                                                        {item.content_link}
+                                                      </div>
+                                                      <button
+                                                        className="flex items-center gap-2 text-base font-semibold text-gray-500 hover:text-pink-600 mt-1"
+                                                        onClick={() =>
+                                                          setContentEdit({
+                                                            sectionIdx: idx,
+                                                            itemIdx,
+                                                            value:
+                                                              item.content_link,
+                                                            file: null,
+                                                          })
+                                                        }
+                                                        type="button"
+                                                      >
+                                                        Edit Link Video
+                                                      </button>
+                                                      {/* Preview video: jika YouTube tampilkan thumbnail, jika bukan tetap iframe */}
+                                                      <div className="mt-2">
+                                                        {getYouTubeThumbnail(
+                                                          item.content_link,
+                                                        ) ? (
+                                                          <a
+                                                            href={
+                                                              item.content_link
+                                                            }
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="block w-full max-w-xs mx-auto"
+                                                          >
+                                                            <img
+                                                              src={getYouTubeThumbnail(
+                                                                item.content_link,
+                                                              )}
+                                                              alt="YouTube Thumbnail"
+                                                              className="rounded-lg border w-full object-cover"
+                                                              style={{
+                                                                aspectRatio:
+                                                                  '16/9',
+                                                              }}
+                                                            />
+                                                            <div className="text-center text-xs text-gray-500 mt-1">
+                                                              Klik untuk buka
+                                                              video
+                                                            </div>
+                                                          </a>
+                                                        ) : (
+                                                          <iframe
+                                                            src={
+                                                              item.content_link
+                                                            }
+                                                            title="Video Preview"
+                                                            className="w-full h-56 rounded-lg border"
+                                                            allowFullScreen
+                                                          />
+                                                        )}
+                                                      </div>
+                                                    </>
+                                                  ) : (
+                                                    <button
+                                                      className="flex items-center gap-2 text-base font-semibold text-gray-500 hover:text-pink-600 mt-1"
+                                                      onClick={() =>
+                                                        setContentEdit({
+                                                          sectionIdx: idx,
+                                                          itemIdx,
+                                                          value: '',
+                                                          file: null,
+                                                        })
+                                                      }
+                                                      type="button"
+                                                    >
+                                                      <FaPlus className="text-gray-400" />{' '}
+                                                      Tambah Link Video
+                                                    </button>
+                                                  )}
                                                 </div>
-                                              </div>
+                                              )}
+                                              {item.contentType === 'slide' && (
+                                                <div className="mb-2">
+                                                  <span className="font-semibold">
+                                                    Upload Slide (PDF)
+                                                  </span>
+                                                  {contentEdit.sectionIdx ===
+                                                    idx &&
+                                                  contentEdit.itemIdx ===
+                                                    itemIdx ? (
+                                                    <div className="flex gap-2 mt-1 items-center">
+                                                      <input
+                                                        className="border rounded-lg px-3 py-2 w-full"
+                                                        type="file"
+                                                        accept="application/pdf"
+                                                        onChange={(e) =>
+                                                          setContentEdit({
+                                                            ...contentEdit,
+                                                            file: e.target
+                                                              .files[0],
+                                                          })
+                                                        }
+                                                      />
+                                                      <button
+                                                        className="bg-pink-600 hover:bg-pink-700 text-white font-semibold px-4 py-1 rounded-lg"
+                                                        onClick={() =>
+                                                          handleSaveContent(
+                                                            idx,
+                                                            itemIdx,
+                                                          )
+                                                        }
+                                                        type="button"
+                                                      >
+                                                        Simpan
+                                                      </button>
+                                                      <button
+                                                        className="text-gray-500 px-3 py-1"
+                                                        onClick={() =>
+                                                          setContentEdit({
+                                                            sectionIdx: null,
+                                                            itemIdx: null,
+                                                            value: '',
+                                                            file: null,
+                                                          })
+                                                        }
+                                                        type="button"
+                                                      >
+                                                        Batal
+                                                      </button>
+                                                    </div>
+                                                  ) : item.content_file ? (
+                                                    <div className="flex flex-col gap-1 mt-2">
+                                                      <div className="flex items-center gap-2">
+                                                        <FaRegFileAlt className="text-purple-700 text-lg" />
+                                                        <span className="font-semibold text-purple-800 text-sm truncate max-w-[160px] md:max-w-[240px] lg:max-w-[320px]">
+                                                          {item.content_file
+                                                            .split('/')
+                                                            .pop()}
+                                                        </span>
+                                                        <button
+                                                          className="ml-2 text-xs text-blue-600 underline hover:text-blue-800"
+                                                          onClick={() =>
+                                                            window.open(
+                                                              item.content_file,
+                                                              '_blank',
+                                                            )
+                                                          }
+                                                          type="button"
+                                                        >
+                                                          Preview Slide
+                                                        </button>
+                                                        <button
+                                                          className="ml-2 text-xs text-gray-500 hover:text-pink-600"
+                                                          onClick={() =>
+                                                            setContentEdit({
+                                                              sectionIdx: idx,
+                                                              itemIdx,
+                                                              value: '',
+                                                              file: null,
+                                                            })
+                                                          }
+                                                          type="button"
+                                                        >
+                                                          Ganti File Slide
+                                                        </button>
+                                                      </div>
+                                                      {/* Responsive PDF preview (modal/iframe) bisa ditambahkan di sini jika ingin lebih advance */}
+                                                    </div>
+                                                  ) : (
+                                                    <button
+                                                      className="flex items-center gap-2 text-base font-semibold text-gray-500 hover:text-pink-600 mt-1"
+                                                      onClick={() =>
+                                                        setContentEdit({
+                                                          sectionIdx: idx,
+                                                          itemIdx,
+                                                          value: '',
+                                                          file: null,
+                                                        })
+                                                      }
+                                                      type="button"
+                                                    >
+                                                      <FaPlus className="text-gray-400" />{' '}
+                                                      Upload Slide PDF
+                                                    </button>
+                                                  )}
+                                                </div>
+                                              )}
                                               <div className="mb-2">
                                                 <span className="font-semibold">
                                                   Description
@@ -667,18 +1344,23 @@ const Curriculum = () => {
                                                     {item.resources.map(
                                                       (res, i) => (
                                                         <li
-                                                          key={i}
+                                                          key={res.id || i}
                                                           className="mb-1 flex items-center gap-2"
                                                         >
-                                                          {res.name || res}
-                                                          {res instanceof
-                                                            File && (
+                                                          {res.title ||
+                                                            res.file_path ||
+                                                            'Resource'}
+                                                          {res.file_path && (
                                                             <a
-                                                              href={URL.createObjectURL(
-                                                                res,
-                                                              )}
+                                                              href={
+                                                                typeof res.file_path ===
+                                                                'string'
+                                                                  ? res.file_path
+                                                                  : undefined
+                                                              }
                                                               download={
-                                                                res.name
+                                                                res.title ||
+                                                                'Resource'
                                                               }
                                                               className="text-blue-500 underline text-xs ml-2"
                                                               target="_blank"
@@ -686,6 +1368,21 @@ const Curriculum = () => {
                                                             >
                                                               Download
                                                             </a>
+                                                          )}
+                                                          {res.id && (
+                                                            <button
+                                                              className="text-red-500 hover:text-red-700 text-xs ml-2"
+                                                              onClick={() =>
+                                                                handleDeleteResource(
+                                                                  res.id,
+                                                                )
+                                                              }
+                                                              title="Delete Resource"
+                                                            >
+                                                              <FaTrash
+                                                                size={12}
+                                                              />
+                                                            </button>
                                                           )}
                                                         </li>
                                                       ),
@@ -705,6 +1402,10 @@ const Curriculum = () => {
                                                     className="block mt-1"
                                                     accept="*/*"
                                                     onChange={(e) => {
+                                                      console.log(
+                                                        'onChange file dipanggil',
+                                                        e.target.files,
+                                                      )
                                                       if (
                                                         e.target.files &&
                                                         e.target.files[0]
@@ -726,12 +1427,17 @@ const Curriculum = () => {
                                                 ) : (
                                                   <button
                                                     className="flex items-center gap-2 text-base font-semibold text-gray-500 hover:text-pink-600 mt-1"
-                                                    onClick={() =>
+                                                    onClick={() => {
+                                                      console.log(
+                                                        'Klik Add External Resource',
+                                                        idx,
+                                                        itemIdx,
+                                                      )
                                                       setResourceEdit({
                                                         sectionIdx: idx,
                                                         itemIdx,
                                                       })
-                                                    }
+                                                    }}
                                                     type="button"
                                                   >
                                                     <FaPlus className="text-gray-400" />{' '}
@@ -744,55 +1450,93 @@ const Curriculum = () => {
                                               </div>
                                             </>
                                           )}
+                                          {/* Tampilkan subSubs jika ada */}
+                                          {item.subSubs &&
+                                            item.subSubs.length > 0 && (
+                                              <div className="mt-1 ml-6">
+                                                <div className="font-semibold text-xs text-pink-600 mb-1">
+                                                  Sub Sub Chapters:
+                                                </div>
+                                                <ul className="list-disc ml-4">
+                                                  {item.subSubs.map(
+                                                    (subsub, sidx) => (
+                                                      <li
+                                                        key={subsub.id || sidx}
+                                                        className="text-gray-700 text-xs"
+                                                      >
+                                                        <span className="font-medium">
+                                                          {subsub.title ||
+                                                            `Sub Sub ${sidx + 1}`}
+                                                        </span>
+                                                        {subsub.content_link && (
+                                                          <>
+                                                            {': '}
+                                                            <a
+                                                              href={
+                                                                subsub.content_link
+                                                              }
+                                                              target="_blank"
+                                                              rel="noopener noreferrer"
+                                                              className="text-blue-600 underline ml-1"
+                                                            >
+                                                              {
+                                                                subsub.content_link
+                                                              }
+                                                            </a>
+                                                          </>
+                                                        )}
+                                                      </li>
+                                                    ),
+                                                  )}
+                                                </ul>
+                                              </div>
+                                            )}
                                         </div>
                                       )}
                                     </Draggable>
                                   ))}
+                                  {/* Form Add New Item di bawah semua items, hanya satu kali per section */}
+                                  <div className="mb-4">
+                                    <span className="font-semibold text-gray-700">
+                                      Add New Item:
+                                    </span>
+                                    <div className="flex gap-2 mt-2">
+                                      <button
+                                        className="flex-1 border border-gray-300 rounded-lg px-4 py-2 flex items-center justify-center gap-2 bg-white font-semibold hover:bg-blue-50 text-blue-700 transition hover:scale-105 shadow-sm"
+                                        onClick={() =>
+                                          handleAddItem(idx, 'lecture')
+                                        }
+                                        type="button"
+                                      >
+                                        <FaRegFileAlt className="text-blue-500" />{' '}
+                                        LECTURE
+                                      </button>
+                                      <button
+                                        className="flex-1 border border-gray-300 rounded-lg px-4 py-2 flex items-center justify-center gap-2 bg-white font-semibold hover:bg-green-50 text-green-700 transition hover:scale-105 shadow-sm"
+                                        onClick={() =>
+                                          handleAddItem(idx, 'quiz')
+                                        }
+                                        type="button"
+                                      >
+                                        <FaRegCircle className="text-green-500" />{' '}
+                                        QUIZ
+                                      </button>
+                                      <button
+                                        className="flex-1 border border-gray-300 rounded-lg px-4 py-2 flex items-center justify-center gap-2 bg-white font-semibold hover:bg-yellow-50 text-yellow-700 transition hover:scale-105 shadow-sm"
+                                        onClick={() =>
+                                          handleAddItem(idx, 'assignment')
+                                        }
+                                        type="button"
+                                      >
+                                        <FaRegCircle className="text-yellow-500" />{' '}
+                                        ASSIGNMENT
+                                      </button>
+                                    </div>
+                                  </div>
                                   {itemProvided.placeholder}
                                 </div>
                               )}
                             </Droppable>
-                          )}
-                          {/* Add New Item hanya jika sudah ada item */}
-                          {section.items.length > 0 && (
-                            <div className="flex flex-col gap-2 mt-2">
-                              <div className="font-semibold mb-2">
-                                Add New Item:
-                              </div>
-                              <div className="flex gap-2">
-                                <button
-                                  className={`flex-1 border border-gray-300 rounded-lg px-4 py-2 flex items-center justify-center gap-2 bg-white font-semibold hover:bg-blue-50 ${addType === 'lecture' ? 'text-blue-700' : 'text-gray-700'}`}
-                                  onClick={() => setAddType('lecture')}
-                                  type="button"
-                                >
-                                  <FaRegFileAlt className="text-blue-500" />{' '}
-                                  LECTURE
-                                </button>
-                                <button
-                                  className={`flex-1 border border-gray-300 rounded-lg px-4 py-2 flex items-center justify-center gap-2 bg-white font-semibold hover:bg-green-50 ${addType === 'quiz' ? 'text-green-700' : 'text-gray-700'}`}
-                                  onClick={() => setAddType('quiz')}
-                                  type="button"
-                                >
-                                  <FaRegCircle className="text-green-500" />{' '}
-                                  QUIZ
-                                </button>
-                                <button
-                                  className={`flex-1 border border-gray-300 rounded-lg px-4 py-2 flex items-center justify-center gap-2 bg-white font-semibold hover:bg-yellow-50 ${addType === 'assignment' ? 'text-yellow-700' : 'text-gray-700'}`}
-                                  onClick={() => setAddType('assignment')}
-                                  type="button"
-                                >
-                                  <FaRegCircle className="text-yellow-500" />{' '}
-                                  ASSIGNMENT
-                                </button>
-                                <button
-                                  className="ml-2 bg-pink-600 hover:bg-pink-700 text-white font-semibold px-4 py-2 rounded-lg shadow"
-                                  type="button"
-                                  onClick={() => handleAddItem(idx, addType)}
-                                >
-                                  Add
-                                </button>
-                              </div>
-                            </div>
                           )}
                         </div>
                       )}
@@ -806,7 +1550,7 @@ const Curriculum = () => {
           {/* Add Section selalu di bawah */}
           <form
             onSubmit={handleAddSection}
-            className="bg-white rounded-2xl border border-gray-200 p-6 flex items-center gap-2 mt-8 w-full"
+            className="bg-white rounded-2xl border border-gray-200 p-6 flex items-center gap-2 mt-8 w-full sticky bottom-0 z-10 shadow-lg"
           >
             <input
               type="text"

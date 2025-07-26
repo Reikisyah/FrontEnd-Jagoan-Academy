@@ -2,12 +2,14 @@ import React, { useEffect, useState, useRef } from 'react'
 import Sidebar from '../../../components/Sidebar'
 import DashboardHeader from '../../../components/DashboardHeader'
 import {
-  getAllCourses,
+  getAllCoursesMentor,
   addCourse,
   updateCourse,
   deleteCourse,
-  publishCourse,
-} from '../../../utils/api'
+  setCoursePublished,
+  getAllCourses,
+} from '../../../utils/api/courseApi'
+import { getChaptersByCourseId } from '../../../utils/api/chapterApi'
 import {
   FaEye,
   FaEdit,
@@ -21,6 +23,8 @@ import {
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { useNavigate } from 'react-router-dom'
+import Swal from 'sweetalert2'
+import 'sweetalert2/dist/sweetalert2.min.css'
 // import AddCourse from './AddCourse' // Tidak perlu lagi
 
 const initialCourse = {
@@ -166,18 +170,55 @@ const CoursesDashboard = () => {
     fetchCourses()
   }, [])
 
-  const fetchCourses = () => {
+  // Fallback data dummy jika API gagal
+  const fallbackCourseData = [
+    {
+      id: 1,
+      title: 'Dasar-Dasar Pengembangan Website: HTML, CSS dan...',
+      description: 'Kursus pengantar web development.',
+      category: 'Programming',
+      created_by: 'Admin',
+      is_published: true,
+      price: '309000',
+      thumbnail: '',
+    },
+    {
+      id: 2,
+      title: 'React JS: Pemula sampai Mahir',
+      description: 'Belajar React dari dasar hingga mahir.',
+      category: 'Programming',
+      created_by: 'Mentor',
+      is_published: false,
+      price: '399000',
+      thumbnail: '',
+    },
+    // ...tambahkan data dummy lain jika perlu
+  ]
+
+  const fetchCourses = async () => {
     setLoading(true)
     setError(null)
     setFetchError(false)
-    getAllCourses()
-      .then((data) => setCourses(data))
-      .catch((err) => {
-        setError(err.message)
-        setFetchError(true)
-        toast.error('Gagal memuat data courses!')
-      })
-      .finally(() => setLoading(false))
+    // Ambil role dari localStorage/sessionStorage
+    const role =
+      localStorage.getItem('role') || sessionStorage.getItem('role') || ''
+    try {
+      let data = []
+      if (role === 'admin') {
+        // Admin hanya ambil semua course dari /courses
+        data = await getAllCourses()
+      } else {
+        // Untuk mentor atau lainnya, hanya ambil course mentor
+        data = await getAllCoursesMentor()
+      }
+      setCourses(data.length > 0 ? data : fallbackCourseData)
+    } catch (err) {
+      setError('Gagal memuat data courses. Menampilkan data contoh...')
+      setFetchError(true)
+      setCourses(fallbackCourseData)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const navigate = useNavigate()
@@ -188,49 +229,76 @@ const CoursesDashboard = () => {
   //   setFormError(null)
   // }
 
-  const handleEdit = (course) => {
-    setEditId(course.id)
-    setForm({
-      title: course.title || '',
-      description: course.description || '',
-      price: course.price || '',
-      category: course.category || '',
-      sub_category: course.sub_category || '',
-      thumbnail: course.thumbnail || '',
-    })
-    setShowEdit(true)
-    setFormError(null)
+  const handleEdit = async (course) => {
+    try {
+      const chapters = await getChaptersByCourseId(course.id)
+      localStorage.setItem('lastCourse', JSON.stringify(course)) // Simpan course ke localStorage
+      navigate('/plan-course/landing-page', { state: { course, chapters } })
+    } catch (err) {
+      toast.error('Gagal mengambil data chapter!')
+    }
   }
 
   const handleDelete = async (id) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'Delete this course?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#e11d48',
+      cancelButtonColor: '#aaa',
+      confirmButtonText: 'Yes',
+      customClass: { popup: 'rounded-xl' },
+    })
+    if (!result.isConfirmed) return
     setDeleteLoading(id)
     try {
       await deleteCourse(id)
       setSuccessMsg('Course deleted!')
-      toast.success('Course berhasil dihapus!')
+      await Swal.fire({
+        icon: 'success',
+        title: 'Course deleted!',
+        showConfirmButton: false,
+        timer: 1200,
+        customClass: { popup: 'rounded-xl' },
+        position: 'center',
+      })
       fetchCourses()
       setTimeout(() => setSuccessMsg(null), 2000)
     } catch (err) {
       setFormError(err.message)
-      toast.error('Gagal menghapus course!')
+      await Swal.fire({
+        icon: 'error',
+        title: 'Failed to delete course',
+        text: err.message,
+        confirmButtonColor: '#e11d48',
+        customClass: { popup: 'rounded-xl' },
+      })
     } finally {
       setDeleteLoading(null)
       setDeleteConfirmId(null)
     }
   }
 
-  const handlePublish = async (id) => {
+  // Fungsi publish/unpublish
+  const handlePublish = async (id, isPublished = true) => {
     setPublishLoading(id)
     setPublishError(null)
     try {
-      await publishCourse(id)
-      setPublishSuccess('Course published!')
-      toast.success('Course berhasil dipublish!')
+      await setCoursePublished(id, isPublished)
+      setPublishSuccess(
+        isPublished ? 'Course published!' : 'Course unpublished!',
+      )
+      toast.success(
+        isPublished
+          ? 'Course berhasil dipublish!'
+          : 'Course berhasil di-unpublish!',
+      )
       fetchCourses()
       setTimeout(() => setPublishSuccess(null), 2000)
     } catch (err) {
-      setPublishError(err.message)
-      toast.error('Gagal publish course!')
+      setPublishError(err.message || 'Gagal publish/unpublish course!')
+      toast.error(err.message || 'Gagal publish/unpublish course!')
       setTimeout(() => setPublishError(null), 2000)
     } finally {
       setPublishLoading(null)
@@ -331,9 +399,9 @@ const CoursesDashboard = () => {
     if (confirmModal.type === 'delete') {
       await handleDelete(confirmModal.course.id)
     } else if (confirmModal.type === 'publish') {
-      await handlePublish(confirmModal.course.id)
+      await handlePublish(confirmModal.course.id, true)
     } else if (confirmModal.type === 'unpublish') {
-      await handlePublish(confirmModal.course.id)
+      await handlePublish(confirmModal.course.id, false)
     }
     closeConfirmModal()
   }
@@ -842,7 +910,7 @@ const CoursesDashboard = () => {
                             </div>
                           </td>
                           <td className="py-2 px-4 text-gray-700">
-                            {course.category}
+                            {course.category || '-'}
                           </td>
                           <td className="py-2 px-4 text-gray-700">
                             {course.created_by}
@@ -878,11 +946,7 @@ const CoursesDashboard = () => {
                               <button
                                 className="text-pink-500 hover:text-pink-700"
                                 title="Edit"
-                                onClick={() =>
-                                  navigate('/plan-course/landing-page', {
-                                    state: { course },
-                                  })
-                                }
+                                onClick={() => handleEdit(course)}
                                 disabled={
                                   formLoading ||
                                   publishLoading === course.id ||
@@ -1086,6 +1150,14 @@ const CoursesDashboard = () => {
                         )}
                       </div>
                       <div className="text-sm text-gray-700 mb-1">
+                        <span className="font-semibold">Language:</span>{' '}
+                        {selectedCourse.language || '-'}
+                      </div>
+                      <div className="text-sm text-gray-700 mb-1">
+                        <span className="font-semibold">Level:</span>{' '}
+                        {selectedCourse.level || '-'}
+                      </div>
+                      <div className="text-sm text-gray-700 mb-1">
                         <span className="font-semibold">Instructor:</span>{' '}
                         {selectedCourse.created_by}
                       </div>
@@ -1150,6 +1222,38 @@ const CoursesDashboard = () => {
                       {selectedCourse.description}
                     </div>
                   </div>
+                  {/* Requirements & Objectives */}
+                  {(selectedCourse.requirements?.length > 0 ||
+                    selectedCourse.course_objectives?.length > 0) && (
+                    <div className="mb-2">
+                      {selectedCourse.requirements?.length > 0 && (
+                        <div className="mb-2">
+                          <div className="font-semibold text-gray-700 mb-1">
+                            Requirements:
+                          </div>
+                          <ul className="list-disc list-inside text-gray-600 text-sm">
+                            {selectedCourse.requirements.map((req, idx) => (
+                              <li key={idx}>{req}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {selectedCourse.course_objectives?.length > 0 && (
+                        <div className="mb-2">
+                          <div className="font-semibold text-gray-700 mb-1">
+                            Course Objectives:
+                          </div>
+                          <ul className="list-disc list-inside text-gray-600 text-sm">
+                            {selectedCourse.course_objectives.map(
+                              (obj, idx) => (
+                                <li key={idx}>{obj}</li>
+                              ),
+                            )}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
                   {/* Edit Button */}
                   <div className="flex justify-end mt-6">
                     <button

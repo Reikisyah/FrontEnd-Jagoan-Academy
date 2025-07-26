@@ -40,40 +40,42 @@ const Sidebar = () => {
           <FiGrid className="w-5 h-5" /> Dashboard
         </Link>
         <Link
-          to="/courses-dashboard"
-          className={`${baseClass} ${isActive('/courses-dashboard') ? activeClass : 'hover:bg-white/10'}`}
+          to={isParticipant ? '/student/courses' : '/courses-dashboard'}
+          className={`${baseClass} ${isActive(isParticipant ? '/student/courses' : '/courses-dashboard') ? activeClass : 'hover:bg-white/10'}`}
         >
           <FiBook className="w-5 h-5" /> Courses
+        </Link>
+        {/* Categories & Subcategories (admin only) */}
+        {!isMentor && !isParticipant && (
+          <>
+            <Link
+              to="/categories"
+              className={`${baseClass} ${isActive('/categories') ? activeClass : 'hover:bg-white/10'}`}
+            >
+              <FiList className="w-5 h-5" /> Categories
+            </Link>
+            <Link
+              to="/subcategories"
+              className={`${baseClass} ${isActive('/subcategories') ? activeClass : 'hover:bg-white/10'}`}
+            >
+              <FiLayers className="w-5 h-5" /> Subcategories
+            </Link>
+          </>
+        )}
+        {/* Subcategories (mentor only) */}
+        {/* Languages selalu tampil setelah Subcategories untuk semua role */}
+        <Link
+          to="/languages"
+          className={`${baseClass} ${isActive('/languages') ? activeClass : 'hover:bg-white/10'}`}
+        >
+          <FiGlobe className="w-5 h-5" /> Languages
         </Link>
         {/* Only show the rest if not participant */}
         {!isParticipant && (
           <>
-            {/* Hide Categories and Subcategories for mentor */}
-            {!isMentor && (
-              <>
-                <Link
-                  to="/categories"
-                  className={`${baseClass} ${isActive('/categories') ? activeClass : 'hover:bg-white/10'}`}
-                >
-                  <FiList className="w-5 h-5" /> Categories
-                </Link>
-                <Link
-                  to="/subcategories"
-                  className={`${baseClass} ${isActive('/subcategories') ? activeClass : 'hover:bg-white/10'}`}
-                >
-                  <FiLayers className="w-5 h-5" /> Subcategories
-                </Link>
-              </>
-            )}
             {/* Hide these for mentor */}
             {!isMentor && (
               <>
-                <Link
-                  to="/languages"
-                  className={`${baseClass} ${isActive('/languages') ? activeClass : 'hover:bg-white/10'}`}
-                >
-                  <FiGlobe className="w-5 h-5" /> Languages
-                </Link>
                 <Link
                   to="/user-management"
                   className={`${baseClass} ${isActive('/user-management') ? activeClass : 'hover:bg-white/10'}`}
