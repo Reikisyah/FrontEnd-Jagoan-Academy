@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'https://lms.alanwari.ponpes.id/api'
+export const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://lms.alanwari.ponpes.id/api'
 
 export function getToken() {
   return localStorage.getItem('token') || sessionStorage.getItem('token') || ''
